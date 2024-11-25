@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CajaController;
+use App\Http\Controllers\PersonaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +22,30 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/login',[AuthController::class,'login'])->name('login');
+
+Route::prefix('personas')->group(function () {
+    // Obtener todas las personas
+    Route::get('/', [PersonaController::class, 'index'])->name('personas.index');
+    // Crear una nueva persona
+    Route::post('/', [PersonaController::class, 'store'])->name('personas.store');
+    // Obtener una persona específica
+    Route::get('/{id}', [PersonaController::class, 'show'])->name('personas.show');
+    // Actualizar una persona específica
+    Route::put('/{id}', [PersonaController::class, 'update'])->name('personas.update');
+    // Eliminar una persona específica
+    Route::delete('/{id}', [PersonaController::class, 'destroy'])->name('personas.destroy');
+});
+
+
+Route::prefix('cajas')->group(function () {
+    // Obtener todas las cajas
+    Route::get('/', [CajaController::class, 'index'])->name('cajas.index');
+    // Crear una nueva Caja
+    Route::post('/', [CajaController::class, 'store'])->name('cajas.store');
+    // Obtener una Caja específica
+    Route::get('/{id}', [CajaController::class, 'show'])->name('cajas.show');
+    // Actualizar una Caja específica
+    Route::put('/{id}', [CajaController::class, 'update'])->name('cajas.update');
+    // Eliminar una Caja específica
+    Route::delete('/{id}', [CajaController::class, 'destroy'])->name('cajas.destroy');
+});

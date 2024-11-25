@@ -22,6 +22,14 @@ class AuthController extends Controller
             return ResponseFormatter::error('Credenciales invalidas', 401);
         }
         $token = $user->createToken($user->role)->plainTextToken;
-        return ResponseFormatter::success($token, 200);
+        return ResponseFormatter::success(['token'=>$token
+    ,'user'=>[
+        'id'=>$user->id,
+        'name'=>$user->name,
+        'email'=>$user->email,
+        'role'=>$user->role,
+        'token_type'=>'Bearer',
+        'access_token'=>$token
+    ]], 200);
     }
 }
