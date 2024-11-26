@@ -45,7 +45,7 @@ Route::prefix('cajas')->group(function () {
     // Obtener una Caja específica
     Route::get('/{id}', [CajaController::class, 'show'])->name('cajas.show');
     // Actualizar una Caja específica
-    Route::put('/{id}', [CajaController::class, 'update'])->name('cajas.update');
+    Route::put('/{caja}', [CajaController::class, 'update'])->name('cajas.update');
     // Eliminar una Caja específica
-    Route::delete('/{id}', [CajaController::class, 'destroy'])->name('cajas.destroy');
+    Route::delete('/{caja}', [CajaController::class, 'destroy'])->name('cajas.destroy');
 });

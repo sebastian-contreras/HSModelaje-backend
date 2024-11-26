@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreCajaRequest;
+use App\Http\Requests\UpdateCajaRequest;
 use App\Models\Caja;
 use App\Traits\FilterableTrait;
 use Illuminate\Http\Request;
@@ -47,7 +48,7 @@ class CajaController extends Controller
             'EstadoCaja'
         ];
         $validSortDirections = ['asc', 'desc']; // Puedes personalizar esto
-        $this->applySorting($query, $request, $validSortFields, $validSortDirections,'IdCaja');
+        $this->applySorting($query, $request, $validSortFields, $validSortDirections, 'IdCaja');
         // Paginación
         $cajas = $query->paginate($cantidad, ['*'], 'page', $pagina);
         return ResponseFormatter::success(
@@ -67,9 +68,9 @@ class CajaController extends Controller
      */
     public function store(StoreCajaRequest $request)
     {
-            $data = $request->validated();
-            $caja = Caja::create($data);
-            return ResponseFormatter::success($caja, 'Caja creada con exito.', 201);
+        $data = $request->validated();
+        $caja = Caja::create($data);
+        return ResponseFormatter::success($caja, 'Caja creada con exito.', 201);
     }
 
     /**
@@ -81,26 +82,23 @@ class CajaController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Caja $caja)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Caja $caja)
+    public function update(UpdateCajaRequest $request, Caja $caja)
     {
-        //
-    }
+        // Actualiza los campos de la caja con los datos de la solicitud
+        $caja->update($request->validated());
 
+        return response()->json(['message' => 'Caja actualizada con éxito.', 'data' => $caja]);
+    }
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Caja $caja)
     {
-        //
+        $caja->delete();
+
+        // Retornar una respuesta exitosa
+        return ResponseFormatter::success([], 'Persona eliminada exitosamente', 204);
     }
 }
