@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('Cajas', function (Blueprint $table) {
             $table->unsignedInteger('IdCaja', true);
             $table->unsignedInteger('NumeroCaja')->nullable();
-            $table->char('Tamaño', 4)->nullable();
+            $table->string('Tamaño', 20)->nullable();
             $table->string('Ubicacion', 250)->nullable();
-            $table->unsignedInteger('Fila')->nullable();
-            $table->unsignedInteger('Columna')->nullable();
+            $table->string('Fila',10)->nullable();
+            $table->string('Columna',10)->nullable();
             $table->text('Observaciones')->nullable();
             $table->char('EstadoCaja', 1)->default('A');
             $table->timestamps();

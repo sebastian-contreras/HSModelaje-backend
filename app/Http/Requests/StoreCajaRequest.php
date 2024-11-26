@@ -11,7 +11,7 @@ class StoreCajaRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,10 +23,10 @@ class StoreCajaRequest extends FormRequest
     {
         return [
             'NumeroCaja' => 'nullable|integer|min:1', // Debe ser un número entero positivo
-            'Tamaño' => 'nullable|string|max:4', // Tamaño con un máximo de 4 caracteres
+            'Tamaño' => 'nullable|string|max:20', // Tamaño con un máximo de 4 caracteres
             'Ubicacion' => 'nullable|string|max:250', // Ubicación con un máximo de 250 caracteres
-            'Fila' => 'nullable|integer|min:0', // Debe ser un número entero no negativo
-            'Columna' => 'nullable|integer|min:0', // Debe ser un número entero no negativo
+            'Fila' => 'nullable|string|max:10', // Debe ser un número entero no negativo
+            'Columna' => 'nullable|string|max:10', // Debe ser un número entero no negativo
             'Observaciones' => 'nullable|string', // Sin límite de caracteres
             'EstadoCaja' => 'nullable|in:A,I,N,B', // Debe ser uno de los valores permitidos
         ];
@@ -40,12 +40,10 @@ class StoreCajaRequest extends FormRequest
         return [
             'NumeroCaja.integer' => 'El número de caja debe ser un número entero.',
             'NumeroCaja.min' => 'El número de caja debe ser al menos 1.',
-            'Tamaño.max' => 'El tamaño no puede exceder los 4 caracteres.',
+            'Tamaño.max' => 'El tamaño no puede exceder los 20 caracteres.',
             'Ubicacion.max' => 'La ubicación no puede exceder los 250 caracteres.',
-            'Fila.integer' => 'La fila debe ser un número entero.',
-            'Fila.min' => 'La fila no puede ser negativa.',
-            'Columna.integer' => 'La columna debe ser un número entero.',
-            'Columna.min' => 'La columna no puede ser negativa.',
+            'Fila.max' => 'La fila no puede exceder los 10 caracteres.',
+            'Columna.max' => 'La columna no puede exceder los 10 caracteres.',
             'EstadoCaja.in' => 'El estado de la caja debe ser uno de los siguientes: A, I, N, B.',
         ];
     }

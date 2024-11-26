@@ -67,12 +67,9 @@ class CajaController extends Controller
      */
     public function store(StoreCajaRequest $request)
     {
-        $data = $request->validated();
-
-        // Crea una nueva caja con los datos validados
-        $caja = Caja::create($data);
-
-        return ResponseFormatter::success($caja, 'Caja creada con exito.', 201);
+            $data = $request->validated();
+            $caja = Caja::create($data);
+            return ResponseFormatter::success($caja, 'Caja creada con exito.', 201);
     }
 
     /**
