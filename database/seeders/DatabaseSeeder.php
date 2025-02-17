@@ -22,14 +22,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@admin.com',
         ]);
-        \App\Models\User::factory()->create([
-            'name' => 'Javier Balardini',
-            'email' => 'jbalardini@gmail.com',
-        ]);
         
         $this->call([
-            PersonaSeeder::class,
-            CajaSeeder::class,
             // Otros seeders...
         ]);
     }
