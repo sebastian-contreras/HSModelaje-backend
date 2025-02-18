@@ -19,8 +19,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [],
-
+    'allowed_origins' => [
+        'https://hsmodelaje-front-production.up.railway.app',
+        'http://localhost:3000',
+        '*'
+    ],
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
@@ -28,7 +31,7 @@ return [
     'exposed_headers' => [],
 
     'max_age' => 0,
-    'Access-Control-Allow-Credentials'=>true,
+    'Access-Control-Allow-Credentials' => true,
 
     'supports_credentials' => true,
 
