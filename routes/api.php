@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\PersonaController;
+use App\Http\Controllers\UsuariosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -48,4 +49,18 @@ Route::prefix('cajas')->group(function () {
     Route::put('/{caja}', [CajaController::class, 'update'])->name('cajas.update');
     // Eliminar una Caja específica
     Route::delete('/{caja}', [CajaController::class, 'destroy'])->name('cajas.destroy');
+});
+
+
+Route::prefix('usuarios')->group(function () {
+    // Obtener todas las usuarios
+    Route::get('/', [UsuariosController::class, 'index'])->name('usuarios.index');
+    // Crear una nueva usuarios
+    Route::post('/', [UsuariosController::class, 'store'])->name('usuarios.store');
+    // Obtener una usuarios específica
+    Route::get('/{IdUsuario}', [UsuariosController::class, 'show'])->name('usuarios.show');
+    // Actualizar una usuarios específica
+    Route::put('/{IdUsuario}', [UsuariosController::class, 'update'])->name('usuarios.update');
+    // Eliminar una usuarios específica
+    Route::delete('/{IdUsuario}', [UsuariosController::class, 'destroy'])->name('usuarios.destroy');
 });
