@@ -105,4 +105,34 @@ class UsuariosController extends Controller
         // Si todo fue exitoso, devolver una respuesta de éxito
         return ResponseFormatter::success(null, 'Usuario borrado exitosamente.', 200);
     }
+
+    public function darBaja(int $IdUsuario)
+    {
+        // Llamar al procedimiento almacenado
+        $result = DB::select('CALL bsp_darbaja_usuario(?)', [$IdUsuario]);
+
+        // Verificar la respuesta del procedimiento almacenado
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            // Si hay un error, devolver un error formateado
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
+        }
+
+        // Si todo fue exitoso, devolver una respuesta de éxito
+        return ResponseFormatter::success(null, 'Usuario dado de baja exitosamente.', 200);
+    }
+
+    public function activar(int $IdUsuario)
+    {
+        // Llamar al procedimiento almacenado
+        $result = DB::select('CALL bsp_activar_usuario(?)', [$IdUsuario]);
+
+        // Verificar la respuesta del procedimiento almacenado
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            // Si hay un error, devolver un error formateado
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
+        }
+
+        // Si todo fue exitoso, devolver una respuesta de éxito
+        return ResponseFormatter::success(null, 'Usuario activo exitosamente.', 200);
+    }
 }

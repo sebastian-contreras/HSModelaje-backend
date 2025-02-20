@@ -22,7 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/login',[AuthController::class,'login'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 Route::prefix('personas')->group(function () {
     // Obtener todas las personas
@@ -63,4 +63,7 @@ Route::prefix('usuarios')->group(function () {
     Route::put('/{IdUsuario}', [UsuariosController::class, 'update'])->name('usuarios.update');
     // Eliminar una usuarios específica
     Route::delete('/{IdUsuario}', [UsuariosController::class, 'destroy'])->name('usuarios.destroy');
+
+    Route::post('/darbaja/{IdUsuario}', [UsuariosController::class, 'darBaja'])->name('usuarios.darBaja');
+    Route::post('/activar/{IdUsuario}', [UsuariosController::class, 'activar'])->name('usuarios.activar');
 });
