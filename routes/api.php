@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CajaController;
+use App\Http\Controllers\EstablecimientosController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\UsuariosController;
 use Illuminate\Http\Request;
@@ -66,4 +67,20 @@ Route::prefix('usuarios')->group(function () {
 
     Route::post('/darbaja/{IdUsuario}', [UsuariosController::class, 'darBaja'])->name('usuarios.darBaja');
     Route::post('/activar/{IdUsuario}', [UsuariosController::class, 'activar'])->name('usuarios.activar');
+});
+
+Route::prefix('establecimientos')->group(function () {
+    // Obtener todas las usuarios
+    Route::get('/', [EstablecimientosController::class, 'index'])->name('establecimientos.index');
+    // Crear una nueva establecimientos
+    Route::post('/', [EstablecimientosController::class, 'store'])->name('establecimientos.store');
+    // Obtener una establecimientos específica
+    Route::get('/{IdEstablecimiento}', [EstablecimientosController::class, 'show'])->name('establecimientos.show');
+    // Actualizar una establecimientos específica
+    Route::put('/{IdEstablecimiento}', [EstablecimientosController::class, 'update'])->name('establecimientos.update');
+    // Eliminar una establecimientos específica
+    Route::delete('/{IdEstablecimiento}', [EstablecimientosController::class, 'destroy'])->name('establecimientos.destroy');
+
+    Route::post('/darbaja/{IdEstablecimiento}', [EstablecimientosController::class, 'darBaja'])->name('establecimientos.darBaja');
+    Route::post('/activar/{IdEstablecimiento}', [EstablecimientosController::class, 'activar'])->name('establecimientos.activar');
 });

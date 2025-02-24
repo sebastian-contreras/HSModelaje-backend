@@ -10,9 +10,9 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        //        
+        //
         $sql = "
- 
+
 
 DROP PROCEDURE IF EXISTS bsp_activar_usuario ;
 
@@ -21,7 +21,7 @@ SALIR:BEGIN
 	/*
 		Permite cambiar el estado del usuario a A: Activo siempre y cuando no esté activo ya. Devuelve OK o el mensaje de error en Mensaje.
 	*/
-    
+
     	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		SHOW ERRORS;
@@ -29,9 +29,9 @@ SALIR:BEGIN
 				NULL AS Id;
 		ROLLBACK;
 	END;
-    
+
     -- Controlar autor no dado de baja
-    IF EXISTS(SELECT IdUsuario FROM Usuarios WHERE IdUsuario = pIdUsuario 
+    IF EXISTS(SELECT IdUsuario FROM Usuarios WHERE IdUsuario = pIdUsuario
 						AND EstadoUsuario = 'A') THEN
 		SELECT 'El usuario ya está Activo.' AS Mensaje,'error' as Response;
         LEAVE SALIR;
@@ -39,7 +39,7 @@ SALIR:BEGIN
 
 	-- Da de baja
     UPDATE Usuarios SET EstadoUsuario = 'A' WHERE IdUsuario = pIdUsuario;
-	
+
     SELECT 'OK' AS Mensaje,'ok' as Response;
 END ;
 
@@ -48,7 +48,7 @@ DROP PROCEDURE IF EXISTS bsp_alta_usuario ;
 CREATE  PROCEDURE bsp_alta_usuario(pUsername varchar(20), pApellidos varchar(30), pNombres varchar(30), pFechaNacimiento date, pTelefono varchar(15), pEmail varchar(60), pContrasena char(32), pRol char(1)   )
 SALIR:BEGIN
 /*
-	Permite dar de alta un usuario controlando que el username ni el correo electronico esten registrados. 
+	Permite dar de alta un usuario controlando que el username ni el correo electronico esten registrados.
     Lo da de alta con estado A: Activa. Devuelve OK + Id o el mensaje de error en Mensaje.
 */
 	DECLARE pIdUsuario int;
@@ -85,7 +85,7 @@ SALIR:BEGIN
 		SELECT 'Ya existe un usuario con esa dirección de correo electrónico.' AS Mensaje,'error' as Response, NULL AS Id;
 		LEAVE SALIR;
     END IF;
-    
+
     -- COMIENZO TRANSACCION
     START TRANSACTION;
         INSERT INTO Usuarios
@@ -93,7 +93,7 @@ SALIR:BEGIN
 (0,pUsername,pApellidos,pNombres,pFechaNacimiento,pTelefono,pEmail,md5(pContrasena),now(),pRol,'A');
 		SET pIdUsuario = LAST_INSERT_ID();
 
-        SELECT 'OK' AS Mensaje,'ok' as Response, pIdUsuario AS Id;                       
+        SELECT 'OK' AS Mensaje,'ok' as Response, pIdUsuario AS Id;
     COMMIT;
 
 
@@ -106,7 +106,7 @@ DROP PROCEDURE IF EXISTS bsp_borra_usuario ;
 CREATE  PROCEDURE bsp_borra_usuario(pIdUsuario smallint)
 SALIR:BEGIN
 	/*
-		Permite borrar un usuario, solamente usado para limpiar base de datos y en produccion. 
+		Permite borrar un usuario, solamente usado para limpiar base de datos y en produccion.
 		Devuelve OK o el mensaje de error en Mensaje.
     */
     -- Manejo de error de la transacción
@@ -133,11 +133,11 @@ BEGIN
 		Procedimiento que sirve para instanciar un usuario desde la base de datos.
     */
     SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-    
+
     SELECT	*, 'ok' as Response
     FROM	Usuarios
     WHERE	IdUsuario = pIdUsuario;
-    
+
     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 END ;
 
@@ -155,9 +155,9 @@ SALIR:BEGIN
 				NULL AS Id;
 		ROLLBACK;
 	END;
-        
+
     -- Controlar autor no dado de baja
-    IF EXISTS(SELECT IdUsuario FROM Usuarios WHERE IdUsuario = pIdUsuario 
+    IF EXISTS(SELECT IdUsuario FROM Usuarios WHERE IdUsuario = pIdUsuario
 						AND EstadoUsuario = 'B') THEN
 		SELECT 'El usuario ya está dado de baja.' AS Mensaje,'error' as Response;
         LEAVE SALIR;
@@ -165,7 +165,7 @@ SALIR:BEGIN
 
 	-- Da de baja
     UPDATE Usuarios SET EstadoUsuario = 'B' WHERE IdUsuario = pIdUsuario;
-	
+
     SELECT 'OK' AS Mensaje,'ok' as Response;
 END ;
 
@@ -177,14 +177,14 @@ BEGIN
 	Permite listar los establecimiento registrados. Puede mostrar o no las inactivas (pIncluyeBajas: S: Si - N: No)
 */
 	    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
- 
+
 		SELECT		*
 		FROM		Establecimientos
-		WHERE		
+		WHERE
 					(pIncluyeBajas = 'S' OR EstadoEstablecimiento = 'A')
 		ORDER BY IdEstablecimiento
 		;
-    
+
 		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 -- {Campos de la Tabla Establecimientos}
 END ;
@@ -197,7 +197,7 @@ BEGIN
 	Permite listar los usuarios de sistema. Puede mostrar o no las inactivas (pIncluyeBajas: S: Si - N: No)
 */
 	    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
- 
+
 		SELECT		IdUsuario,
 Username,
 Apellidos,
@@ -209,11 +209,11 @@ FechaCreado,
 Rol,
 EstadoUsuario
 		FROM		Usuarios
-		WHERE		
+		WHERE
 					(pIncluyeBajas = 'S' OR EstadoUsuario = 'A')
 		ORDER BY IdUsuario
 		;
-    
+
 		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 -- {Campos de la Tabla Usuarios}
 END ;
@@ -223,7 +223,7 @@ DROP PROCEDURE IF EXISTS bsp_modificar_perfil ;
 CREATE  PROCEDURE bsp_modificar_perfil(pIdUsuario smallint,pUsername varchar(20), pApellidos varchar(30), pNombres varchar(30), pFechaNacimiento date, pTelefono varchar(15), pEmail varchar(60), pContrasena char(32) )
 SALIR:BEGIN
 /*
-	Permite modificar el perfil usuario controlando que el username ni el correo electronico esten registrados., 
+	Permite modificar el perfil usuario controlando que el username ni el correo electronico esten registrados.,
     ademas que el mismo no este dado de Baja  Devuelve OK + Id o el mensaje de error en Mensaje.
 */
 	DECLARE pIdUsuario int;
@@ -258,12 +258,12 @@ SALIR:BEGIN
 		SELECT 'Ya existe un usuario con esa dirección de correo electrónico.' AS Mensaje, NULL AS Id;
 		LEAVE SALIR;
     END IF;
-    
+
     -- COMIENZO TRANSACCION
     START TRANSACTION;
 
- UPDATE Usuarios 
-SET 
+ UPDATE Usuarios
+SET
     Username = pUsername,
     Apellidos = pApellidos,
     Nombres = pNombres,
@@ -271,10 +271,10 @@ SET
     Telefono = pTelefono,
     Email = pEmail,
     Rol = pRol
-WHERE 
+WHERE
     IdUsuario = pIdUsuario;
-        SELECT 'OK' AS Mensaje, pIdUsuario AS Id,'ok' as Response;                       
-		
+        SELECT 'OK' AS Mensaje, pIdUsuario AS Id,'ok' as Response;
+
     COMMIT;
 
 
@@ -287,7 +287,7 @@ DROP PROCEDURE IF EXISTS bsp_modificar_rol_usuario ;
 CREATE  PROCEDURE bsp_modificar_rol_usuario(pIdUsuario smallint, pRol char(1))
 SALIR:BEGIN
 /*
-	Permite cambiar el rol del usuario a A: Administrador, O:Organizados, V:Verificador siempre y cuando el usuario este activo. 
+	Permite cambiar el rol del usuario a A: Administrador, O:Organizados, V:Verificador siempre y cuando el usuario este activo.
     Devuelve OK o el mensaje de error en Mensaje.
 */
 	DECLARE pIdUsuario int;
@@ -299,7 +299,7 @@ SALIR:BEGIN
 				NULL AS Id;
 		ROLLBACK;
 	END;
-    
+
         -- Verificar que pRol sea uno de los valores permitidos
     IF pRol NOT IN ('A', 'O', 'V') THEN
         SELECT 'Rol no válido.' AS Mensaje, NULL AS Id;
@@ -308,12 +308,12 @@ SALIR:BEGIN
 
     -- COMIENZO TRANSACCION
     START TRANSACTION;
- UPDATE Usuarios SET 
+ UPDATE Usuarios SET
 		Rol = pRol
-        WHERE 
+        WHERE
 		IdUsuario = pIdUsuario;
-        
-        SELECT 'OK' AS Mensaje, pIdUsuario AS Id;                       
+
+        SELECT 'OK' AS Mensaje, pIdUsuario AS Id;
     COMMIT;
 
 
@@ -326,7 +326,7 @@ DROP PROCEDURE IF EXISTS bsp_modifica_perfil ;
 CREATE  PROCEDURE bsp_modifica_perfil(pIdUsuario smallint,pUsername varchar(20), pApellidos varchar(30), pNombres varchar(30), pFechaNacimiento date, pTelefono varchar(15), pEmail varchar(60), pContrasena char(32), pRol char(1)   )
 SALIR:BEGIN
 /*
-	Permite modificar el perfil usuario controlando que el username ni el correo electronico esten registrados., 
+	Permite modificar el perfil usuario controlando que el username ni el correo electronico esten registrados.,
     ademas que el mismo no este dado de Baja  Devuelve OK + Id o el mensaje de error en Mensaje.
 */
     -- Manejo de error en la transacción
@@ -357,11 +357,11 @@ SALIR:BEGIN
 		SELECT 'Ya existe un usuario con esa dirección de correo electrónico.' AS Mensaje, 'error' as Response, NULL AS Id;
 		LEAVE SALIR;
     END IF;
-    
+
     -- COMIENZO TRANSACCION
     START TRANSACTION;
- UPDATE Usuarios 
-SET 
+ UPDATE Usuarios
+SET
     Username = pUsername,
     Apellidos = pApellidos,
     Nombres = pNombres,
@@ -369,15 +369,278 @@ SET
     Telefono = pTelefono,
     Email = pEmail,
     Rol = pRol
-WHERE 
+WHERE
     IdUsuario = pIdUsuario;
-        SELECT 'OK' AS Mensaje, 'ok' as Response, pIdUsuario AS Id;                       
-		
+        SELECT 'OK' AS Mensaje, 'ok' as Response, pIdUsuario AS Id;
+
     COMMIT;
 
 
 -- Devuelve OK + Id o el mensaje de error en Mensaje
 -- Mensaje varchar(100), Id int
+END ;
+
+
+DROP PROCEDURE IF EXISTS bsp_listar_establecimiento ;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_establecimiento`(pIncluyeBajas char(1))
+BEGIN
+	/*
+	Permite listar los establecimiento registrados. Puede mostrar o no las inactivas (pIncluyeBajas: S: Si - N: No)
+*/
+	    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Establecimientos
+		WHERE
+					(pIncluyeBajas = 'S' OR EstadoEstablecimiento = 'A')
+		ORDER BY IdEstablecimiento
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- {Campos de la Tabla Establecimientos}
+END ;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_establecimiento ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_establecimiento`( pCadena varchar(50), pIncluyeInactivos char(1), pOffset int, pRowCount int)
+SALIR:BEGIN
+	/*
+		Permite buscar los establecimientos a partir del nombre desde el inicio de la cadena solo si la cadena tiene mas de 3 caracteres.
+        Puede incluir o no los inactivos (pIncluyeInactivos: S: Si - N: No).
+        Para todos, cadena vacía. Incluye paginado.
+    */
+      DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pCadena)>1 AND CHAR_LENGTH(pCadena) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Establecimientos
+	WHERE		Establecimiento LIKE CONCAT('%',pCadena, '%') AND
+				(pIncluyeInactivos = 'S' OR EstadoEstablecimiento = 'A')
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Establecimientos
+   WHERE	Establecimiento LIKE CONCAT('%',pCadena, '%') AND
+			(pIncluyeInactivos = 'S' OR EstadoEstablecimiento = 'A') ORDER BY Establecimiento DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+    -- {Campos de la Tabla Establecimientos}
+END ;
+
+DROP PROCEDURE IF EXISTS bsp_alta_establecimiento ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_establecimiento`(pEstablecimiento varchar(60), pUbicacion text, pCapacidad int)
+SALIR:BEGIN
+/*
+Permite dar de alta un establecimiento. Lo da de alta con estado A: Activa. Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+    DECLARE pIdEstablecimiento int;
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pEstablecimiento = '' OR pEstablecimiento IS NULL OR
+       pUbicacion IS NULL OR
+       pCapacidad IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Controla que no exista un establecimiento con el mismo nombre
+    IF EXISTS(SELECT Establecimiento FROM Establecimientos WHERE Establecimiento = pEstablecimiento) THEN
+        SELECT 'Ya existe un establecimiento con ese nombre.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+		INSERT INTO Establecimientos
+        (`IdEstablecimiento`, `Establecimiento`, `Ubicacion`, `Capacidad`, `EstadoEstablecimiento`) VALUES
+        (0, pEstablecimiento, pUbicacion, pCapacidad, 'A');
+
+        SET pIdEstablecimiento = LAST_INSERT_ID();
+
+        SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdEstablecimiento AS Id;
+
+    COMMIT;
+
+-- Mensaje varchar(100), Id int
+END ;
+
+
+DROP PROCEDURE IF EXISTS bsp_modifica_establecimiento ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_establecimiento`(pIdEstablecimiento int, pEstablecimiento varchar(60), pUbicacion text, pCapacidad int)
+SALIR:BEGIN
+/*
+	Permite modificar el establecimiento. Controlando que no este dado de Baja  Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+ -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pEstablecimiento = '' OR pEstablecimiento IS NULL OR
+       pUbicacion IS NULL OR
+       pCapacidad IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Controla que no exista un establecimiento con el mismo nombre
+    IF EXISTS(SELECT Establecimiento FROM Establecimientos WHERE Establecimiento = pEstablecimiento AND pIdEstablecimiento != IdEstablecimiento) THEN
+        SELECT 'Ya existe un establecimiento con ese nombre.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+        UPDATE Establecimientos SET IdEstablecimiento = pIdEstablecimiento
+             , Establecimiento = pEstablecimiento
+             , Ubicacion = pUbicacion
+             , Capacidad = pCapacidad
+             WHERE IdEstablecimiento = pIdEstablecimiento;
+
+        SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdEstablecimiento AS Id;
+
+    COMMIT;
+END ;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_establecimiento ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_establecimiento`( pCadena varchar(50), pIncluyeInactivos char(1), pOffset int, pRowCount int)
+SALIR:BEGIN
+	/*
+		Permite buscar los establecimientos a partir del nombre desde el inicio de la cadena solo si la cadena tiene mas de 3 caracteres.
+        Puede incluir o no los inactivos (pIncluyeInactivos: S: Si - N: No).
+        Para todos, cadena vacía. Incluye paginado.
+    */
+      DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pCadena)>1 AND CHAR_LENGTH(pCadena) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Establecimientos
+	WHERE		Establecimiento LIKE CONCAT('%',pCadena, '%') AND
+				(pIncluyeInactivos = 'S' OR EstadoEstablecimiento = 'A')
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Establecimientos
+   WHERE	Establecimiento LIKE CONCAT('%',pCadena, '%') AND
+			(pIncluyeInactivos = 'S' OR EstadoEstablecimiento = 'A') ORDER BY Establecimiento DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+    -- {Campos de la Tabla Establecimientos}
+END ;
+
+DROP PROCEDURE IF EXISTS bsp_dame_establecimiento ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_establecimiento`(pIdEstablecimiento int)
+BEGIN
+	/*
+		Procedimiento que sirve para instanciar un establecimiento desde la base de datos.
+    */
+
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Establecimientos
+    WHERE	IdEstablecimiento = pIdEstablecimiento;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+    -- Campos de la Tabla Establecimiento
+END ;
+
+
+DROP PROCEDURE IF EXISTS bsp_darbaja_establecimiento ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_darbaja_establecimiento`(pIdEstablecimiento int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado del establecimiento a B: Baja siempre y cuando no esté dada de baja. Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar establecimiento no dado de baja
+    IF EXISTS(SELECT IdEstablecimiento FROM Establecimientos WHERE IdEstablecimiento = pIdEstablecimiento
+						AND EstadoEstablecimiento = 'B') THEN
+		SELECT 'El establecimiento ya está dado de baja.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Establecimientos SET EstadoEstablecimiento = 'B' WHERE IdEstablecimiento = pIdEstablecimiento;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+-- Mensaje varchar(100)
+END ;
+
+
+DROP PROCEDURE IF EXISTS bsp_activar_establecimiento ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_activar_establecimiento`(pIdEstablecimiento int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado del establecimiento a A: Activo siempre y cuando no esté activo ya. Devuelve OK o el mensaje de error en Mensaje.
+*/
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar autor no dado de baja
+    IF EXISTS(SELECT IdEstablecimiento FROM Establecimientos WHERE IdEstablecimiento = pIdEstablecimiento
+						AND EstadoEstablecimiento = 'A') THEN
+		SELECT 'El establecimiento ya está Activo.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Establecimientos SET EstadoEstablecimiento = 'A' WHERE IdEstablecimiento = pIdEstablecimiento;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+
+-- Mensaje varchar(100)
 END ;
 
 
