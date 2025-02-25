@@ -17,12 +17,12 @@ return new class extends Migration {
 -- Project :      HSModelaje-Relacional.DM1
 -- Author :       Sebastian Contreras
 --
--- Date Created : Monday, February 17, 2025 19:58:06
+-- Date Created : Tuesday, February 25, 2025 18:32:19
 -- Target DBMS : MySQL 5.x
 --
 
--- 
--- TABLE: Entradas 
+--
+-- TABLE: Entradas
 --
 
 CREATE TABLE Entradas(
@@ -43,8 +43,8 @@ CREATE TABLE Entradas(
 
 
 
--- 
--- TABLE: Establecimientos 
+--
+-- TABLE: Establecimientos
 --
 
 CREATE TABLE Establecimientos(
@@ -59,8 +59,8 @@ CREATE TABLE Establecimientos(
 
 
 
--- 
--- TABLE: Eventos 
+--
+-- TABLE: Eventos
 --
 
 CREATE TABLE Eventos(
@@ -72,14 +72,15 @@ CREATE TABLE Eventos(
     FechaProbableFinal      DATETIME        NOT NULL,
     Votacion                CHAR(1)         NOT NULL,
     EstadoEvento            CHAR(1)         NOT NULL,
+    IdEstablecimiento       INT             NOT NULL,
     PRIMARY KEY (IdEvento)
 )ENGINE=INNODB
 ;
 
 
 
--- 
--- TABLE: Gastos 
+--
+-- TABLE: Gastos
 --
 
 CREATE TABLE Gastos(
@@ -95,8 +96,8 @@ CREATE TABLE Gastos(
 
 
 
--- 
--- TABLE: Jueces 
+--
+-- TABLE: Jueces
 --
 
 CREATE TABLE Jueces(
@@ -112,8 +113,8 @@ CREATE TABLE Jueces(
 
 
 
--- 
--- TABLE: Metricas 
+--
+-- TABLE: Metricas
 --
 
 CREATE TABLE Metricas(
@@ -127,8 +128,8 @@ CREATE TABLE Metricas(
 
 
 
--- 
--- TABLE: Modelos 
+--
+-- TABLE: Modelos
 --
 
 CREATE TABLE Modelos(
@@ -146,8 +147,8 @@ CREATE TABLE Modelos(
 
 
 
--- 
--- TABLE: Patrocinador 
+--
+-- TABLE: Patrocinador
 --
 
 CREATE TABLE Patrocinador(
@@ -163,8 +164,8 @@ CREATE TABLE Patrocinador(
 
 
 
--- 
--- TABLE: Usuarios 
+--
+-- TABLE: Usuarios
 --
 
 CREATE TABLE Usuarios(
@@ -185,8 +186,8 @@ CREATE TABLE Usuarios(
 
 
 
--- 
--- TABLE: Votacion 
+--
+-- TABLE: Votacion
 --
 
 CREATE TABLE Votacion(
@@ -204,8 +205,8 @@ CREATE TABLE Votacion(
 
 
 
--- 
--- TABLE: Zonas 
+--
+-- TABLE: Zonas
 --
 
 CREATE TABLE Zonas(
@@ -225,141 +226,155 @@ CREATE TABLE Zonas(
 
 
 
--- 
--- INDEX: Ref46 
+--
+-- INDEX: Ref46
 --
 
 CREATE INDEX Ref46 ON Entradas(IdEvento, IdEstablecimiento, IdZona)
 ;
--- 
--- INDEX: Ref65 
+--
+-- INDEX: Ref320
+--
+
+CREATE INDEX Ref320 ON Eventos(IdEstablecimiento)
+;
+--
+-- INDEX: Ref65
 --
 
 CREATE INDEX Ref65 ON Gastos(IdEvento)
 ;
--- 
--- INDEX: Ref68 
+--
+-- INDEX: Ref68
 --
 
 CREATE INDEX Ref68 ON Metricas(IdEvento)
 ;
--- 
--- INDEX: Ref64 
+--
+-- INDEX: Ref64
 --
 
 CREATE INDEX Ref64 ON Patrocinador(IdEvento)
 ;
--- 
--- INDEX: UI_Username 
+--
+-- INDEX: UI_Username
 --
 
 CREATE UNIQUE INDEX UI_Username ON Usuarios(Username)
 ;
--- 
--- INDEX: Ref1113 
+--
+-- INDEX: Ref1113
 --
 
 CREATE INDEX Ref1113 ON Votacion(IdMetrica, IdEvento)
 ;
--- 
--- INDEX: Ref1215 
+--
+-- INDEX: Ref1215
 --
 
 CREATE INDEX Ref1215 ON Votacion(IdModelo)
 ;
--- 
--- INDEX: Ref1416 
+--
+-- INDEX: Ref1416
 --
 
 CREATE INDEX Ref1416 ON Votacion(IdJuez)
 ;
--- 
--- INDEX: Ref31 
+--
+-- INDEX: Ref31
 --
 
 CREATE INDEX Ref31 ON Zonas(IdEstablecimiento)
 ;
--- 
--- INDEX: Ref62 
+--
+-- INDEX: Ref62
 --
 
 CREATE INDEX Ref62 ON Zonas(IdEvento)
 ;
--- 
--- TABLE: Entradas 
+--
+-- TABLE: Entradas
 --
 
-ALTER TABLE Entradas ADD CONSTRAINT RefZonas6 
+ALTER TABLE Entradas ADD CONSTRAINT RefZonas6
     FOREIGN KEY (IdZona, IdEstablecimiento, IdEvento)
     REFERENCES Zonas(IdZona, IdEstablecimiento, IdEvento)
 ;
 
 
--- 
--- TABLE: Gastos 
+--
+-- TABLE: Eventos
 --
 
-ALTER TABLE Gastos ADD CONSTRAINT RefEventos5 
+ALTER TABLE Eventos ADD CONSTRAINT RefEstablecimientos20
+    FOREIGN KEY (IdEstablecimiento)
+    REFERENCES Establecimientos(IdEstablecimiento)
+;
+
+
+--
+-- TABLE: Gastos
+--
+
+ALTER TABLE Gastos ADD CONSTRAINT RefEventos5
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
 ;
 
 
--- 
--- TABLE: Metricas 
+--
+-- TABLE: Metricas
 --
 
-ALTER TABLE Metricas ADD CONSTRAINT RefEventos8 
+ALTER TABLE Metricas ADD CONSTRAINT RefEventos8
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
 ;
 
 
--- 
--- TABLE: Patrocinador 
+--
+-- TABLE: Patrocinador
 --
 
-ALTER TABLE Patrocinador ADD CONSTRAINT RefEventos4 
+ALTER TABLE Patrocinador ADD CONSTRAINT RefEventos4
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
 ;
 
 
--- 
--- TABLE: Votacion 
+--
+-- TABLE: Votacion
 --
 
-ALTER TABLE Votacion ADD CONSTRAINT RefMetricas13 
+ALTER TABLE Votacion ADD CONSTRAINT RefMetricas13
     FOREIGN KEY (IdMetrica, IdEvento)
     REFERENCES Metricas(IdMetrica, IdEvento)
 ;
 
-ALTER TABLE Votacion ADD CONSTRAINT RefModelos15 
+ALTER TABLE Votacion ADD CONSTRAINT RefModelos15
     FOREIGN KEY (IdModelo)
     REFERENCES Modelos(IdModelo)
 ;
 
-ALTER TABLE Votacion ADD CONSTRAINT RefJueces16 
+ALTER TABLE Votacion ADD CONSTRAINT RefJueces16
     FOREIGN KEY (IdJuez)
     REFERENCES Jueces(IdJuez)
 ;
 
 
--- 
--- TABLE: Zonas 
+--
+-- TABLE: Zonas
 --
 
-ALTER TABLE Zonas ADD CONSTRAINT RefEstablecimientos1 
+ALTER TABLE Zonas ADD CONSTRAINT RefEstablecimientos1
     FOREIGN KEY (IdEstablecimiento)
     REFERENCES Establecimientos(IdEstablecimiento)
 ;
 
-ALTER TABLE Zonas ADD CONSTRAINT RefEventos2 
+ALTER TABLE Zonas ADD CONSTRAINT RefEventos2
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
 ;
-
-
 
         ";
 
