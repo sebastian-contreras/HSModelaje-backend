@@ -30,6 +30,35 @@ class EstablecimientosController extends Controller
         }
     }
 
+
+    public function busqueda(Request $request)
+    {
+        // Obtener los parámetros de la solicitud
+        $pCadena = $request->input('pCadena', ''); // Valor por defecto ''
+        $pIncluyeInactivos = $request->input('pIncluyeBajas', 'N'); // Valor por defecto 'N'
+        $pPagina = $request->input('pPagina', 1); // Valor por defecto 1
+        $pCantidad = $request->input('pCantidad', 10); // Valor por defecto 10
+
+        // Calcular el offset
+        $pOffset = ($pPagina - 1) * $pCantidad;
+
+        try {
+            // Llamar al procedimiento almacenado
+            $lista = DB::select('CALL bsp_buscar_establecimiento(?,?,?,?)', [$pCadena, $pIncluyeInactivos, $pOffset, $pCantidad]);
+            // Verificar si hay resultados y calcular la cantidad total de páginas
+            $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
+            $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
+
+            // Devolver el resultado como JSON
+            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows ]);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return ResponseFormatter::error('Error al obtener los establecimientos: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
     /**
      * Store a newly created resource in storage.
      */
@@ -38,7 +67,7 @@ class EstablecimientosController extends Controller
         //
         $request->validated();
         // Llamar al procedimiento almacenado
-            $result = DB::select('CALL bsp_alta_establecimiento(?, ?, ?)', [
+        $result = DB::select('CALL bsp_alta_establecimiento(?, ?, ?)', [
             $request->Establecimiento,
             $request->Ubicacion,
             $request->Capacidad,

@@ -72,6 +72,7 @@ Route::prefix('usuarios')->group(function () {
 Route::prefix('establecimientos')->group(function () {
     // Obtener todas las usuarios
     Route::get('/', [EstablecimientosController::class, 'index'])->name('establecimientos.index');
+    Route::get('/busqueda', [EstablecimientosController::class, 'busqueda'])->name('establecimientos.busqueda');
     // Crear una nueva establecimientos
     Route::post('/', [EstablecimientosController::class, 'store'])->name('establecimientos.store');
     // Obtener una establecimientos específica
