@@ -68,7 +68,7 @@ CREATE TABLE Eventos(
     Evento                  VARCHAR(150)    NOT NULL,
     FechaInicio             DATETIME,
     FechaFinal              DATETIME,
-    FechaProblableInicio    DATETIME        NOT NULL,
+    FechaProbableInicio    DATETIME        NOT NULL,
     FechaProbableFinal      DATETIME        NOT NULL,
     Votacion                CHAR(1)         NOT NULL,
     EstadoEvento            CHAR(1)         NOT NULL,
@@ -84,13 +84,13 @@ CREATE TABLE Eventos(
 --
 
 CREATE TABLE Gastos(
-    IdGastos       INT               NOT NULL,
+    IdGasto       INT               NOT NULL,
     IdEvento       INT               NOT NULL,
     Gasto          VARCHAR(100)      NOT NULL,
     Personal       VARCHAR(100)      NOT NULL,
     Monto          DECIMAL(15, 2)    NOT NULL,
     Comprobante    VARCHAR(400),
-    PRIMARY KEY (IdGastos, IdEvento)
+    PRIMARY KEY (IdGasto, IdEvento)
 )ENGINE=INNODB
 ;
 

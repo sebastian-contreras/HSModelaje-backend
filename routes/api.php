@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\EstablecimientosController;
+use App\Http\Controllers\EventosController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\UsuariosController;
 use Illuminate\Http\Request;
@@ -84,4 +85,23 @@ Route::prefix('establecimientos')->group(function () {
 
     Route::post('/darbaja/{IdEstablecimiento}', [EstablecimientosController::class, 'darBaja'])->name('establecimientos.darBaja');
     Route::post('/activar/{IdEstablecimiento}', [EstablecimientosController::class, 'activar'])->name('establecimientos.activar');
+});
+
+
+Route::prefix('eventos')->group(function () {
+    // Obtener todas los eventos
+    Route::get('/', [EventosController::class, 'index'])->name('eventos.index');
+    Route::get('/busqueda', [EventosController::class, 'busqueda'])->name('eventos.busqueda');
+    // Crear una nueva eventos
+    Route::post('/', [EventosController::class, 'store'])->name('eventos.store');
+    // Obtener una eventos específica
+    Route::get('/{IdEvento}', [EventosController::class, 'show'])->name('eventos.show');
+    // Actualizar una eventos específica
+    Route::put('/{IdEvento}', [EventosController::class, 'update'])->name('eventos.update');
+    // Eliminar una eventos específica
+    Route::delete('/{IdEvento}', [EventosController::class, 'destroy'])->name('eventos.destroy');
+
+    Route::post('/darbaja/{IdEvento}', [EventosController::class, 'darBaja'])->name('eventos.darBaja');
+    Route::post('/activar/{IdEvento}', [EventosController::class, 'activar'])->name('eventos.activar');
+    Route::post('/finalizar/{IdEvento}', [EventosController::class, 'finalizar'])->name('eventos.finalizar');
 });
