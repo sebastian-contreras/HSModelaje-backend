@@ -644,6 +644,436 @@ SALIR:BEGIN
 END ;
 
 
+-- EVENTOS
+
+DROP PROCEDURE IF EXISTS bsp_listar_eventos ;
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_eventos`(pIncluyeBajas char(1))
+BEGIN
+/*
+	Permite listar los eventos registrados. Puede mostrar o no las inactivas (pIncluyeBajas: S: Si - N: No)
+*/
+		    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Eventos
+		WHERE
+					(pIncluyeBajas = 'S' OR (EstadoEvento = 'A' OR EstadoEvento = 'F'))
+		ORDER BY IdEvento
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Eventos}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_evento ;
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_evento`( pCadena varchar(50), pEstado char(1),pIncluyeVotacion char(1), pFechaInicio date, pFechaFinal date, pOffset int, pRowCount int)
+SALIR:BEGIN
+/*
+	Permite buscar los eventos a partir del nombre desde el inicio de la cadena solo si la cadena tiene mas de 3 caracteres,
+    a partir de un rango de fecha de inicio y si incluye votacion. (pEstado: A: Activo - B: Baja - F:Finalizada - T:Todos).
+    Para todos, cadena vacía. Incluye paginado.
+*/
+  DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pCadena)>1 AND CHAR_LENGTH(pCadena) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Eventos
+	WHERE		Evento LIKE CONCAT('%',pCadena, '%') AND
+				( pIncluyeVotacion IS NULL OR pIncluyeVotacion = 'S' OR Votacion = 'N') AND
+				 (pEstado = 'T' OR EstadoEvento = pEstado)
+AND (pFechaInicio IS NULL OR FechaProbableInicio >= pFechaInicio)
+      AND (pFechaFinal IS NULL OR FechaProbableFinal <= pFechaFinal)
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Eventos
+   WHERE	Evento LIKE CONCAT('%',pCadena, '%') AND
+			( pIncluyeVotacion IS NULL OR pIncluyeVotacion = 'S' OR Votacion = 'N') AND
+			(pEstado = 'T' OR EstadoEvento = pEstado)
+                AND (pFechaInicio IS NULL OR FechaProbableInicio >= pFechaInicio)
+      AND (pFechaFinal IS NULL OR FechaProbableFinal <= pFechaFinal)
+			ORDER BY Evento DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+
+-- {Campos de la Tabla Eventos}
+END ;
+
+
+DROP PROCEDURE IF EXISTS bsp_alta_evento ;
+
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_evento`(pEvento varchar(150), pFechaProbableInicio datetime, pFechaProbableFinal datetime, pVotacion char(1), pIdEstablecimiento  int)
+SALIR:BEGIN
+/*
+	Permite dar de alta un evento. Lo da de alta con estado A: Activa. Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+
+	DECLARE pIdEvento int;
+    -- Manejo de error en la transacción
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+	   -- Controla parámetros obligatorios
+	IF	pEvento = '' OR pEvento IS NULL OR
+		pFechaProbableInicio IS NULL OR
+        pFechaProbableFinal IS NULL OR
+        pVotacion = '' OR pVotacion IS NULL OR
+        pIdEstablecimiento = '' OR pIdEstablecimiento IS NULL THEN
+		SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+    -- Controla que el establecimiento exista
+	IF NOT EXISTS(SELECT IdEstablecimiento FROM Establecimientos WHERE IdEstablecimiento = pIdEstablecimiento) THEN
+		SELECT 'No existe el establecimiento.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
+      -- Verificar que pVotacion sea uno de los valores permitidos
+    IF pVotacion NOT IN ('S', 'N') THEN
+        SELECT 'Votacion no válido.' AS Mensaje, NULL AS Id;
+        LEAVE SALIR; -- Salir del procedimiento
+    END IF;
+
+
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+INSERT INTO `Eventos`
+(`IdEvento`,
+`Evento`,
+`FechaProbableInicio`,
+`FechaProbableFinal`,
+`Votacion`,
+`IdEstablecimiento`,
+`EstadoEvento`)
+VALUES
+(0,
+pEvento,
+pFechaProbableInicio,
+pFechaProbableFinal,
+pVotacion,
+pIdEstablecimiento,'A');
+
+
+		SET pIdEvento = LAST_INSERT_ID();
+
+        SELECT 'OK' AS Mensaje,'ok' as Response, pIdEvento AS Id;
+    COMMIT;
+-- Mensaje varchar(100), Id int
+END ;
+
+
+DROP PROCEDURE IF EXISTS bsp_modifica_evento ;
+
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_evento`(pIdEvento int, pEvento varchar(150), pFechaProbableInicio date, pFechaProbableFinal date, pVotacion char(1), pFechaInicio date, pFechaFinal date, pIdEstablecimiento  int)
+SALIR:BEGIN
+/*
+	Permite modificar el evento. Controlando que no este dado de Baja o finalizado Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+
+    -- Manejo de error en la transacción
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+
+
+    -- Controla parámetros obligatorios
+	IF	pEvento = '' OR pEvento IS NULL OR
+		pFechaProbableInicio IS NULL OR
+         pFechaProbableFinal IS NULL OR
+        pVotacion = '' OR pVotacion IS NULL OR
+        pIdEstablecimiento = '' OR pIdEstablecimiento IS NULL THEN
+		SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
+     -- Controlar evento no este finalizado
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND EstadoEvento = 'F') THEN
+		SELECT 'El Evento ya está finalizado. No se puede modificar' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+        -- Controlar evento no este dado de baja
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND EstadoEvento = 'B') THEN
+		SELECT 'El Evento está dado de baja. No se puede modificar' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+    -- Controla que el establecimiento exista
+	IF NOT EXISTS(SELECT IdEstablecimiento FROM Establecimientos WHERE IdEstablecimiento = pIdEstablecimiento) THEN
+		SELECT 'No existe el establecimiento.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
+
+      -- Verificar que pVotacion sea uno de los valores permitidos
+    IF pVotacion NOT IN ('S', 'N') THEN
+        SELECT 'Votacion no válido.' AS Mensaje, NULL AS Id;
+        LEAVE SALIR; -- Salir del procedimiento
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+
+	      UPDATE Eventos SET
+              Evento = pEvento
+             , FechaProbableInicio = pFechaProbableInicio
+             , FechaProbableFinal = pFechaProbableFinal
+             , Votacion = pVotacion
+             , FechaInicio = pFechaInicio
+             , FechaFinal = pFechaFinal
+             , IdEstablecimiento = pIdEstablecimiento
+             WHERE IdEvento = pIdEvento;
+
+
+        SELECT 'OK' AS Mensaje,'ok' as Response, pIdEvento Id;
+    COMMIT;
+-- Mensaje varchar(100)
+END ;
+
+
+DROP PROCEDURE IF EXISTS bsp_borra_evento ;
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_evento`(pIdEvento int)
+SALIR:BEGIN
+/*
+	Permite borrar un evento, solamente usado para limpiar base de datos y en produccion. Devuelve OK o el mensaje de error en Mensaje.
+*/
+   DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+
+   -- Controla que el Evento no tenga metricas asociadas
+	IF EXISTS(SELECT IdMetrica FROM Metricas WHERE IdEvento = pIdEvento) THEN
+		SELECT 'No puede borrar el Evento. Existen metricas asociadas.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+	-- Controla que el Evento no tenga zonas asociadas
+	IF EXISTS(SELECT IdZona FROM Zonas WHERE IdEvento = pIdEvento) THEN
+		SELECT 'No puede borrar el Evento. Existen zonas asociadas.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+
+	-- Controla que el Evento no tenga patrocinadores asociadas
+	IF EXISTS(SELECT IdPatrocinador FROM Patrocinador WHERE IdEvento = pIdEvento) THEN
+		SELECT 'No puede borrar el Evento. Existen patrocinadores asociados.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+		-- Controla que el Evento no tenga gastos asociadas
+	IF EXISTS(SELECT IdGasto FROM Gastos WHERE IdEvento = pIdEvento) THEN
+		SELECT 'No puede borrar el Evento. Existen Gastos asociados.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+
+
+    START TRANSACTION;
+		-- Borra usuario
+        DELETE FROM Eventos WHERE IdEvento= pIdEvento;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+
+
+
+-- Mensaje varchar(100)
+END  ;
+
+
+DROP PROCEDURE IF EXISTS bsp_dame_evento ;
+
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_evento`(pIdEvento int)
+BEGIN
+/*
+	Procedimiento que sirve para instanciar un evento desde la base de datos.
+*/
+
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Eventos
+    WHERE	IdEvento = pIdEvento;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+-- {Campo de la Tabla Eventos}
+END  ;
+
+
+
+DROP PROCEDURE IF EXISTS bsp_darbaja_evento ;
+
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_darbaja_evento`(pIdEvento int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado del evento a B: Baja siempre y cuando no esté dada de baja. Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar evento no dado de baja
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND EstadoEvento = 'B') THEN
+		SELECT 'El evento ya está dado de baja.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Eventos SET EstadoEvento = 'B' WHERE IdEvento = pIdEvento;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+
+-- Mensaje varchar(100)
+END  ;
+
+
+DROP PROCEDURE IF EXISTS bsp_activar_evento ;
+
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_activar_evento`(pIdEvento int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado del evento a A: Activo siempre y cuando no esté activo ya. Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar evento no este activo
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND EstadoEvento = 'A') THEN
+		SELECT 'El Evento ya está Activo.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+
+
+	-- Da de baja
+    UPDATE Eventos SET EstadoEvento = 'A' WHERE IdEvento = pIdEvento;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+
+-- Mensaje varchar(100)
+END  ;
+
+DROP PROCEDURE IF EXISTS bsp_finalizar_evento ;
+
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_finalizar_evento`(pIdEvento int, pFechaInicio datetime, pFechaFinal datetime)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado del evento a F: Finalizado siempre y cuando no esté finalizado ni este dado de baja ya.
+    Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar evento no este finalizado
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND EstadoEvento = 'F') THEN
+		SELECT 'El Evento ya está finalizado.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+        -- Controlar evento no este dado de baja
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND EstadoEvento = 'B') THEN
+		SELECT 'El Evento está dado de baja.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+   -- Controla parámetros obligatorios
+	IF
+
+		pFechaInicio IS NULL OR
+        pFechaFinal IS NULL
+        THEN
+		SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
+
+	-- Da de baja
+    UPDATE Eventos SET EstadoEvento = 'F', FechaInicio=pFechaInicio, FechaFinal=pFechaFinal WHERE IdEvento = pIdEvento;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+
+
+-- Mensaje varchar(100)
+END  ;
+
+
+
+
+
+
+
+
+
 
         ";
         DB::unprepared($sql);
