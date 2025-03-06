@@ -17,12 +17,12 @@ class UpdateEventoRequest extends FormRequest
     public function rules()
     {
         return [
-            'IdEvento' => 'required|Number',
+            'IdEvento' => 'required',
             'Evento' => 'required|string|max:150',
             'FechaProbableInicio' => 'required|date',
             'FechaProbableFinal' => 'required|date',
-            'Votacion ' => 'required|char',
-            'IdEstablecimiento' => 'required|Number',
+            'Votacion ' => 'nullable',
+            'IdEstablecimiento' => 'required',
         ];
     }
 

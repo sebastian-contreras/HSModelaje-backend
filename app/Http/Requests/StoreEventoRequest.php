@@ -15,8 +15,8 @@ class StoreEventoRequest extends FormRequest
             'Evento' => 'required|string|max:150',
             'FechaProbableInicio' => 'required|date',
             'FechaProbableFinal' => 'required|date',
-            'Votacion ' => 'required|char',
-            'IdEstablecimiento' => 'required|Number',
+            'Votacion ' => 'nullable',
+            'IdEstablecimiento' => 'required',
         ];
     }
 

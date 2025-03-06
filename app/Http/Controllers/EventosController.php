@@ -35,10 +35,10 @@ class EventosController extends Controller
     {
         // Obtener los parámetros de la solicitud
         $pCadena = $request->input('pCadena', ''); // Valor por defecto ''
-        $pIncluyeVotacion = $request->input('pIncluyeVotacion', 'N'); // Valor por defecto 'N'
-        $pFechaInicio = $request->input('pFechaInicio', '');
-        $pFechaFinal = $request->input('pFechaFinal', '');
-        $pEstado = $request->input('pEstado', '');
+        $pIncluyeVotacion = $request->input('pIncluyeVotacion', null); // Valor por defecto 'N'
+        $pFechaInicio = $request->input('pFechaInicio', null);
+        $pFechaFinal = $request->input('pFechaFinal', null);
+        $pEstado = $request->input('pEstado', 'A');
 
         $pPagina = $request->input('pPagina', 1); // Valor por defecto 1
         $pCantidad = $request->input('pCantidad', 10); // Valor por defecto 10
@@ -98,12 +98,14 @@ class EventosController extends Controller
     {
         //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_evento(?, ?, ?,?,?)', [
+        $result = DB::select('CALL bsp_modifica_evento(?, ?, ?,?,?,?,?,?)', [
             $request->IdEvento,
             $request->Evento,
             $request->FechaProbableInicio,
             $request->FechaProbableFinal,
             $request->Votacion,
+            null,
+            null,
             $request->IdEstablecimiento,
         ]);
 
@@ -164,7 +166,7 @@ class EventosController extends Controller
         return ResponseFormatter::success(null, 'Evento activo exitosamente.', 200);
     }
 
-    public function finalzar(int $IdEvento,Request $request)
+    public function finalizar(int $IdEvento,Request $request)
     {
 
         $pFechaInicio = $request->input('pFechaInicio'); // Valor por defecto ''
