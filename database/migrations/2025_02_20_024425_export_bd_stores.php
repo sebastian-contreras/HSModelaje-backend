@@ -670,7 +670,6 @@ END;
 
 DROP PROCEDURE IF EXISTS bsp_buscar_evento ;
 
-
 CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_evento`( pCadena varchar(50), pEstado char(1),pIncluyeVotacion char(1), pFechaInicio date, pFechaFinal date, pOffset int, pRowCount int)
 SALIR:BEGIN
 /*
@@ -689,7 +688,7 @@ SALIR:BEGIN
 
 	SET pTotalRows =  (SELECT COUNT(*)
 	FROM		Eventos
-	WHERE		Evento LIKE CONCAT('%',pCadena, '%') AND
+	WHERE		(pCadena is NULL OR Evento LIKE CONCAT('%',pCadena, '%')) AND
 				( pIncluyeVotacion IS NULL OR pIncluyeVotacion = 'S' OR Votacion = 'N') AND
 				 (pEstado = 'T' OR EstadoEvento = pEstado)
 AND (pFechaInicio IS NULL OR FechaProbableInicio >= pFechaInicio)

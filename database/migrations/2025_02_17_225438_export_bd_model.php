@@ -17,7 +17,7 @@ return new class extends Migration {
 -- Project :      HSModelaje-Relacional.DM1
 -- Author :       Sebastian Contreras
 --
--- Date Created : Tuesday, February 25, 2025 18:32:19
+-- Date Created : Saturday, March 08, 2025 13:18:16
 -- Target DBMS : MySQL 5.x
 --
 
@@ -39,9 +39,8 @@ CREATE TABLE Entradas(
     EstadoEnt            CHAR(1),
     PRIMARY KEY (IdEntrada, IdZona, IdEstablecimiento, IdEvento)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Establecimientos
@@ -55,9 +54,8 @@ CREATE TABLE Establecimientos(
     EstadoEstablecimiento    CHAR(1)        NOT NULL,
     PRIMARY KEY (IdEstablecimiento)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Eventos
@@ -75,26 +73,24 @@ CREATE TABLE Eventos(
     IdEstablecimiento       INT             NOT NULL,
     PRIMARY KEY (IdEvento)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Gastos
 --
 
 CREATE TABLE Gastos(
-    IdGasto       INT               NOT NULL,
+    IdGastos       INT               NOT NULL,
     IdEvento       INT               NOT NULL,
     Gasto          VARCHAR(100)      NOT NULL,
     Personal       VARCHAR(100)      NOT NULL,
     Monto          DECIMAL(15, 2)    NOT NULL,
     Comprobante    VARCHAR(400),
-    PRIMARY KEY (IdGasto, IdEvento)
+    PRIMARY KEY (IdGastos, IdEvento)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Jueces
@@ -102,16 +98,16 @@ CREATE TABLE Gastos(
 
 CREATE TABLE Jueces(
     IdJuez        INT            AUTO_INCREMENT,
+    IdEvento      INT            NOT NULL,
     DNI           CHAR(11)       NOT NULL,
     ApelName      VARCHAR(80)    NOT NULL,
     Correo        VARCHAR(60)    NOT NULL,
     Telefono      VARCHAR(15)    NOT NULL,
     EstadoJuez    CHAR(1)        NOT NULL,
-    PRIMARY KEY (IdJuez)
+    PRIMARY KEY (IdJuez, IdEvento)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Metricas
@@ -124,9 +120,8 @@ CREATE TABLE Metricas(
     EstadoMetrica    CHAR(1)         NOT NULL,
     PRIMARY KEY (IdMetrica, IdEvento)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Modelos
@@ -136,16 +131,30 @@ CREATE TABLE Modelos(
     IdModelo     INT            AUTO_INCREMENT,
     DNI          CHAR(11),
     ApelName     VARCHAR(80),
-    Edad         DATE,
+    FechaNacimiento         DATE,
     Sexo         CHAR(1),
     Telefono     VARCHAR(15),
     Correo       VARCHAR(60),
     EstadoMod    CHAR(1),
     PRIMARY KEY (IdModelo)
 )ENGINE=INNODB
+COMMENT=''
 ;
 
+--
+-- TABLE: Participantes
+--
 
+CREATE TABLE Participantes(
+    IdParticipante        INT             NOT NULL,
+    IdEvento              INT             NOT NULL,
+    IdModelo              INT             NOT NULL,
+    Promotor              VARCHAR(100),
+    EstadoParticipante    CHAR(1)         NOT NULL,
+    PRIMARY KEY (IdParticipante, IdEvento, IdModelo)
+)ENGINE=INNODB
+COMMENT=''
+;
 
 --
 -- TABLE: Patrocinador
@@ -160,9 +169,8 @@ CREATE TABLE Patrocinador(
     Descripcion       TEXT,
     PRIMARY KEY (IdPatrocinador, IdEvento)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Usuarios
@@ -182,28 +190,27 @@ CREATE TABLE Usuarios(
     EstadoUsuario      CHAR(1)        NOT NULL,
     PRIMARY KEY (IdUsuario)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Votacion
 --
 
 CREATE TABLE Votacion(
-    IdVoto        CHAR(10)    NOT NULL,
-    IdMetrica     INT         NOT NULL,
-    IdEvento      INT         NOT NULL,
-    IdModelo      INT         NOT NULL,
-    IdJuez        INT         NOT NULL,
-    Nota          INT         NOT NULL,
-    Devolucion    TEXT,
-    EstadoVoto    CHAR(1)     NOT NULL,
-    PRIMARY KEY (IdVoto, IdMetrica, IdEvento, IdModelo, IdJuez)
+    IdVoto            CHAR(10)    NOT NULL,
+    IdMetrica         INT         NOT NULL,
+    IdEvento          INT         NOT NULL,
+    IdJuez            INT         NOT NULL,
+    IdParticipante    INT         NOT NULL,
+    IdModelo          INT         NOT NULL,
+    Nota              INT         NOT NULL,
+    Devolucion        TEXT,
+    EstadoVoto        CHAR(1)     NOT NULL,
+    PRIMARY KEY (IdVoto, IdMetrica, IdEvento, IdJuez, IdParticipante, IdModelo)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- TABLE: Zonas
@@ -222,9 +229,8 @@ CREATE TABLE Zonas(
     EstadoZona           CHAR(1)           NOT NULL,
     PRIMARY KEY (IdZona, IdEstablecimiento, IdEvento)
 )ENGINE=INNODB
+COMMENT=''
 ;
-
-
 
 --
 -- INDEX: Ref46
@@ -245,10 +251,28 @@ CREATE INDEX Ref320 ON Eventos(IdEstablecimiento)
 CREATE INDEX Ref65 ON Gastos(IdEvento)
 ;
 --
+-- INDEX: Ref624
+--
+
+CREATE INDEX Ref624 ON Jueces(IdEvento)
+;
+--
 -- INDEX: Ref68
 --
 
 CREATE INDEX Ref68 ON Metricas(IdEvento)
+;
+--
+-- INDEX: Ref621
+--
+
+CREATE INDEX Ref621 ON Participantes(IdEvento)
+;
+--
+-- INDEX: Ref1222
+--
+
+CREATE INDEX Ref1222 ON Participantes(IdModelo)
 ;
 --
 -- INDEX: Ref64
@@ -269,16 +293,16 @@ CREATE UNIQUE INDEX UI_Username ON Usuarios(Username)
 CREATE INDEX Ref1113 ON Votacion(IdMetrica, IdEvento)
 ;
 --
--- INDEX: Ref1215
---
-
-CREATE INDEX Ref1215 ON Votacion(IdModelo)
-;
---
 -- INDEX: Ref1416
 --
 
-CREATE INDEX Ref1416 ON Votacion(IdJuez)
+CREATE INDEX Ref1416 ON Votacion(IdJuez, IdEvento)
+;
+--
+-- INDEX: Ref1523
+--
+
+CREATE INDEX Ref1523 ON Votacion(IdParticipante, IdEvento, IdModelo)
 ;
 --
 -- INDEX: Ref31
@@ -296,7 +320,7 @@ CREATE INDEX Ref62 ON Zonas(IdEvento)
 -- TABLE: Entradas
 --
 
-ALTER TABLE Entradas ADD CONSTRAINT RefZonas6
+ALTER TABLE Entradas ADD CONSTRAINT RefZonas62
     FOREIGN KEY (IdZona, IdEstablecimiento, IdEvento)
     REFERENCES Zonas(IdZona, IdEstablecimiento, IdEvento)
 ;
@@ -306,7 +330,7 @@ ALTER TABLE Entradas ADD CONSTRAINT RefZonas6
 -- TABLE: Eventos
 --
 
-ALTER TABLE Eventos ADD CONSTRAINT RefEstablecimientos20
+ALTER TABLE Eventos ADD CONSTRAINT RefEstablecimientos202
     FOREIGN KEY (IdEstablecimiento)
     REFERENCES Establecimientos(IdEstablecimiento)
 ;
@@ -316,7 +340,17 @@ ALTER TABLE Eventos ADD CONSTRAINT RefEstablecimientos20
 -- TABLE: Gastos
 --
 
-ALTER TABLE Gastos ADD CONSTRAINT RefEventos5
+ALTER TABLE Gastos ADD CONSTRAINT RefEventos52
+    FOREIGN KEY (IdEvento)
+    REFERENCES Eventos(IdEvento)
+;
+
+
+--
+-- TABLE: Jueces
+--
+
+ALTER TABLE Jueces ADD CONSTRAINT RefEventos242
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
 ;
@@ -326,9 +360,24 @@ ALTER TABLE Gastos ADD CONSTRAINT RefEventos5
 -- TABLE: Metricas
 --
 
-ALTER TABLE Metricas ADD CONSTRAINT RefEventos8
+ALTER TABLE Metricas ADD CONSTRAINT RefEventos82
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
+;
+
+
+--
+-- TABLE: Participantes
+--
+
+ALTER TABLE Participantes ADD CONSTRAINT RefEventos212
+    FOREIGN KEY (IdEvento)
+    REFERENCES Eventos(IdEvento)
+;
+
+ALTER TABLE Participantes ADD CONSTRAINT RefModelos222
+    FOREIGN KEY (IdModelo)
+    REFERENCES Modelos(IdModelo)
 ;
 
 
@@ -336,7 +385,7 @@ ALTER TABLE Metricas ADD CONSTRAINT RefEventos8
 -- TABLE: Patrocinador
 --
 
-ALTER TABLE Patrocinador ADD CONSTRAINT RefEventos4
+ALTER TABLE Patrocinador ADD CONSTRAINT RefEventos42
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
 ;
@@ -346,19 +395,19 @@ ALTER TABLE Patrocinador ADD CONSTRAINT RefEventos4
 -- TABLE: Votacion
 --
 
-ALTER TABLE Votacion ADD CONSTRAINT RefMetricas13
+ALTER TABLE Votacion ADD CONSTRAINT RefMetricas132
     FOREIGN KEY (IdMetrica, IdEvento)
     REFERENCES Metricas(IdMetrica, IdEvento)
 ;
 
-ALTER TABLE Votacion ADD CONSTRAINT RefModelos15
-    FOREIGN KEY (IdModelo)
-    REFERENCES Modelos(IdModelo)
+ALTER TABLE Votacion ADD CONSTRAINT RefJueces162
+    FOREIGN KEY (IdEvento, IdJuez)
+    REFERENCES Jueces(IdJuez, IdEvento)
 ;
 
-ALTER TABLE Votacion ADD CONSTRAINT RefJueces16
-    FOREIGN KEY (IdJuez)
-    REFERENCES Jueces(IdJuez)
+ALTER TABLE Votacion ADD CONSTRAINT RefParticipantes232
+    FOREIGN KEY (IdEvento, IdParticipante, IdModelo)
+    REFERENCES Participantes(IdParticipante, IdEvento, IdModelo)
 ;
 
 
@@ -366,12 +415,12 @@ ALTER TABLE Votacion ADD CONSTRAINT RefJueces16
 -- TABLE: Zonas
 --
 
-ALTER TABLE Zonas ADD CONSTRAINT RefEstablecimientos1
+ALTER TABLE Zonas ADD CONSTRAINT RefEstablecimientos12
     FOREIGN KEY (IdEstablecimiento)
     REFERENCES Establecimientos(IdEstablecimiento)
 ;
 
-ALTER TABLE Zonas ADD CONSTRAINT RefEventos2
+ALTER TABLE Zonas ADD CONSTRAINT RefEventos23
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
 ;

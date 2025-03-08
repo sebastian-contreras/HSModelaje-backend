@@ -7,12 +7,30 @@ use App\Http\Requests\StoreEventoRequest;
 use App\Http\Requests\UpdateEventoRequest;
 use DB;
 use Illuminate\Http\Request;
+use Number;
+use Ramsey\Uuid\Type\Integer;
 
 class EventosController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+
+     public function dame(string $IdEvento)
+     {
+         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
+         try {
+             // Llamar al procedimiento almacenado
+             $lista = DB::select('CALL bsp_dame_evento(?)', [$IdEvento]);
+
+             // Devolver el resultado como JSON
+             return ResponseFormatter::success($lista);
+         } catch (\Exception $e) {
+             // Manejo de errores
+             return ResponseFormatter::error('error al obtener el evento.', 500);
+         }
+     }
     public function index(Request $request)
     {
         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario

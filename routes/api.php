@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\EstablecimientosController;
 use App\Http\Controllers\EventosController;
+use App\Http\Controllers\ModelosController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\UsuariosController;
 use Illuminate\Http\Request;
@@ -91,6 +92,7 @@ Route::prefix('establecimientos')->group(function () {
 Route::prefix('eventos')->group(function () {
     // Obtener todas los eventos
     Route::get('/', [EventosController::class, 'index'])->name('eventos.index');
+    Route::get('/show/{IdEvento}', [EventosController::class, 'dame'])->name('eventos.dame');
     Route::get('/busqueda', [EventosController::class, 'busqueda'])->name('eventos.busqueda');
     // Crear una nueva eventos
     Route::post('/', [EventosController::class, 'store'])->name('eventos.store');
@@ -104,4 +106,23 @@ Route::prefix('eventos')->group(function () {
     Route::post('/darbaja/{IdEvento}', [EventosController::class, 'darBaja'])->name('eventos.darBaja');
     Route::post('/activar/{IdEvento}', [EventosController::class, 'activar'])->name('eventos.activar');
     Route::post('/finalizar/{IdEvento}', [EventosController::class, 'finalizar'])->name('eventos.finalizar');
+});
+
+
+Route::prefix('modelos')->group(function () {
+    // Obtener todas los modelos
+    Route::get('/', [ModelosController::class, 'index'])->name('modelos.index');
+    Route::get('/show/{IdModelo}', [ModelosController::class, 'dame'])->name('modelos.dame');
+    Route::get('/busqueda', [ModelosController::class, 'busqueda'])->name('modelos.busqueda');
+    // Crear una nueva modelos
+    Route::post('/', [ModelosController::class, 'store'])->name('modelos.store');
+    // Obtener una modelos específica
+    Route::get('/{IdModelo}', [ModelosController::class, 'show'])->name('modelos.show');
+    // Actualizar una modelos específica
+    Route::put('/{IdModelo}', [ModelosController::class, 'update'])->name('modelos.update');
+    // Eliminar una modelos específica
+    Route::delete('/{IdModelo}', [ModelosController::class, 'destroy'])->name('modelos.destroy');
+
+    Route::post('/darbaja/{IdModelo}', [ModelosController::class, 'darBaja'])->name('modelos.darBaja');
+    Route::post('/activar/{IdModelo}', [ModelosController::class, 'activar'])->name('modelos.activar');
 });
