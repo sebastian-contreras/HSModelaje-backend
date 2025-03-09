@@ -138,6 +138,34 @@ return new class extends Migration {
             DB::statement('CALL `HSModelaje_db`.`bsp_alta_juez`(?, ?, ?, ?, ?)', $juez);
         }
 
+        $zonas = [
+            [1, 'Zona VIP', 50, 'S', 150.00, 'Zona exclusiva con servicio premium.'],
+            [2, 'Zona Familiar', 100, 'N', 75.00, 'Zona ideal para familias con niños.'],
+            [3, 'Zona General', 200, 'N', 30.00, 'Acceso general para todos los asistentes.'],
+            [4, 'Zona de Conciertos', 150, 'S', 120.00, 'Zona con mejor acústica para conciertos.'],
+            [5, 'Zona Lounge', 80, 'S', 200.00, 'Zona con asientos cómodos y servicio de bar.'],
+            [6, 'Zona de Deportes', 120, 'N', 50.00, 'Zona para disfrutar de eventos deportivos.'],
+            [7, 'Zona de Eventos Especiales', 60, 'S', 180.00, 'Zona para eventos privados y especiales.'],
+            [8, 'Zona de Exposición', 90, 'N', 40.00, 'Zona para exposiciones y ferias.'],
+            [9, 'Zona de Relax', 70, 'S', 160.00, 'Zona tranquila para relajarse.'],
+            [10, 'Zona de Comida', 150, 'N', 25.00, 'Zona con variedad de opciones gastronómicas.'],
+            [1, 'Zona de Juegos', 200, 'N', 20.00, 'Zona con juegos y entretenimiento para niños.'],
+            [2, 'Zona de Arte', 50, 'S', 100.00, 'Zona dedicada a exposiciones de arte.'],
+            [3, 'Zona de Networking', 80, 'N', 90.00, 'Zona para hacer contactos y networking.'],
+            [4, 'Zona de Tecnología', 120, 'S', 110.00, 'Zona con demostraciones de tecnología.'],
+            [5, 'Zona de Cine', 150, 'N', 70.00, 'Zona para proyecciones de películas.'],
+            [6, 'Zona de Música', 100, 'S', 130.00, 'Zona para disfrutar de música en vivo.'],
+            [7, 'Zona de Fitness', 80, 'N', 60.00, 'Zona para actividades deportivas y fitness.'],
+            [8, 'Zona de Bienestar', 70, 'S', 140.00, 'Zona dedicada al bienestar y la salud.'],
+            [9, 'Zona de Innovación', 90, 'N', 95.00, 'Zona para presentar ideas innovadoras.'],
+            [10, 'Zona de Celebraciones', 150, 'S', 200.00, 'Zona para celebraciones y eventos especiales.']
+        ];
+
+        foreach ($zonas as $zona) {
+            DB::statement('CALL `HSModelaje_db`.`bsp_alta_zona`(?, ?, ?, ?, ?,?)', $zona);
+        }
+
+
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Http\Controllers\ModelosController;
 use App\Http\Controllers\PatrocinadoresController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\ZonasController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -183,5 +184,22 @@ Route::prefix('jueces')->group(function () {
 
     Route::post('/darbaja/{IdJuez}', [JuecesController::class, 'darBaja'])->name('jueces.darBaja');
     Route::post('/activar/{IdJuez}', [JuecesController::class, 'activar'])->name('jueces.activar');
+});
 
+Route::prefix('zonas')->group(function () {
+    // Obtener todas los zonas
+    Route::get('/busqueda', [ZonasController::class, 'busqueda'])->name('zonas.busqueda');
+    Route::get('/{IdEvento}', [ZonasController::class, 'index'])->name('zonas.index');
+    Route::get('/show/{IdZona}', [ZonasController::class, 'dame'])->name('zonas.dame');
+    // Crear una nueva zonas
+    Route::post('/', [ZonasController::class, 'store'])->name('zonas.store');
+    // Obtener una zonas específica
+    Route::get('/{IdZona}', [ZonasController::class, 'show'])->name('zonas.show');
+    // Actualizar una zonas específica
+    Route::put('/{IdZona}', [ZonasController::class, 'update'])->name('zonas.update');
+    // Eliminar una zonas específica
+    Route::delete('/{IdZona}', [ZonasController::class, 'destroy'])->name('zonas.destroy');
+
+    Route::post('/darbaja/{IdZona}', [ZonasController::class, 'darBaja'])->name('zonas.darBaja');
+    Route::post('/activar/{IdZona}', [ZonasController::class, 'activar'])->name('zonas.activar');
 });
