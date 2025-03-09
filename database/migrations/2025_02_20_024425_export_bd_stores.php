@@ -1557,6 +1557,270 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 -- Mensaje varchar(100)
 END;
 
+
+
+DROP PROCEDURE IF EXISTS bsp_listar_jueces;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_jueces`(pIdEvento int, pIncluyeBajas char(1))
+SALIR:BEGIN
+/*
+	Permite listar los modelos jueces  de un evento. Puede mostrar o no las inactivas (pIncluyeBajas: S: Si - N: No)
+*/
+	 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Jueces
+		WHERE
+					IdEvento = pIdEvento
+                    AND
+                    (pIncluyeBajas = 'S' OR EstadoJuez = 'A')
+		ORDER BY IdJuez
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- {Campos de la Tabla Jueces}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_juez;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_juez`(pIdEvento int, pDNI char(11), pApelName varchar(80), pEstado char(1), pOffset int, pRowCount int )
+SALIR:BEGIN
+/*
+	Permite buscar los jueces registrados, por eventos en los que participo, DNI, apellido y nombre y estado. Incluye paginado.
+*/
+
+ DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pApelName)>1 AND CHAR_LENGTH(pApelName) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Jueces
+	WHERE
+    	(pDNI IS NULL OR DNI LIKE CONCAT('%',pDNI, '%')) AND
+        (pApelName IS NULL OR ApelName LIKE CONCAT('%',pApelName, '%')) AND
+        (pEstado IS NULL OR EstadoJuez = pEstado) AND
+        IdEvento = pIdEvento
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Jueces
+   WHERE
+       	(pDNI IS NULL OR DNI LIKE CONCAT('%',pDNI, '%')) AND
+        (pApelName IS NULL OR ApelName LIKE CONCAT('%',pApelName, '%')) AND
+        (pEstado IS NULL OR EstadoJuez = pEstado) AND
+        IdEvento = pIdEvento
+   ORDER BY IdJuez DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+
+
+-- {Campos de la Tabla Jueces}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_alta_juez;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_juez`(
+    pIdEvento INT,
+    pDNI CHAR(11),
+    pApelName VARCHAR(80),
+    pCorreo VARCHAR(60),
+    pTelefono VARCHAR(15)
+)
+SALIR:BEGIN
+    /*
+        Permite dar de alta un juez. Devuelve OK + Id o el mensaje de error en Mensaje.
+    */
+
+    DECLARE pIdJuez INT;
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pIdEvento IS NULL OR
+       pDNI = '' OR pDNI IS NULL OR
+       pApelName = '' OR pApelName IS NULL OR
+       pCorreo = '' OR pCorreo IS NULL OR
+       pTelefono = '' OR pTelefono IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+    -- Generar un nuevo ID para el juez
+    SET pIdJuez = 1 + (SELECT COALESCE(MAX(IdJuez), 0) FROM Jueces);
+
+    -- Insertar el nuevo juez
+    INSERT INTO Jueces
+    (`IdJuez`, `IdEvento`, `DNI`, `ApelName`, `Correo`, `Telefono`,`EstadoJuez`) VALUES
+    (pIdJuez, pIdEvento, pDNI, pApelName, pCorreo, pTelefono,'A');
+
+    -- Mensaje de éxito
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdJuez AS Id;
+
+    COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_modifica_juez;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_juez`(pIdJuez int, pDNI char(11) , pApelName varchar(80), pTelefono varchar(15), pCorreo varchar(60))
+SALIR:BEGIN
+    /*
+            Permite modificar un juez. Controlando que no este dado de Baja  Devuelve OK + Id o el mensaje de error en Mensaje.
+    */
+
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pIdJuez IS NULL OR
+       pDNI = '' OR pDNI IS NULL OR
+       pApelName = '' OR pApelName IS NULL OR
+       pCorreo = '' OR pCorreo IS NULL OR
+       pTelefono = '' OR pTelefono IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+    UPDATE Jueces SET
+    DNI = pDNI,
+    ApelName = pApelName,
+    Correo = pCorreo,
+    Telefono = pTelefono
+    WHERE IdJuez = pIdJuez;
+
+    -- Mensaje de éxito
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdJuez AS Id;
+
+    COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_borra_juez;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_juez`(pIdJuez int)
+SALIR:BEGIN
+/*
+	Permite borrar un juez, solamente usado para limpiar base de datos y en produccion. Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+
+	   -- Controla que el juez no haya participado en una votacion
+	IF EXISTS(SELECT IdJuez FROM Votacion WHERE IdJuez = pIdJuez ) THEN
+		SELECT 'No puede borrar el Juez. Existen Votaciones asociadas.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+    START TRANSACTION;
+		-- Borra usuario
+        DELETE FROM Jueces WHERE IdJuez = pIdJuez;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+
+-- Mensaje varchar(100)
+END;
+DROP PROCEDURE IF EXISTS bsp_dame_juez;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_juez`(pIdJuez int)
+BEGIN
+/*
+	Procedimiento que sirve para instanciar un juez desde la base de datos.
+*/
+
+   SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Jueces
+    WHERE	IdJuez = pIdJuez;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- pIdJuez int
+END;
+
+DROP PROCEDURE IF EXISTS bsp_darbaja_juez;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_darbaja_juez`(pIdJuez int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de un juez a B: Baja siempre y cuando no esté dada de baja. Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+
+    IF EXISTS(SELECT IdJuez FROM Jueces WHERE IdJuez = pIdJuez
+						AND EstadoJuez = 'B') THEN
+		SELECT 'El juez ya está dado de baja.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Jueces SET EstadoJuez = 'B' WHERE IdJuez = pIdJuez;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_activar_juez;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_activar_juez`(pIdJuez int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de un juez a A: Activo siempre y cuando no esté activo ya. Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+
+    IF EXISTS(SELECT IdJuez FROM Jueces WHERE IdJuez = pIdJuez
+						AND EstadoJuez = 'A') THEN
+		SELECT 'El juez ya está activo.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Jueces SET EstadoJuez = 'A' WHERE IdJuez = pIdJuez;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+-- Mensaje varchar(100)
+END;
+
         ";
         DB::unprepared($sql);
 
