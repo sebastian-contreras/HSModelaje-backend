@@ -35,7 +35,7 @@ return new class extends Migration {
         ];
 
         foreach ($establecimientos as $establecimiento) {
-            DB::statement('CALL `HSModelaje_db`.`bsp_alta_establecimientos`(?, ?, ?)', $establecimiento);
+            DB::statement('CALL `HSModelaje_db`.`bsp_alta_establecimiento`(?, ?, ?)', $establecimiento);
         }
 
         // Datos eventos
