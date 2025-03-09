@@ -81,7 +81,7 @@ Route::prefix('establecimientos')->group(function () {
     // Crear una nueva establecimientos
     Route::post('/', [EstablecimientosController::class, 'store'])->name('establecimientos.store');
     // Obtener una establecimientos específica
-    Route::get('/{IdEstablecimiento}', [EstablecimientosController::class, 'show'])->name('establecimientos.show');
+    Route::get('/{IdEstablecimiento}', [EstablecimientosController::class, 'dame'])->name('establecimientos.dame');
     // Actualizar una establecimientos específica
     Route::put('/{IdEstablecimiento}', [EstablecimientosController::class, 'update'])->name('establecimientos.update');
     // Eliminar una establecimientos específica

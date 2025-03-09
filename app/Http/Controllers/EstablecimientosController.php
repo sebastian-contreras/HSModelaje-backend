@@ -80,11 +80,20 @@ class EstablecimientosController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function dame(string $IdEstablecimiento)
     {
-        //
-    }
+        // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
+        try {
+            // Llamar al procedimiento almacenado
+            $lista = DB::select('CALL bsp_dame_establecimiento(?)', [$IdEstablecimiento]);
 
+            // Devolver el resultado como JSON
+            return ResponseFormatter::success($lista);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return ResponseFormatter::error('error al obtener el establecimiento.', 500);
+        }
+    }
     /**
      * Update the specified resource in storage.
      */
