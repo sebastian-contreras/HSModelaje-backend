@@ -1821,6 +1821,396 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 -- Mensaje varchar(100)
 END;
 
+
+DROP PROCEDURE IF EXISTS bsp_listar_zonas;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_zonas`(pIdEvento int, pIncluyeBajas char(1))
+BEGIN
+/*
+	Permite listar las zonas registradas en un evento. Puede mostrar o no las inactivas (pIncluyeBajas: S: Si - N: No)
+*/
+		SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Zonas
+		WHERE
+					(pIncluyeBajas = 'S' OR EstadoZona = 'A') AND IdEvento = pIdEvento
+		ORDER BY IdZona
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Eventos}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_zonas;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_zonas`(pIdEvento int, pZona varchar(100), pAccesoDisc char(1),pEstado char(1), pOffset int, pRowCount int)
+SALIR:BEGIN
+/*
+	Permite listar las zonas registradas en un evento. Puede mostrar o no las inactivas (pIncluyeBajas: S: Si - N: No). Incluye Paginado
+*/
+  DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pZona)>1 AND CHAR_LENGTH(pZona) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Zonas
+	WHERE		(pZona IS NULL OR Zona LIKE CONCAT('%',pZona, '%')) AND
+				(pEstado IS NULL OR EstadoZona = pEstado) AND
+                (pAccesoDisc IS NULL OR AccesoDisc = pAccesoDisc) AND
+				 IdEvento = pIdEvento
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Zonas
+   WHERE
+				(pZona IS NULL OR Zona LIKE CONCAT('%',pZona, '%')) AND
+				(pEstado IS NULL OR EstadoZona = pEstado) AND
+                (pAccesoDisc IS NULL OR AccesoDisc = pAccesoDisc) AND
+				 IdEvento = pIdEvento
+   ORDER BY IdZona DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+-- {Campos de la Tabla Zonas}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_alta_zona;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_zona`(
+    pIdEvento int,
+    pZona varchar(100),
+    pCapacidad int,
+    pAccesoDisc char(1),
+    pPrecio decimal(15, 2),
+    pDetalle text
+)
+SALIR:BEGIN
+/*
+ Permite dar de alta una zona en un evento. Lo da de alta con estado A: Activa. Devuelve OK + Id o el mensaje de error en Mensaje.
+ */
+DECLARE pIdZona int;
+
+DECLARE pIdEstablecimiento int;
+
+-- Manejo de error en la transacción
+DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN SHOW ERRORS;
+
+SELECT
+    'Error en la transacción. Contáctese con el administrador.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+ROLLBACK;
+
+END;
+
+-- Controla parámetros obligatorios
+IF pIdEvento IS NULL
+OR pZona = ''
+OR pZona IS NULL
+OR pCapacidad IS NULL
+OR pAccesoDisc IS NULL
+OR pPrecio IS NULL THEN
+SELECT
+    'Faltan datos obligatorios.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+LEAVE SALIR;
+
+END IF;
+
+-- Controla que el evento exista
+IF NOT EXISTS (
+    SELECT
+        IdEvento
+    FROM
+        Eventos
+    WHERE
+        IdEvento = pIdEvento
+) THEN
+SELECT
+    'No existe el evento.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+LEAVE SALIR;
+
+END IF;
+
+-- Verificar que pAccesoDisc sea uno de los valores permitidos
+IF pAccesoDisc NOT IN ('S', 'N') THEN
+SELECT
+    'Acceso para discapacitados no válido.' AS Mensaje,
+    NULL AS Id;
+
+LEAVE SALIR;
+
+-- Salir del procedimiento
+END IF;
+
+-- COMIENZO TRANSACCION
+START TRANSACTION;
+
+SET
+    pIdZona = 1 + (
+        SELECT
+            COALESCE(MAX(IdZona), 0)
+        FROM
+            Zonas
+    );
+
+SET
+    pIdEstablecimiento = (
+        SELECT
+            IdEstablecimiento
+        from
+            Eventos
+        WHERE
+            IdEvento = pIdEvento
+    );
+
+INSERT INTO
+    `Zonas` (
+        `IdZona`,
+        `IdEstablecimiento`,
+        `IdEvento`,
+        `Zona`,
+        `Ocupacion`,
+        `Capacidad`,
+        `AccesoDisc`,
+        `Precio`,
+        `Detalle`,
+        `EstadoZona`
+    )
+VALUES
+    (
+        pIdZona,
+		pIdEstablecimiento,
+        pIdEvento,
+        pZona,
+        0,
+        pCapacidad,
+        pAccesoDisc,
+        pPrecio,
+        pDetalle,
+        'A'
+    );
+
+SELECT
+    'OK' AS Mensaje,
+    'ok' AS Response,
+    pIdZona AS Id;
+
+COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_modifica_zona;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_zona`(
+    pIdZona int,
+    pZona varchar(100),
+    pCapacidad int,
+    pAccesoDisc char(1),
+    pPrecio decimal(15, 2),
+    pDetalle text
+)
+SALIR:BEGIN
+/*
+ Permite modificar el evento. Controlando que no este dado de Baja  Devuelve OK + Id o el mensaje de error en Mensaje.
+ */
+-- Manejo de error en la transacción
+DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN SHOW ERRORS;
+
+SELECT
+    'Error en la transacción. Contáctese con el administrador.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+ROLLBACK;
+
+END;
+
+-- Controla parámetros obligatorios
+IF pIdZona IS NULL
+OR pZona = ''
+OR pZona IS NULL
+OR pCapacidad IS NULL
+OR pAccesoDisc IS NULL
+OR pPrecio IS NULL THEN
+SELECT
+    'Faltan datos obligatorios.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+LEAVE SALIR;
+
+END IF;
+
+-- Verificar que pAccesoDisc sea uno de los valores permitidos
+IF pAccesoDisc NOT IN ('S', 'N') THEN
+SELECT
+    'Acceso para discapacitados no válido.' AS Mensaje,
+    NULL AS Id;
+
+LEAVE SALIR;
+
+-- Salir del procedimiento
+END IF;
+
+-- COMIENZO TRANSACCION
+START TRANSACTION;
+
+UPDATE
+    Zonas
+SET
+    Zona = pZona,
+    Capacidad = pCapacidad,
+    AccesoDisc = pAccesoDisc,
+    Precio = pPrecio,
+    Detalle = pDetalle
+WHERE
+    IdZona = pIdZona;
+
+SELECT
+    'OK' AS Mensaje,
+    'ok' AS Response,
+    pIdZona AS Id;
+
+COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_borra_zona;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_zona`(pIdZona int)
+SALIR:BEGIN
+/*
+	Permite borrar una zona, solamente usado para limpiar base de datos y en produccion, debe verificarse que no hayan entradas vendidas en esa zona.
+    Devuelve OK o el mensaje de error en Mensaje.
+*/
+   DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+
+   -- Controla que el Evento no tenga metricas asociadas
+	IF EXISTS(SELECT IdZona FROM Entradas WHERE IdZona = pIdZona) THEN
+		SELECT 'No puede borrar la zona. Existen entradas asociadas.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+
+    START TRANSACTION;
+		-- Borra usuario
+        DELETE FROM Zonas WHERE IdZona= pIdZona;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+
+
+
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_dame_zona;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_zona`(pIdZona int)
+BEGIN
+/*
+	Procedimiento que sirve para instanciar una zona desde la base de datos.
+*/
+
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Zonas
+    WHERE	IdZona = pIdZona;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+-- {Campo de la Tabla Zonas}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_darbaja_zona;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_darbaja_zona`(pIdZona int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de una zona a B: Baja siempre y cuando no esté dada de baja. Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar zona no dado de baja
+    IF EXISTS(SELECT IdZona FROM Zonas WHERE IdZona = pIdZona
+						AND EstadoZona = 'B') THEN
+		SELECT 'La zona ya está dado de baja.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Zonas SET EstadoZona = 'B' WHERE IdZona = pIdZona;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_activar_zona;
+
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_activar_zona`(pIdZona int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de una zona a A: Activo siempre y cuando no esté activo ya. Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar zona no dado de baja
+    IF EXISTS(SELECT IdZona FROM Zonas WHERE IdZona = pIdZona
+						AND EstadoZona = 'A') THEN
+		SELECT 'La zona ya está activa.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Zonas SET EstadoZona = 'A' WHERE IdZona = pIdZona;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+
+-- Mensaje varchar(100)
+END
+
+
         ";
         DB::unprepared($sql);
 
