@@ -56,6 +56,32 @@ return new class extends Migration
         foreach ($eventos as $evento) {
             DB::statement('CALL `HSModelaje_db`.`bsp_alta_evento`(?, ?, ?, ?, ?)', $evento);
         }
+
+        $gastos = [[1, 'Alquiler de sala', 'Juan Pérez', 1500.00, 'Factura 001'],
+        [2, 'Catering', 'María López', 2500.50, 'Factura 002'],
+        [3, 'Material promocional', 'Carlos García', 800.75, 'Factura 003'],
+        [4, 'Transporte', 'Ana Martínez', 1200.00, 'Factura 004'],
+        [5, 'Publicidad', 'Luis Fernández', 3000.00, 'Factura 005'],
+        [6, 'Decoración', 'Sofía Rodríguez', 950.25, 'Factura 006'],
+        [7, 'Sonido y luces', 'Diego Torres', 1800.00, 'Factura 007'],
+        [8, 'Fotografía', 'Laura Sánchez', 2200.50, 'Factura 008'],
+        [9, 'Seguridad', 'Javier Morales', 1300.00, 'Factura 009'],
+        [10, 'Impresiones', 'Claudia Jiménez', 600.00, 'Factura 010'],
+        [1, 'Alquiler de equipo', 'Fernando Ruiz', 1750.00, 'Factura 011'],
+        [2, 'Regalos promocionales', 'Patricia Díaz', 400.00, 'Factura 012'],
+        [3, 'Tarta de cumpleaños', 'Ricardo Castro', 500.00, 'Factura 013'],
+        [4, 'Música en vivo', 'Verónica Herrera', 2500.00, 'Factura 014'],
+        [5, 'Alquiler de sillas', 'Gabriel Romero', 300.00, 'Factura 015'],
+        [6, 'Video promocional', 'Isabel Ortega', 1200.00, 'Factura 016'],
+        [7, 'Técnico de sonido', 'Andrés Salazar', 800.00, 'Factura 017'],
+        [8, 'Transporte de invitados', 'Mónica Ríos', 1500.00, 'Factura 018'],
+        [9, 'Alquiler de carpa', 'Hugo Mendoza', 2000.00, 'Factura 019'],
+        [10, 'Servicios de limpieza', 'Natalia Aguirre', 700.00, 'Factura 020']];
+
+        foreach ($gastos as $gasto) {
+            DB::statement('CALL `HSModelaje_db`.`bsp_alta_gasto`(?, ?, ?, ?, ?)', $gasto);
+        }
+
     }
 
     /**

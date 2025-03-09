@@ -81,13 +81,14 @@ COMMENT=''
 --
 
 CREATE TABLE Gastos(
-    IdGastos       INT               NOT NULL,
+    IdGasto       INT               NOT NULL        AUTO_INCREMENT,
     IdEvento       INT               NOT NULL,
     Gasto          VARCHAR(100)      NOT NULL,
     Personal       VARCHAR(100)      NOT NULL,
     Monto          DECIMAL(15, 2)    NOT NULL,
     Comprobante    VARCHAR(400),
-    PRIMARY KEY (IdGastos, IdEvento)
+    FechaCreado    DATETIME        NOT NULL,
+    PRIMARY KEY (IdGasto, IdEvento)
 )ENGINE=INNODB
 COMMENT=''
 ;

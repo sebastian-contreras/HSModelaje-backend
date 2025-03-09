@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\EstablecimientosController;
 use App\Http\Controllers\EventosController;
+use App\Http\Controllers\GastosController;
 use App\Http\Controllers\ModelosController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\UsuariosController;
@@ -125,4 +126,21 @@ Route::prefix('modelos')->group(function () {
 
     Route::post('/darbaja/{IdModelo}', [ModelosController::class, 'darBaja'])->name('modelos.darBaja');
     Route::post('/activar/{IdModelo}', [ModelosController::class, 'activar'])->name('modelos.activar');
+});
+
+
+Route::prefix('gastos')->group(function () {
+    // Obtener todas los modelos
+    Route::get('/busqueda', [GastosController::class, 'busqueda'])->name('modelos.busqueda');
+    Route::get('/{IdEvento}', [GastosController::class, 'index'])->name('modelos.index');
+    Route::get('/show/{IdGasto}', [GastosController::class, 'dame'])->name('modelos.dame');
+    // Crear una nueva modelos
+    Route::post('/', [GastosController::class, 'store'])->name('modelos.store');
+    // Obtener una modelos específica
+    Route::get('/{IdGasto}', [GastosController::class, 'show'])->name('modelos.show');
+    // Actualizar una modelos específica
+    Route::put('/{IdGasto}', [GastosController::class, 'update'])->name('modelos.update');
+    // Eliminar una modelos específica
+    Route::delete('/{IdGasto}', [GastosController::class, 'destroy'])->name('modelos.destroy');
+
 });

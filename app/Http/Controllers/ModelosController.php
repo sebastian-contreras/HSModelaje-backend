@@ -134,7 +134,7 @@ class ModelosController extends Controller
         }
 
         // Si todo fue exitoso, devolver una respuesta de éxito
-        return ResponseFormatter::success(null, 'Establecimiento borrado exitosamente.', 200);
+        return ResponseFormatter::success(null, 'Modelo borrado exitosamente.', 200);
     }
 
 
@@ -150,7 +150,7 @@ class ModelosController extends Controller
         }
 
         // Si todo fue exitoso, devolver una respuesta de éxito
-        return ResponseFormatter::success(null, 'Establecimiento dado de baja exitosamente.', 200);
+        return ResponseFormatter::success(null, 'Modelo dado de baja exitosamente.', 200);
     }
 
     public function activar(int $IdModelo)
@@ -165,7 +165,7 @@ class ModelosController extends Controller
         }
 
         // Si todo fue exitoso, devolver una respuesta de éxito
-        return ResponseFormatter::success(null, 'Establecimiento activo exitosamente.', 200);
+        return ResponseFormatter::success(null, 'Modelo activo exitosamente.', 200);
     }
 
 

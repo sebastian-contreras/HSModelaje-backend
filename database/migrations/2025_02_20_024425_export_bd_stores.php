@@ -1066,13 +1066,496 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 END  ;
 
 
+DROP PROCEDURE IF EXISTS bsp_listar_gastos ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_gastos`(pIdEvento int)
+SALIR:BEGIN
+/*
+	Permite listar los gastos registrados en un evento.
+*/
+   SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Gastos
+		WHERE
+					IdEvento = pIdEvento
+		ORDER BY IdGasto
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Gastos}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_gastos ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_gastos`(pIdEvento int, pGasto varchar(100) , pOffset int, pRowCount int)
+SALIR:BEGIN
+	/*
+		Permite listar los gastos registrados en un evento, y filtrarlos por nombre. Incluye Paginado
+    */
+      DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pGasto)>1 AND CHAR_LENGTH(pGasto) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Gastos
+	WHERE		(pGasto IS NULL OR Gasto LIKE CONCAT('%',pGasto, '%')) AND IdEvento = pIdEvento
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Gastos
+   WHERE	(pGasto IS NULL OR Gasto LIKE CONCAT('%',pGasto, '%'))	AND IdEvento = pIdEvento
+   ORDER BY IdGasto DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+    -- {Campos de la Tabla Gastos}
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_alta_gasto ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_gasto`(
+    pIdEvento int,
+    pGasto varchar(100),
+    pPersonal varchar(100),
+    pMonto decimal(10,2),
+    pComprobante varchar(400)
+)
+SALIR:BEGIN
+/*
+    Permite dar de alta un gasto. Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+    DECLARE pIdGasto int;
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pIdEvento IS NULL OR
+       pGasto = '' OR pGasto IS NULL OR
+       pPersonal = '' OR pPersonal IS NULL OR
+       pMonto IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Controla que el monto sea mayor a 0
+    IF pMonto <= 0 THEN
+        SELECT 'El monto debe ser mayor a 0.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+    		SET pIdGasto = 1 + (SELECT COALESCE(MAX(IdGasto),0)
+								FROM Gastos);
+        INSERT INTO Gastos
+        (`IdGasto`, `IdEvento`, `Gasto`, `Personal`, `Monto`, `Comprobante`, `FechaCreado`) VALUES
+        (pIdGasto, pIdEvento, pGasto, pPersonal, pMonto, pComprobante, NOW());
+
+        SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdGasto AS Id;
+    COMMIT;
+-- Mensaje varchar(100), Id int
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_modifica_gasto ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_gasto`(pIdGasto int,pGasto varchar(100), pPersonal varchar(100), pMonto decimal(10,2), pComprobante varchar(400))
+SALIR:BEGIN
+/*
+	Permite modificar el gasto.  Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pIdGasto IS NULL OR
+       pGasto = '' OR pGasto IS NULL OR
+       pPersonal = '' OR pPersonal IS NULL OR
+       pMonto IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Controla que el monto sea mayor a 0
+    IF pMonto <= 0 THEN
+        SELECT 'El monto debe ser mayor a 0.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+        UPDATE Gastos SET
+            IdGasto=pIdGasto,
+            Gasto=pGasto,
+            Personal=pPersonal,
+            Monto=pMonto,
+            Comprobante=pComprobante
+            WHERE IdGasto = pIdGasto;
+
+        SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdGasto AS Id;
+    COMMIT;
+-- Mensaje varchar(100), Id int
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_borra_gasto ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_gasto`(pIdGasto int)
+SALIR:BEGIN
+	/*
+		Permite borrar un gasto, solamente usado para limpiar base de datos y en produccion.
+        Devuelve OK o el mensaje de error en Mensaje.
+    */
+    -- Manejo de error de la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+		-- Borra usuario
+        DELETE FROM Gastos WHERE IdGasto = pIdGasto;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+END;
+
+DROP PROCEDURE IF EXISTS bsp_dame_gasto ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_gasto`(pIdGasto int)
+SALIR:BEGIN
+/*
+	Procedimiento que sirve para instanciar un gasto desde la base de datos.
+*/
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Gastos
+    WHERE	IdGasto = pIdGasto;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Gastos}
+END;
+
+
+-- MODELOS
+
+
+DROP PROCEDURE IF EXISTS bsp_listar_modelos;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_modelos`(pIncluyeBajas char(1))
+BEGIN
+/*
+	Permite listar los modelos registrados. Puede mostrar o no las inactivas (pIncluyeBajas: S: Si - N: No)
+*/
+
+		    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Modelos
+		WHERE
+					(pIncluyeBajas = 'S' OR EstadoMod = 'A')
+		ORDER BY IdModelo
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Modelos}
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_buscar_modelo;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_modelo`(pDNI char(11), pApelName varchar(80), pFechaNacimientoMin date,pFechaNacimientoMax date, pSexo char(1), pEstado char(1), pOffset int, pRowCount int)
+SALIR:BEGIN
+/*
+	Permite buscar los modelos registrados, por eventos en los que participo, DNI, apellido y nombre, fecha de nacimiento, sexo y estado.
+    Incluye paginado.
+*/
+DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pApelName)>1 AND CHAR_LENGTH(pApelName) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Modelos
+	WHERE
+		(pDNI IS NULL OR DNI LIKE CONCAT('%',pDNI, '%')) AND
+        (pApelName IS NULL OR ApelName LIKE CONCAT('%',pApelName, '%')) AND
+		(pFechaNacimientoMin IS NULL OR FechaNacimiento >= pFechaNacimientoMin) AND
+        (pFechaNacimientoMax IS NULL OR FechaNacimiento <= pFechaNacimientoMax) AND
+        (pSexo IS NULL OR Sexo = pSexo) AND
+		(pEstado IS NULL OR EstadoMod = pEstado)
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Modelos
+   WHERE
+		(pDNI IS NULL OR DNI LIKE CONCAT('%',pDNI, '%')) AND
+        (pApelName IS NULL OR ApelName LIKE CONCAT('%',pApelName, '%')) AND
+		(pFechaNacimientoMin IS NULL OR FechaNacimiento >= pFechaNacimientoMin) AND
+        (pFechaNacimientoMax IS NULL OR FechaNacimiento <= pFechaNacimientoMax) AND
+        (pSexo IS NULL OR Sexo = pSexo) AND
+		(pEstado IS NULL OR EstadoMod = pEstado)
+		ORDER BY IdModelo DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
 
 
+-- {Campos de la Tabla Modelos}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_alta_modelo;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_modelo`(
+    pDNI char(11),
+    pApelName varchar(80),
+    pFechaNacimiento date,
+    pSexo char(1),
+    pTelefono varchar(15),
+    pCorreo varchar(60)
+)
+SALIR:BEGIN
+/*
+    Permite dar de alta un modelo. Lo da de alta con estado A: Activa. Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+
+    DECLARE pIdModelo int;
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pDNI = '' OR pDNI IS NULL OR
+       pApelName IS NULL OR
+       pFechaNacimiento IS NULL OR
+       pSexo IS NULL OR
+       pTelefono IS NULL OR
+       pCorreo IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Controla que no exista un modelo con el mismo DNI
+    IF EXISTS(SELECT DNI FROM Modelos WHERE DNI = pDNI) THEN
+        SELECT 'Ya existe un modelo con ese DNI.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+    INSERT INTO Modelos
+    (`IdModelo`, `DNI`, `ApelName`, `FechaNacimiento`, `Sexo`, `Telefono`, `Correo`, `EstadoMod`) VALUES
+    (0, pDNI, pApelName, pFechaNacimiento,pSexo, pTelefono, pCorreo, 'A');
+
+    SET pIdModelo = LAST_INSERT_ID();
+
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdModelo AS Id;
+
+    COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_modifica_modelo ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_modelo`(pIdModelo int,pDNI char(11), pApelName varchar(80), pFechaNacimiento date, pSexo char(1), pTelefono varchar(15), pCorreo varchar(60))
+SALIR:BEGIN
+/*
+	Permite modificar el modelo. Controlando que no este dado de Baja  Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+ -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pDNI = '' OR pDNI IS NULL OR
+       pApelName IS NULL OR
+       pIdModelo IS NULL OR
+       pFechaNacimiento IS NULL OR
+       pSexo IS NULL OR
+       pTelefono IS NULL OR
+       pCorreo IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Controla que no exista un modelo con el mismo DNI
+    IF EXISTS(SELECT DNI FROM Modelos WHERE DNI = pDNI AND IdModelo != pIdModelo) THEN
+        SELECT 'Ya existe un modelo con ese DNI.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+        UPDATE Modelos SET
+     DNI = pDNI,
+     ApelName = pApelName,
+     FechaNacimiento = pFechaNacimiento,
+     Sexo = pSexo,
+     Telefono = pTelefono,
+     Correo = pCorreo
+	WHERE IdModelo = pIdModelo;
 
 
 
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdModelo AS Id;
 
+    COMMIT;
+
+-- Mensaje varchar(100)
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_borra_modelo;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_modelo`(pIdModelo int)
+SALIR:BEGIN
+/*
+	Permite borrar un modelo, solamente usado para limpiar base de datos y en produccion. Devuelve OK o el mensaje de error en Mensaje.
+*/
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+   -- Controla que el Modelo no haya participado nunca
+	IF EXISTS(SELECT IdModelo FROM Participantes WHERE IdModelo  = pIdModelo ) THEN
+		SELECT 'No puede borrar el Modelo. Existen participaciones asociadas.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+    START TRANSACTION;
+		-- Borra
+        DELETE FROM Modelos WHERE IdModelo = pIdModelo;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+
+
+-- Mensaje varchar(100)
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_dame_modelo;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_modelo`(pIdModelo int)
+SALIR:BEGIN
+/*
+	Procedimiento que sirve para instanciar un modelo desde la base de datos.
+*/
+
+
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Modelos
+    WHERE	IdModelo = pIdModelo ;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+-- {Campo de la Tabla Modelos}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_darbaja_modelo;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_darbaja_modelo`(pIdModelo int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de un modelo a B: Baja siempre y cuando no esté dada de baja. Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar autor no dado de baja
+    IF EXISTS(SELECT IdModelo FROM Modelos WHERE IdModelo = pIdModelo
+						AND EstadoMod = 'B') THEN
+		SELECT 'El modelo ya está dado de baja.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Modelos SET EstadoMod = 'B' WHERE IdModelo = pIdModelo;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+-- Mensaje varchar(100)
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_activar_modelo;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_activar_modelo`(pIdModelo int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de un modelo a A: Activo siempre y cuando no esté activo ya. Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar autor no dado de baja
+    IF EXISTS(SELECT IdModelo FROM Modelos WHERE IdModelo = pIdModelo
+						AND EstadoMod = 'A') THEN
+		SELECT 'El modelo ya está activo.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- ACTIVAR
+    UPDATE Modelos SET EstadoMod = 'A' WHERE IdModelo = pIdModelo;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+-- Mensaje varchar(100)
+END;
 
         ";
         DB::unprepared($sql);
