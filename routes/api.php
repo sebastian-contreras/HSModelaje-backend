@@ -6,6 +6,7 @@ use App\Http\Controllers\EstablecimientosController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\GastosController;
 use App\Http\Controllers\ModelosController;
+use App\Http\Controllers\PatrocinadoresController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\UsuariosController;
 use Illuminate\Http\Request;
@@ -131,16 +132,33 @@ Route::prefix('modelos')->group(function () {
 
 Route::prefix('gastos')->group(function () {
     // Obtener todas los modelos
-    Route::get('/busqueda', [GastosController::class, 'busqueda'])->name('modelos.busqueda');
-    Route::get('/{IdEvento}', [GastosController::class, 'index'])->name('modelos.index');
-    Route::get('/show/{IdGasto}', [GastosController::class, 'dame'])->name('modelos.dame');
-    // Crear una nueva modelos
-    Route::post('/', [GastosController::class, 'store'])->name('modelos.store');
-    // Obtener una modelos específica
-    Route::get('/{IdGasto}', [GastosController::class, 'show'])->name('modelos.show');
-    // Actualizar una modelos específica
-    Route::put('/{IdGasto}', [GastosController::class, 'update'])->name('modelos.update');
-    // Eliminar una modelos específica
-    Route::delete('/{IdGasto}', [GastosController::class, 'destroy'])->name('modelos.destroy');
+    Route::get('/busqueda', [GastosController::class, 'busqueda'])->name('gastos.busqueda');
+    Route::get('/{IdEvento}', [GastosController::class, 'index'])->name('gastos.index');
+    Route::get('/show/{IdGasto}', [GastosController::class, 'dame'])->name('gastos.dame');
+    // Crear una nueva gastos
+    Route::post('/', [GastosController::class, 'store'])->name('gastos.store');
+    // Obtener una gastos específica
+    Route::get('/{IdGasto}', [GastosController::class, 'show'])->name('gastos.show');
+    // Actualizar una gastos específica
+    Route::put('/{IdGasto}', [GastosController::class, 'update'])->name('gastos.update');
+    // Eliminar una gastos específica
+    Route::delete('/{IdGasto}', [GastosController::class, 'destroy'])->name('gastos.destroy');
+
+});
+
+
+Route::prefix('patrocinadores')->group(function () {
+    // Obtener todas los patrocinadores
+    Route::get('/busqueda', [PatrocinadoresController::class, 'busqueda'])->name('patrocinadores.busqueda');
+    Route::get('/{IdEvento}', [PatrocinadoresController::class, 'index'])->name('patrocinadores.index');
+    Route::get('/show/{IdPatrocinador}', [PatrocinadoresController::class, 'dame'])->name('patrocinadores.dame');
+    // Crear una nueva patrocinadores
+    Route::post('/', [PatrocinadoresController::class, 'store'])->name('patrocinadores.store');
+    // Obtener una patrocinadores específica
+    Route::get('/{IdPatrocinador}', [PatrocinadoresController::class, 'show'])->name('patrocinadores.show');
+    // Actualizar una patrocinadores específica
+    Route::put('/{IdPatrocinador}', [PatrocinadoresController::class, 'update'])->name('patrocinadores.update');
+    // Eliminar una patrocinadores específica
+    Route::delete('/{IdPatrocinador}', [PatrocinadoresController::class, 'destroy'])->name('patrocinadores.destroy');
 
 });

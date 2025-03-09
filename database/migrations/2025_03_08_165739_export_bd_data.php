@@ -82,6 +82,31 @@ return new class extends Migration
             DB::statement('CALL `HSModelaje_db`.`bsp_alta_gasto`(?, ?, ?, ?, ?)', $gasto);
         }
 
+
+        $patrocinadores = [[1, 'Tech Innovations S.A.', 'contacto@techinnovations.com', '5551234567', 'Líder en soluciones tecnológicas.'],
+        [2, 'Cultura y Arte Ltda.', 'info@culturayarte.com', '5552345678', 'Promoviendo el arte y la cultura.'],
+        [3, 'Música y Eventos S.R.L.', 'info@musiayeventos.com', '5553456789', 'Organización de eventos musicales.'],
+        [4, 'Ferias y Exposiciones S.A.', 'contacto@feriaseexposiciones.com', '5554567890', 'Expertos en ferias comerciales.'],
+        [5, 'Conferencias Globales S.A.', 'info@conferenciasglobales.com', '5555678901', 'Conectando ideas y personas.'],
+        [6, 'Exposiciones Creativas Ltda.', 'contacto@exposicionescreativas.com', '5556789012', 'Fomentando la creatividad en eventos.'],
+        [7, 'Deportes y Aventura S.R.L.', 'info@deportesyaventura.com', '5557890123', 'Patrocinador de eventos deportivos.'],
+        [8, 'Moda y Estilo S.A.', 'contacto@modayestilo.com', '5558901234', 'Tendencias en moda y estilo.'],
+        [9, 'Tecnología Avanzada S.A.', 'info@tecnologiaavanzada.com', '5559012345', 'Innovación en tecnología.'],
+        [10, 'Arte y Diseño Ltda.', 'contacto@arteydiseño.com', '5550123456', 'Creando experiencias artísticas.'],
+        [1, 'Salud y Bienestar S.A.', 'info@saludybienestar.com', '5551234568', 'Promoviendo la salud y el bienestar.'],
+        [2, 'Educación y Futuro Ltda.', 'contacto@educacionyfuturo.com', '5552345679', 'Comprometidos con la educación.'],
+        [3, 'Gastronomía Gourmet S.R.L.', 'info@gastronomiagourmet.com', '5553456780', 'Experiencias culinarias únicas.'],
+        [4, 'Turismo y Aventura S.A.', 'contacto@turismoyaventura.com', '5554567891', 'Descubre el mundo con nosotros.'],
+        [5, 'Entretenimiento Total Ltda.', 'info@entretenimientototal.com', '5555678902', 'Diversión para todos.'],
+        [6, 'Eventos Corporativos S.R.L.', 'contacto@eventoscorporativos.com', '5556789013', 'Soluciones para eventos empresariales.'],
+        [7, 'Innovación Educativa S.A.', 'info@innovacioneducativa.com', '5557890124', 'Transformando la educación.'],
+        [8, 'Cine y Televisión Ltda.', 'contacto@cineytelevision.com', '5558901235', 'Producción y promoción de eventos.'],
+        [9, 'Marketing Creativo S.A.', 'info@marketingcreativo.com', '5559012346', 'Estrategias innovadoras de marketing.'],
+        [10, 'Desarrollo Sostenible Ltda.', 'contacto@desarrollosostenible.com', '5550123457', 'Comprometidos con el medio ambiente.']
+    ];
+    foreach ($patrocinadores as $patrocinador) {
+        DB::statement('CALL `HSModelaje_db`.`bsp_alta_patrocinador`(?, ?, ?, ?, ?)', $patrocinador);
+    }
     }
 
     /**

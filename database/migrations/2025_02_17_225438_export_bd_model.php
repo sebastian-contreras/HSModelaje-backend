@@ -158,16 +158,17 @@ COMMENT=''
 ;
 
 --
--- TABLE: Patrocinador
+-- TABLE: Patrocinadores
 --
 
-CREATE TABLE Patrocinador(
+CREATE TABLE Patrocinadores(
     IdPatrocinador    SMALLINT        AUTO_INCREMENT,
     IdEvento          INT             NOT NULL,
     Patrocinador      VARCHAR(100)    NOT NULL,
     Correo            VARCHAR(100)    NOT NULL,
     Telefono          VARCHAR(10)     NOT NULL,
     Descripcion       TEXT,
+    FechaCreado    DATETIME        NOT NULL,
     PRIMARY KEY (IdPatrocinador, IdEvento)
 )ENGINE=INNODB
 COMMENT=''
@@ -279,7 +280,7 @@ CREATE INDEX Ref1222 ON Participantes(IdModelo)
 -- INDEX: Ref64
 --
 
-CREATE INDEX Ref64 ON Patrocinador(IdEvento)
+CREATE INDEX Ref64 ON Patrocinadores(IdEvento)
 ;
 --
 -- INDEX: UI_Username
@@ -383,10 +384,10 @@ ALTER TABLE Participantes ADD CONSTRAINT RefModelos222
 
 
 --
--- TABLE: Patrocinador
+-- TABLE: Patrocinadores
 --
 
-ALTER TABLE Patrocinador ADD CONSTRAINT RefEventos42
+ALTER TABLE Patrocinadores ADD CONSTRAINT RefEventos42
     FOREIGN KEY (IdEvento)
     REFERENCES Eventos(IdEvento)
 ;
