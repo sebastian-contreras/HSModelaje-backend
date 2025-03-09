@@ -6,6 +6,7 @@ use App\Http\Controllers\EstablecimientosController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\GastosController;
 use App\Http\Controllers\JuecesController;
+use App\Http\Controllers\MetricasController;
 use App\Http\Controllers\ModelosController;
 use App\Http\Controllers\PatrocinadoresController;
 use App\Http\Controllers\PersonaController;
@@ -202,4 +203,22 @@ Route::prefix('zonas')->group(function () {
 
     Route::post('/darbaja/{IdZona}', [ZonasController::class, 'darBaja'])->name('zonas.darBaja');
     Route::post('/activar/{IdZona}', [ZonasController::class, 'activar'])->name('zonas.activar');
+});
+
+Route::prefix('metricas')->group(function () {
+    // Obtener todas los metricas
+    Route::get('/busqueda', [MetricasController::class, 'busqueda'])->name('metricas.busqueda');
+    Route::get('/{IdEvento}', [MetricasController::class, 'index'])->name('metricas.index');
+    Route::get('/show/{IdMetrica}', [MetricasController::class, 'dame'])->name('metricas.dame');
+    // Crear una nueva metricas
+    Route::post('/', [MetricasController::class, 'store'])->name('metricas.store');
+    // Obtener una metricas específica
+    Route::get('/{IdMetrica}', [MetricasController::class, 'show'])->name('metricas.show');
+    // Actualizar una metricas específica
+    Route::put('/{IdMetrica}', [MetricasController::class, 'update'])->name('metricas.update');
+    // Eliminar una metricas específica
+    Route::delete('/{IdMetrica}', [MetricasController::class, 'destroy'])->name('metricas.destroy');
+
+    Route::post('/darbaja/{IdMetrica}', [MetricasController::class, 'darBaja'])->name('metricas.darBaja');
+    Route::post('/activar/{IdMetrica}', [MetricasController::class, 'activar'])->name('metricas.activar');
 });
