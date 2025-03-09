@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -57,56 +56,88 @@ return new class extends Migration
             DB::statement('CALL `HSModelaje_db`.`bsp_alta_evento`(?, ?, ?, ?, ?)', $evento);
         }
 
-        $gastos = [[1, 'Alquiler de sala', 'Juan Pérez', 1500.00, 'Factura 001'],
-        [2, 'Catering', 'María López', 2500.50, 'Factura 002'],
-        [3, 'Material promocional', 'Carlos García', 800.75, 'Factura 003'],
-        [4, 'Transporte', 'Ana Martínez', 1200.00, 'Factura 004'],
-        [5, 'Publicidad', 'Luis Fernández', 3000.00, 'Factura 005'],
-        [6, 'Decoración', 'Sofía Rodríguez', 950.25, 'Factura 006'],
-        [7, 'Sonido y luces', 'Diego Torres', 1800.00, 'Factura 007'],
-        [8, 'Fotografía', 'Laura Sánchez', 2200.50, 'Factura 008'],
-        [9, 'Seguridad', 'Javier Morales', 1300.00, 'Factura 009'],
-        [10, 'Impresiones', 'Claudia Jiménez', 600.00, 'Factura 010'],
-        [1, 'Alquiler de equipo', 'Fernando Ruiz', 1750.00, 'Factura 011'],
-        [2, 'Regalos promocionales', 'Patricia Díaz', 400.00, 'Factura 012'],
-        [3, 'Tarta de cumpleaños', 'Ricardo Castro', 500.00, 'Factura 013'],
-        [4, 'Música en vivo', 'Verónica Herrera', 2500.00, 'Factura 014'],
-        [5, 'Alquiler de sillas', 'Gabriel Romero', 300.00, 'Factura 015'],
-        [6, 'Video promocional', 'Isabel Ortega', 1200.00, 'Factura 016'],
-        [7, 'Técnico de sonido', 'Andrés Salazar', 800.00, 'Factura 017'],
-        [8, 'Transporte de invitados', 'Mónica Ríos', 1500.00, 'Factura 018'],
-        [9, 'Alquiler de carpa', 'Hugo Mendoza', 2000.00, 'Factura 019'],
-        [10, 'Servicios de limpieza', 'Natalia Aguirre', 700.00, 'Factura 020']];
+        $gastos = [
+            [1, 'Alquiler de sala', 'Juan Pérez', 1500.00, 'Factura 001'],
+            [2, 'Catering', 'María López', 2500.50, 'Factura 002'],
+            [3, 'Material promocional', 'Carlos García', 800.75, 'Factura 003'],
+            [4, 'Transporte', 'Ana Martínez', 1200.00, 'Factura 004'],
+            [5, 'Publicidad', 'Luis Fernández', 3000.00, 'Factura 005'],
+            [6, 'Decoración', 'Sofía Rodríguez', 950.25, 'Factura 006'],
+            [7, 'Sonido y luces', 'Diego Torres', 1800.00, 'Factura 007'],
+            [8, 'Fotografía', 'Laura Sánchez', 2200.50, 'Factura 008'],
+            [9, 'Seguridad', 'Javier Morales', 1300.00, 'Factura 009'],
+            [10, 'Impresiones', 'Claudia Jiménez', 600.00, 'Factura 010'],
+            [1, 'Alquiler de equipo', 'Fernando Ruiz', 1750.00, 'Factura 011'],
+            [2, 'Regalos promocionales', 'Patricia Díaz', 400.00, 'Factura 012'],
+            [3, 'Tarta de cumpleaños', 'Ricardo Castro', 500.00, 'Factura 013'],
+            [4, 'Música en vivo', 'Verónica Herrera', 2500.00, 'Factura 014'],
+            [5, 'Alquiler de sillas', 'Gabriel Romero', 300.00, 'Factura 015'],
+            [6, 'Video promocional', 'Isabel Ortega', 1200.00, 'Factura 016'],
+            [7, 'Técnico de sonido', 'Andrés Salazar', 800.00, 'Factura 017'],
+            [8, 'Transporte de invitados', 'Mónica Ríos', 1500.00, 'Factura 018'],
+            [9, 'Alquiler de carpa', 'Hugo Mendoza', 2000.00, 'Factura 019'],
+            [10, 'Servicios de limpieza', 'Natalia Aguirre', 700.00, 'Factura 020']
+        ];
 
         foreach ($gastos as $gasto) {
             DB::statement('CALL `HSModelaje_db`.`bsp_alta_gasto`(?, ?, ?, ?, ?)', $gasto);
         }
 
 
-        $patrocinadores = [[1, 'Tech Innovations S.A.', 'contacto@techinnovations.com', '5551234567', 'Líder en soluciones tecnológicas.'],
-        [2, 'Cultura y Arte Ltda.', 'info@culturayarte.com', '5552345678', 'Promoviendo el arte y la cultura.'],
-        [3, 'Música y Eventos S.R.L.', 'info@musiayeventos.com', '5553456789', 'Organización de eventos musicales.'],
-        [4, 'Ferias y Exposiciones S.A.', 'contacto@feriaseexposiciones.com', '5554567890', 'Expertos en ferias comerciales.'],
-        [5, 'Conferencias Globales S.A.', 'info@conferenciasglobales.com', '5555678901', 'Conectando ideas y personas.'],
-        [6, 'Exposiciones Creativas Ltda.', 'contacto@exposicionescreativas.com', '5556789012', 'Fomentando la creatividad en eventos.'],
-        [7, 'Deportes y Aventura S.R.L.', 'info@deportesyaventura.com', '5557890123', 'Patrocinador de eventos deportivos.'],
-        [8, 'Moda y Estilo S.A.', 'contacto@modayestilo.com', '5558901234', 'Tendencias en moda y estilo.'],
-        [9, 'Tecnología Avanzada S.A.', 'info@tecnologiaavanzada.com', '5559012345', 'Innovación en tecnología.'],
-        [10, 'Arte y Diseño Ltda.', 'contacto@arteydiseño.com', '5550123456', 'Creando experiencias artísticas.'],
-        [1, 'Salud y Bienestar S.A.', 'info@saludybienestar.com', '5551234568', 'Promoviendo la salud y el bienestar.'],
-        [2, 'Educación y Futuro Ltda.', 'contacto@educacionyfuturo.com', '5552345679', 'Comprometidos con la educación.'],
-        [3, 'Gastronomía Gourmet S.R.L.', 'info@gastronomiagourmet.com', '5553456780', 'Experiencias culinarias únicas.'],
-        [4, 'Turismo y Aventura S.A.', 'contacto@turismoyaventura.com', '5554567891', 'Descubre el mundo con nosotros.'],
-        [5, 'Entretenimiento Total Ltda.', 'info@entretenimientototal.com', '5555678902', 'Diversión para todos.'],
-        [6, 'Eventos Corporativos S.R.L.', 'contacto@eventoscorporativos.com', '5556789013', 'Soluciones para eventos empresariales.'],
-        [7, 'Innovación Educativa S.A.', 'info@innovacioneducativa.com', '5557890124', 'Transformando la educación.'],
-        [8, 'Cine y Televisión Ltda.', 'contacto@cineytelevision.com', '5558901235', 'Producción y promoción de eventos.'],
-        [9, 'Marketing Creativo S.A.', 'info@marketingcreativo.com', '5559012346', 'Estrategias innovadoras de marketing.'],
-        [10, 'Desarrollo Sostenible Ltda.', 'contacto@desarrollosostenible.com', '5550123457', 'Comprometidos con el medio ambiente.']
-    ];
-    foreach ($patrocinadores as $patrocinador) {
-        DB::statement('CALL `HSModelaje_db`.`bsp_alta_patrocinador`(?, ?, ?, ?, ?)', $patrocinador);
-    }
+        $patrocinadores = [
+            [1, 'Tech Innovations S.A.', 'contacto@techinnovations.com', '5551234567', 'Líder en soluciones tecnológicas.'],
+            [2, 'Cultura y Arte Ltda.', 'info@culturayarte.com', '5552345678', 'Promoviendo el arte y la cultura.'],
+            [3, 'Música y Eventos S.R.L.', 'info@musiayeventos.com', '5553456789', 'Organización de eventos musicales.'],
+            [4, 'Ferias y Exposiciones S.A.', 'contacto@feriaseexposiciones.com', '5554567890', 'Expertos en ferias comerciales.'],
+            [5, 'Conferencias Globales S.A.', 'info@conferenciasglobales.com', '5555678901', 'Conectando ideas y personas.'],
+            [6, 'Exposiciones Creativas Ltda.', 'contacto@exposicionescreativas.com', '5556789012', 'Fomentando la creatividad en eventos.'],
+            [7, 'Deportes y Aventura S.R.L.', 'info@deportesyaventura.com', '5557890123', 'Patrocinador de eventos deportivos.'],
+            [8, 'Moda y Estilo S.A.', 'contacto@modayestilo.com', '5558901234', 'Tendencias en moda y estilo.'],
+            [9, 'Tecnología Avanzada S.A.', 'info@tecnologiaavanzada.com', '5559012345', 'Innovación en tecnología.'],
+            [10, 'Arte y Diseño Ltda.', 'contacto@arteydiseño.com', '5550123456', 'Creando experiencias artísticas.'],
+            [1, 'Salud y Bienestar S.A.', 'info@saludybienestar.com', '5551234568', 'Promoviendo la salud y el bienestar.'],
+            [2, 'Educación y Futuro Ltda.', 'contacto@educacionyfuturo.com', '5552345679', 'Comprometidos con la educación.'],
+            [3, 'Gastronomía Gourmet S.R.L.', 'info@gastronomiagourmet.com', '5553456780', 'Experiencias culinarias únicas.'],
+            [4, 'Turismo y Aventura S.A.', 'contacto@turismoyaventura.com', '5554567891', 'Descubre el mundo con nosotros.'],
+            [5, 'Entretenimiento Total Ltda.', 'info@entretenimientototal.com', '5555678902', 'Diversión para todos.'],
+            [6, 'Eventos Corporativos S.R.L.', 'contacto@eventoscorporativos.com', '5556789013', 'Soluciones para eventos empresariales.'],
+            [7, 'Innovación Educativa S.A.', 'info@innovacioneducativa.com', '5557890124', 'Transformando la educación.'],
+            [8, 'Cine y Televisión Ltda.', 'contacto@cineytelevision.com', '5558901235', 'Producción y promoción de eventos.'],
+            [9, 'Marketing Creativo S.A.', 'info@marketingcreativo.com', '5559012346', 'Estrategias innovadoras de marketing.'],
+            [10, 'Desarrollo Sostenible Ltda.', 'contacto@desarrollosostenible.com', '5550123457', 'Comprometidos con el medio ambiente.']
+        ];
+        foreach ($patrocinadores as $patrocinador) {
+            DB::statement('CALL `HSModelaje_db`.`bsp_alta_patrocinador`(?, ?, ?, ?, ?)', $patrocinador);
+        }
+
+        $jueces = [
+            [1, '12345678901', 'Juan Pérez', 'juan.perez@example.com', '1234567890'],
+            [2, '23456789012', 'María López', 'maria.lopez@example.com', '1234567891'],
+            [3, '34567890123', 'Carlos García', 'carlos.garcia@example.com', '1234567892'],
+            [4, '45678901234', 'Ana Martínez', 'ana.martinez@example.com', '1234567893'],
+            [5, '56789012345', 'Luis Fernández', 'luis.fernandez@example.com', '1234567894'],
+            [6, '67890123456', 'Laura Sánchez', 'laura.sanchez@example.com', '1234567895'],
+            [7, '78901234567', 'Javier Torres', 'javier.torres@example.com', '1234567896'],
+            [8, '89012345678', 'Sofía Ramírez', 'sofia.ramirez@example.com', '1234567897'],
+            [9, '90123456789', 'Diego Morales', 'diego.morales@example.com', '1234567898'],
+            [10, '01234567890', 'Clara Jiménez', 'clara.jimenez@example.com', '1234567899'],
+            [1, '13579246801', 'Fernando Díaz', 'fernando.diaz@example.com', '1234567800'],
+            [2, '24681357902', 'Patricia Ruiz', 'patricia.ruiz@example.com', '1234567801'],
+            [3, '35792468013', 'Andrés Castro', 'andres.castro@example.com', '1234567802'],
+            [4, '46813579204', 'Verónica Ortega', 'veronica.ortega@example.com', '1234567803'],
+            [5, '57924680315', 'Ricardo Romero', 'ricardo.romero@example.com', '1234567804'],
+            [6, '68035791426', 'Gabriela Herrera', 'gabriela.herrera@example.com', '1234567805'],
+            [7, '79146802537', 'Samuel Mendoza', 'samuel.mendoza@example.com', '1234567806'],
+            [8, '80257913648', 'Isabel Castro', 'isabel.castro@example.com', '1234567807'],
+            [9, '91368024759', 'Hugo Salazar', 'hugo.salazar@example.com', '1234567808'],
+            [10, '02479135860', 'Natalia Paredes', 'natalia.paredes@example.com', '1234567809']
+        ];
+
+
+        foreach ($jueces as $juez) {
+            DB::statement('CALL `HSModelaje_db`.`bsp_alta_juez`(?, ?, ?, ?, ?)', $juez);
+        }
+
     }
 
     /**

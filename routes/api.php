@@ -5,6 +5,7 @@ use App\Http\Controllers\CajaController;
 use App\Http\Controllers\EstablecimientosController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\GastosController;
+use App\Http\Controllers\JuecesController;
 use App\Http\Controllers\ModelosController;
 use App\Http\Controllers\PatrocinadoresController;
 use App\Http\Controllers\PersonaController;
@@ -160,5 +161,27 @@ Route::prefix('patrocinadores')->group(function () {
     Route::put('/{IdPatrocinador}', [PatrocinadoresController::class, 'update'])->name('patrocinadores.update');
     // Eliminar una patrocinadores específica
     Route::delete('/{IdPatrocinador}', [PatrocinadoresController::class, 'destroy'])->name('patrocinadores.destroy');
+
+});
+
+
+
+
+Route::prefix('jueces')->group(function () {
+    // Obtener todas los jueces
+    Route::get('/busqueda', [JuecesController::class, 'busqueda'])->name('jueces.busqueda');
+    Route::get('/{IdEvento}', [JuecesController::class, 'index'])->name('jueces.index');
+    Route::get('/show/{IdJuez}', [JuecesController::class, 'dame'])->name('jueces.dame');
+    // Crear una nueva jueces
+    Route::post('/', [JuecesController::class, 'store'])->name('jueces.store');
+    // Obtener una jueces específica
+    Route::get('/{IdJuez}', [JuecesController::class, 'show'])->name('jueces.show');
+    // Actualizar una jueces específica
+    Route::put('/{IdJuez}', [JuecesController::class, 'update'])->name('jueces.update');
+    // Eliminar una jueces específica
+    Route::delete('/{IdJuez}', [JuecesController::class, 'destroy'])->name('jueces.destroy');
+
+    Route::post('/darbaja/{IdJuez}', [JuecesController::class, 'darBaja'])->name('jueces.darBaja');
+    Route::post('/activar/{IdJuez}', [JuecesController::class, 'activar'])->name('jueces.activar');
 
 });
