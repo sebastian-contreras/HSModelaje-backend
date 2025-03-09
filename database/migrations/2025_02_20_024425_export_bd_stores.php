@@ -2208,7 +2208,295 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 
 
 -- Mensaje varchar(100)
-END
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_listar_metricas;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_metricas`(pIdEvento int, pIncluyeBajas char(1))
+BEGIN
+/*
+		Permite listar las metricas registrados en un evento.
+*/
+		SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Metricas
+		WHERE
+					(pIncluyeBajas = 'S' OR EstadoMetrica = 'A') AND IdEvento = pIdEvento
+		ORDER BY IdMetrica
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Metricas}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_metricas;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_metricas`(pIdEvento int, pMetrica varchar(150) ,pEstado char(1), pOffset int, pRowCount int )
+SALIR:BEGIN
+/*
+	Permite buscar las metricas registrados en un evento.
+*/
+
+ DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pMetrica)>1 AND CHAR_LENGTH(pMetrica) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Metricas
+	WHERE
+        (pMetrica IS NULL OR Metrica LIKE CONCAT('%',pMetrica, '%')) AND
+        (pEstado IS NULL OR EstadoMetrica = pEstado) AND
+        IdEvento = pIdEvento
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Metricas
+   WHERE
+        (pMetrica IS NULL OR Metrica LIKE CONCAT('%',pMetrica, '%')) AND
+        (pEstado IS NULL OR EstadoMetrica = pEstado) AND
+        IdEvento = pIdEvento
+   ORDER BY IdMetrica DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Metricas}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_alta_metrica;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_metrica`(pIdEvento int, pMetrica varchar(150))
+SALIR :BEGIN
+/*
+ Permite dar de alta un metrica. Devuelve OK + Id o el mensaje de error en Mensaje.
+ */
+DECLARE pIdMetrica INT;
+
+-- Manejo de error en la transacción
+DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN SHOW ERRORS;
+
+SELECT
+    'Error en la transacción. Contáctese con el administrador.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+ROLLBACK;
+
+END;
+
+-- Controla parámetros obligatorios
+IF pIdEvento IS NULL
+OR pMetrica = ''
+OR pMetrica IS NULL THEN
+SELECT
+    'Faltan datos obligatorios.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+LEAVE SALIR;
+
+END IF;
+
+-- COMIENZO TRANSACCION
+START TRANSACTION;
+
+-- Generar un nuevo ID para el metrica
+SET
+    pIdMetrica = 1 + (
+        SELECT
+            COALESCE(MAX(IdMetrica), 0)
+        FROM
+            Metricas
+    );
+
+-- Insertar el nuevo metrica
+INSERT INTO
+    Metricas (
+        `IdMetrica`,
+        `IdEvento`,
+        `Metrica`,
+        `EstadoMetrica`
+    )
+VALUES
+    (pIdMetrica, pIdEvento, pMetrica, 'A');
+
+-- Mensaje de éxito
+SELECT
+    'OK' AS Mensaje,
+    'ok' AS Response,
+    pIdMetrica AS Id;
+
+COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_modifica_metrica;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_metrica`(pIdMetrica int, pMetrica varchar(150))
+SALIR :BEGIN
+/*
+    Permite modificar una metrica.  Devuelve OK + Id o el mensaje de error en Mensaje.
+ */
+
+-- Manejo de error en la transacción
+DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN SHOW ERRORS;
+
+SELECT
+    'Error en la transacción. Contáctese con el administrador.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+ROLLBACK;
+
+END;
+
+-- Controla parámetros obligatorios
+IF pIdMetrica IS NULL
+OR pMetrica = ''
+OR pMetrica IS NULL THEN
+SELECT
+    'Faltan datos obligatorios.' AS Mensaje,
+    'error' AS Response,
+    NULL AS Id;
+
+LEAVE SALIR;
+
+END IF;
+
+-- COMIENZO TRANSACCION
+START TRANSACTION;
+
+UPDATE Metricas SET
+    Metrica=pMetrica
+    WHERE IdMetrica=pIdMetrica;
+
+-- Mensaje de éxito
+SELECT
+    'OK' AS Mensaje,
+    'ok' AS Response,
+    pIdMetrica AS Id;
+
+COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_borra_metrica;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_metrica`(pIdMetrica int)
+SALIR:BEGIN
+/*
+	Permite borrar una metrica. Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+
+	   -- Controla que el juez no haya participado en una votacion
+	IF EXISTS(SELECT IdMetrica FROM Votacion WHERE IdMetrica = pIdMetrica ) THEN
+		SELECT 'No puede borrar el Juez. Existen Votaciones asociadas.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+    START TRANSACTION;
+		-- Borra usuario
+        DELETE FROM Metricas WHERE IdMetrica = pIdMetrica;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_dame_metrica;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_metrica`(pIdMetrica int)
+BEGIN
+/*
+	Procedimiento que sirve para instanciar una metrica desde la base de datos.
+*/
+
+   SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Metricas
+    WHERE	IdMetrica = pIdMetrica;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- {Campos de la Tabla Metricas}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_darbaja_metrica;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_darbaja_metrica`(pIdMetrica int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de una metrica a B: Baja siempre y cuando no esté dada de baja. Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+
+    IF EXISTS(SELECT IdMetrica FROM Metricas WHERE IdMetrica = pIdMetrica
+						AND EstadoMetrica = 'B') THEN
+		SELECT 'La metrica ya está dada de baja.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Metricas SET EstadoMetrica = 'B' WHERE IdMetrica = pIdMetrica;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_activar_metrica;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_activar_metrica`(pIdMetrica int)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de una metrica a A: Activo siempre y cuando no esté activo ya. Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+
+    IF EXISTS(SELECT IdMetrica FROM Metricas WHERE IdMetrica = pIdMetrica
+						AND EstadoMetrica = 'A') THEN
+		SELECT 'La metrica ya está activa.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+    UPDATE Metricas SET EstadoMetrica = 'A' WHERE IdMetrica = pIdMetrica;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+-- Mensaje varchar(100)
+END;
+
+
 
 
         ";

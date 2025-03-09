@@ -166,6 +166,23 @@ return new class extends Migration {
         }
 
 
+            $metricas = [
+                [1, 'Capacidad de pose'],
+                [1, 'Variedad de looks'],
+                [1, 'Estilo personal'],
+                [1, 'Confianza en pasarela'],
+                [1, 'Habilidad para combinar prendas'],
+                [1, 'Expresión facial'],
+                [1, 'Actitud profesional'],
+                [1, 'Conocimiento de tendencias'],
+                [1, 'Capacidad de improvisación'],
+                [1, 'Apariencia general']
+            ];
+            foreach ($metricas as $metrica) {
+                DB::statement('CALL `HSModelaje_db`.`bsp_alta_metrica`(?, ?)', $metrica);
+            }
+
+
     }
 
     /**
