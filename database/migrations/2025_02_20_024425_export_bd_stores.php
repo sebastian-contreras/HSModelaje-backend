@@ -2496,6 +2496,190 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 -- Mensaje varchar(100)
 END;
 
+DROP PROCEDURE IF EXISTS bsp_listar_patrocinadores;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_patrocinadores`(pIdEvento int)
+BEGIN
+/*
+	Permite listar los patrocinadores registrados en un evento.
+*/
+	 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Patrocinadores
+		WHERE
+					IdEvento = pIdEvento
+		ORDER BY IdPatrocinador
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Patrocinadores}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_patrocinadores;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_patrocinadores`(pIdEvento int, pPatrocinador varchar(100), pOffset int, pRowCount int )
+SALIR:BEGIN
+/*
+	Permite listar los patrocinadores registrados en un evento.
+*/
+  DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	IF CHAR_LENGTH(pPatrocinador)>1 AND CHAR_LENGTH(pPatrocinador) < 3 THEN
+		SELECT 'Sea más específico en la búsqueda' AS Mensaje;
+        LEAVE SALIR;
+	END IF;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Patrocinadores
+	WHERE		(pPatrocinador IS NULL OR Patrocinador LIKE CONCAT('%',pPatrocinador, '%')) AND IdEvento = pIdEvento
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Patrocinadores
+   WHERE	(pPatrocinador IS NULL OR Patrocinador LIKE CONCAT('%',pPatrocinador, '%'))	AND IdEvento = pIdEvento
+   ORDER BY IdPatrocinador DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+-- {Campos de la Tabla Patrocinadores}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_alta_patrocinador;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_patrocinador`(pIdEvento int, pPatrocinador varchar(100), pCorreo varchar(100), pTelefono varchar(10), pDescripcion text)
+SALIR:BEGIN
+/*
+	Permite dar de alta un patrocinador. Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+
+    DECLARE pIdPatrocinador INT;
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pIdEvento IS NULL OR
+       pPatrocinador = '' OR pPatrocinador IS NULL OR
+       pCorreo = '' OR pCorreo IS NULL OR
+       pTelefono = '' OR pTelefono IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+    -- Generar un nuevo ID para el patrocinador
+    SET pIdPatrocinador = 1 + (SELECT COALESCE(MAX(IdPatrocinador), 0) FROM Patrocinadores);
+
+    -- Insertar el nuevo patrocinador
+    INSERT INTO Patrocinadores
+    (`IdPatrocinador`, `IdEvento`, `Patrocinador`, `Correo`, `Telefono`, `Descripcion`, `FechaCreado`) VALUES
+    (pIdPatrocinador, pIdEvento, pPatrocinador, pCorreo, pTelefono, pDescripcion, NOW());
+
+    -- Mensaje de éxito
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdPatrocinador AS Id;
+
+    COMMIT;
+
+
+-- Mensaje varchar(100), Id int
+END;
+
+DROP PROCEDURE IF EXISTS bsp_modifica_patrocinador;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_patrocinador`(pIdPatrocinador int, pPatrocinador varchar(100), pCorreo varchar(100), pTelefono varchar(10), pDescripcion text)
+SALIR:BEGIN
+/*
+	Permite modificar el patrocinador.  Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF
+       pPatrocinador = '' OR pPatrocinador IS NULL OR
+       pCorreo = '' OR pCorreo IS NULL OR
+       pTelefono = '' OR pTelefono IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+    UPDATE Patrocinadores SET
+     Patrocinador=pPatrocinador,
+     Correo=pCorreo,
+     Telefono=pTelefono,
+     Descripcion=pDescripcion
+     WHERE IdPatrocinador = pIdPatrocinador;
+
+    -- Mensaje de éxito
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdPatrocinador AS Id;
+
+    COMMIT;
+
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_borra_patrocinador;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_patrocinador`(pIdPatrocinador int)
+SALIR:BEGIN
+/*
+	Permite borrar un patrocinador de un evento.
+*/
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+        DELETE FROM Patrocinadores WHERE IdPatrocinador = pIdPatrocinador;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_dame_patrocinador;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_patrocinador`(pIdPatrocinador int)
+SALIR:BEGIN
+/*
+	Procedimiento que sirve para instanciar un patrocinador desde la base de datos.
+*/
+
+      SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Patrocinadores
+    WHERE	IdPatrocinador = pIdPatrocinador;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campo de la Tabla Patrocinadores}
+END;
 
 
 
