@@ -35,7 +35,7 @@ return new class extends Migration {
         ];
 
         foreach ($establecimientos as $establecimiento) {
-            DB::statement('CALL `HSModelaje_db`.`bsp_alta_establecimiento`(?, ?, ?)', $establecimiento);
+            DB::statement('CALL `bsp_alta_establecimiento`(?, ?, ?)', $establecimiento);
         }
 
         // Datos eventos
@@ -53,7 +53,7 @@ return new class extends Migration {
         ];
 
         foreach ($eventos as $evento) {
-            DB::statement('CALL `HSModelaje_db`.`bsp_alta_evento`(?, ?, ?, ?, ?)', $evento);
+            DB::statement('CALL `bsp_alta_evento`(?, ?, ?, ?, ?)', $evento);
         }
 
         $gastos = [
@@ -80,7 +80,7 @@ return new class extends Migration {
         ];
 
         foreach ($gastos as $gasto) {
-            DB::statement('CALL `HSModelaje_db`.`bsp_alta_gasto`(?, ?, ?, ?, ?)', $gasto);
+            DB::statement('CALL `bsp_alta_gasto`(?, ?, ?, ?, ?)', $gasto);
         }
 
 
@@ -107,7 +107,7 @@ return new class extends Migration {
             [10, 'Desarrollo Sostenible Ltda.', 'contacto@desarrollosostenible.com', '5550123457', 'Comprometidos con el medio ambiente.']
         ];
         foreach ($patrocinadores as $patrocinador) {
-            DB::statement('CALL `HSModelaje_db`.`bsp_alta_patrocinador`(?, ?, ?, ?, ?)', $patrocinador);
+            DB::statement('CALL `bsp_alta_patrocinador`(?, ?, ?, ?, ?)', $patrocinador);
         }
 
         $jueces = [
@@ -135,7 +135,7 @@ return new class extends Migration {
 
 
         foreach ($jueces as $juez) {
-            DB::statement('CALL `HSModelaje_db`.`bsp_alta_juez`(?, ?, ?, ?, ?)', $juez);
+            DB::statement('CALL `bsp_alta_juez`(?, ?, ?, ?, ?)', $juez);
         }
 
         $zonas = [
@@ -162,7 +162,7 @@ return new class extends Migration {
         ];
 
         foreach ($zonas as $zona) {
-            DB::statement('CALL `HSModelaje_db`.`bsp_alta_zona`(?, ?, ?, ?, ?,?)', $zona);
+            DB::statement('CALL `bsp_alta_zona`(?, ?, ?, ?, ?,?)', $zona);
         }
 
 
@@ -179,7 +179,7 @@ return new class extends Migration {
                 [1, 'Apariencia general']
             ];
             foreach ($metricas as $metrica) {
-                DB::statement('CALL `HSModelaje_db`.`bsp_alta_metrica`(?, ?)', $metrica);
+                DB::statement('CALL `bsp_alta_metrica`(?, ?)', $metrica);
             }
 
 
