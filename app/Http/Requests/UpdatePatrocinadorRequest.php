@@ -18,6 +18,7 @@ class UpdatePatrocinadorRequest extends FormRequest
             'Patrocinador' => 'required|string|max:100',
             'Correo' => 'required|email|max:100',
             'Telefono' => 'required|string|max:10', // Asegúrate de que tenga exactamente 10 caracteres
+            'DomicilioRef' => 'nullable|string|max:150', // Asegúrate de que tenga exactamente 10 caracteres
             'Descripcion' => 'nullable|string', // Puede ser nulo
         ];
     }

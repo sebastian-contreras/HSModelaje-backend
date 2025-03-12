@@ -167,6 +167,7 @@ CREATE TABLE Patrocinadores(
     Patrocinador      VARCHAR(100)    NOT NULL,
     Correo            VARCHAR(100)    NOT NULL,
     Telefono          VARCHAR(10)     NOT NULL,
+    DomicilioRef      VARCHAR(150)     NOT NULL,
     Descripcion       TEXT,
     FechaCreado    DATETIME        NOT NULL,
     PRIMARY KEY (IdPatrocinador, IdEvento)

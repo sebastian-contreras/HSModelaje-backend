@@ -2552,7 +2552,7 @@ END;
 
 DROP PROCEDURE IF EXISTS bsp_alta_patrocinador;
 
-CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_patrocinador`(pIdEvento int, pPatrocinador varchar(100), pCorreo varchar(100), pTelefono varchar(10), pDescripcion text)
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_patrocinador`(pIdEvento int, pPatrocinador varchar(100), pCorreo varchar(100), pTelefono varchar(10), pDomicilioRef varchar(150),pDescripcion text)
 SALIR:BEGIN
 /*
 	Permite dar de alta un patrocinador. Devuelve OK + Id o el mensaje de error en Mensaje.
@@ -2585,8 +2585,8 @@ SALIR:BEGIN
 
     -- Insertar el nuevo patrocinador
     INSERT INTO Patrocinadores
-    (`IdPatrocinador`, `IdEvento`, `Patrocinador`, `Correo`, `Telefono`, `Descripcion`, `FechaCreado`) VALUES
-    (pIdPatrocinador, pIdEvento, pPatrocinador, pCorreo, pTelefono, pDescripcion, NOW());
+    (`IdPatrocinador`, `IdEvento`, `Patrocinador`, `Correo`, `Telefono`, `DomicilioRef`, `Descripcion`, `FechaCreado`) VALUES
+    (pIdPatrocinador, pIdEvento, pPatrocinador, pCorreo, pTelefono, pDomicilioRef ,pDescripcion, NOW());
 
     -- Mensaje de éxito
     SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdPatrocinador AS Id;
@@ -2599,7 +2599,7 @@ END;
 
 DROP PROCEDURE IF EXISTS bsp_modifica_patrocinador;
 
-CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_patrocinador`(pIdPatrocinador int, pPatrocinador varchar(100), pCorreo varchar(100), pTelefono varchar(10), pDescripcion text)
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_patrocinador`(pIdPatrocinador int, pPatrocinador varchar(100), pCorreo varchar(100), pTelefono varchar(10), pDomicilioRef varchar(150), pDescripcion text)
 SALIR:BEGIN
 /*
 	Permite modificar el patrocinador.  Devuelve OK + Id o el mensaje de error en Mensaje.
@@ -2628,7 +2628,8 @@ SALIR:BEGIN
      Patrocinador=pPatrocinador,
      Correo=pCorreo,
      Telefono=pTelefono,
-     Descripcion=pDescripcion
+     Descripcion=pDescripcion,
+     DomicilioRef=pDomicilioRef
      WHERE IdPatrocinador = pIdPatrocinador;
 
     -- Mensaje de éxito

@@ -72,11 +72,12 @@ class PatrocinadoresController extends Controller
         //
         $request->validated();
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_patrocinador(?, ?, ?,?, ?)', [
+        $result = DB::select('CALL bsp_alta_patrocinador(?, ?, ?,?, ?,?)', [
             $request->IdEvento,
             $request->Patrocinador,
             $request->Correo,
             $request->Telefono,
+            $request->DomicilioRef,
             $request->Descripcion,
         ]);
 
@@ -99,11 +100,12 @@ class PatrocinadoresController extends Controller
     {
         //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_patrocinador(?,?, ?, ?,?)', [
+        $result = DB::select('CALL bsp_modifica_patrocinador(?,?, ?, ?,?,?)', [
             $request->IdPatrocinador,
             $request->Patrocinador,
             $request->Correo,
             $request->Telefono,
+            $request->DomicilioRef,
             $request->Descripcion,
         ]);
 
