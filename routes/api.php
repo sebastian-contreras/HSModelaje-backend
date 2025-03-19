@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CajaController;
+use App\Http\Controllers\EntradasController;
 use App\Http\Controllers\EstablecimientosController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\GastosController;
@@ -221,4 +222,25 @@ Route::prefix('metricas')->group(function () {
 
     Route::post('/darbaja/{IdMetrica}', [MetricasController::class, 'darBaja'])->name('metricas.darBaja');
     Route::post('/activar/{IdMetrica}', [MetricasController::class, 'activar'])->name('metricas.activar');
+});
+
+
+
+Route::prefix('entradas')->group(function () {
+    // Obtener todas los entradas
+    Route::get('/busqueda', [EntradasController::class, 'busqueda'])->name('entradas.busqueda');
+    Route::get('/{IdEvento}', [EntradasController::class, 'index'])->name('entradas.index');
+    Route::get('/show/{IdEntrada}', [EntradasController::class, 'dame'])->name('entradas.dame');
+    // Crear una nueva entradas
+    Route::post('/', [EntradasController::class, 'store'])->name('entradas.store');
+    // Obtener una entradas específica
+    Route::get('/{IdEntrada}', [EntradasController::class, 'show'])->name('entradas.show');
+    // Actualizar una entradas específica
+    Route::put('/{IdEntrada}', [EntradasController::class, 'update'])->name('entradas.update');
+    // Eliminar una entradas específica
+    Route::delete('/{IdEntrada}', [EntradasController::class, 'destroy'])->name('entradas.destroy');
+
+    Route::post('/abonar/{IdEntrada}', [EntradasController::class, 'abonar'])->name('entradas.abonar');
+    Route::post('/usar/{IdEntrada}', [EntradasController::class, 'usar'])->name('entradas.usar');
+    Route::post('/rechazar/{IdEntrada}', [EntradasController::class, 'rechazar'])->name('entradas.rechazar');
 });

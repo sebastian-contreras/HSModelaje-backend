@@ -2684,6 +2684,491 @@ END;
 
 
 
+-- ENTRADAS
+
+DROP PROCEDURE IF EXISTS bsp_listar_entradas;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_entradas`(pIdEvento int)
+BEGIN
+/*
+	Permite listar las entradas registradas de un evento.
+*/
+  SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		*
+		FROM		Entradas
+		WHERE
+					IdEvento = pIdEvento
+		ORDER BY IdEntrada
+		;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+-- {Campos de la Tabla Entradas}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_buscar_entrada;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_entrada`(
+	pCadena varchar(50),
+	pDNI varchar(11),
+	pEstado char(1),
+	pIdZona int,
+	pIdEvento int,
+	pOffset int,
+	pRowCount int
+)
+SALIR :BEGIN
+/*
+ Permite buscar las entradas de un evento, filtrando por zona, apellido, nombre , Correo y DNI del comprador, y por estado de entrada.
+ Incluye paginado.
+ */
+DECLARE pTotalRows int;
+
+SET
+	SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+IF CHAR_LENGTH(pCadena) > 1
+AND CHAR_LENGTH(pCadena) < 3 THEN
+SELECT
+	'Sea más específico en la búsqueda' AS Mensaje;
+
+LEAVE SALIR;
+
+END IF;
+
+SET
+	pTotalRows = (
+		SELECT
+			COUNT(*)
+		FROM
+			Entradas
+		WHERE
+			(
+				pDNI IS NULL
+				OR DNI = pDNI
+			)
+			AND (
+				pCadena IS NULL
+				OR ApelName LIKE CONCAT('%', pCadena, '%')
+				OR Correo LIKE CONCAT('%', pCadena, '%')
+				OR Telefono LIKE CONCAT('%', pCadena, '%')
+				OR DNI LIKE CONCAT('%', pCadena, '%')
+			)
+			AND (
+				pIdZona IS NULL
+				OR IdZona = pIdZona
+			)
+			AND (
+				pIdEvento IS NULL
+				OR IdEvento = pIdEvento
+			)
+			AND (
+				pEstado IS NULL
+				OR EstadoEnt = pEstado
+			)
+	);
+
+-- Consulta final
+SELECT
+	*,
+	pTotalRows as TotalRows
+FROM
+	Entradas
+WHERE
+	(
+		pDNI IS NULL
+		OR DNI = pDNI
+	)
+	AND (
+		pCadena IS NULL
+		OR ApelName LIKE CONCAT('%', pCadena, '%')
+		OR Correo LIKE CONCAT('%', pCadena, '%')
+		OR Telefono LIKE CONCAT('%', pCadena, '%')
+		OR DNI LIKE CONCAT('%', pCadena, '%')
+	)
+	AND (
+		pIdZona IS NULL
+		OR IdZona = pIdZona
+	)
+	AND (
+		pIdEvento IS NULL
+		OR IdEvento = pIdEvento
+	)
+	AND (
+		pEstado IS NULL
+		OR EstadoEnt = pEstado
+	)
+ORDER BY
+	IdEntrada DESC
+LIMIT
+	pOffset, pRowCount;
+
+SET
+	SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Entradas}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_alta_entrada;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_entrada`(
+    pIdZona INT,
+    pApelname VARCHAR(100),
+    pDNI VARCHAR(11),
+    pCorreo VARCHAR(100),
+    pTelefono VARCHAR(15),
+    pComprobante VARCHAR(400)
+)
+SALIR:BEGIN
+    /*
+        Permite dar de alta una entrada. Lo da de alta con estado P: Pendiente y con la fecha actual como fecha de alta.
+        Devuelve OK + Id o el mensaje de error en Mensaje.
+    */
+
+    DECLARE pIdEntrada INT;
+    DECLARE pIdEvento INT;
+    DECLARE pIdEstablecimiento INT;
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pIdZona IS NULL OR
+       pApelname = '' OR pApelname IS NULL OR
+       pDNI = '' OR pDNI IS NULL OR
+       pCorreo = '' OR pCorreo IS NULL OR
+       pTelefono = '' OR pTelefono IS NULL OR
+       pComprobante IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+        -- Controla que el establecimiento exista
+	IF NOT EXISTS(SELECT IdZona FROM Zonas WHERE IdZona = pIdZona) THEN
+		SELECT 'No existe la zona.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
+  SET pIdEvento = (SELECT IdEvento FROM Zonas WHERE IdZona = pIdZona);
+  SET pIdEstablecimiento = (SELECT IdEstablecimiento FROM Zonas WHERE IdZona = pIdZona);
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+    -- Insertar la nueva entrada con estado P (Pendiente)
+    INSERT INTO Entradas
+    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`) VALUES
+    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW());
+
+    SET pIdEntrada = LAST_INSERT_ID();
+
+    -- Mensaje de éxito
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdEntrada AS Id;
+
+    COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_alta_entrada_vendedor;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_entrada_vendedor`(
+    pIdZona INT,
+    pApelname VARCHAR(100),
+    pDNI VARCHAR(11),
+    pCorreo VARCHAR(100),
+    pTelefono VARCHAR(15),
+    pComprobante VARCHAR(400)
+)
+SALIR:BEGIN
+    /*
+        Permite dar de alta una entrada desde sistema. Lo da de alta con estado P: Pendiente y con la fecha actual como fecha de alta, el comprobante puede exister o no.
+        Devuelve OK + Id o el mensaje de error en Mensaje.
+    */
+
+    DECLARE pIdEntrada INT;
+    DECLARE pIdEvento INT;
+    DECLARE pIdEstablecimiento INT;
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+
+    -- Controla parámetros obligatorios
+    IF pIdZona IS NULL OR
+       pApelname = '' OR pApelname IS NULL OR
+       pDNI = '' OR pDNI IS NULL OR
+       pCorreo = '' OR pCorreo IS NULL OR
+       pTelefono = '' OR pTelefono IS NULL
+        THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+        -- Controla que el establecimiento exista
+	IF NOT EXISTS(SELECT IdZona FROM Zonas WHERE IdZona = pIdZona) THEN
+		SELECT 'No existe la zona.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
+  SET pIdEvento = (SELECT IdEvento FROM Zonas WHERE IdZona = pIdZona);
+  SET pIdEstablecimiento = (SELECT IdEstablecimiento FROM Zonas WHERE IdZona = pIdZona);
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+    -- Insertar la nueva entrada con estado P (Pendiente)
+    INSERT INTO Entradas
+    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`) VALUES
+    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW());
+
+    SET pIdEntrada = LAST_INSERT_ID();
+
+    -- Mensaje de éxito
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdEntrada AS Id;
+
+    COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_modifica_entrada;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_entrada`(pIdEntrada bigint, pIdZona int, pApelname varchar(100), pDNI varchar(11), pCorreo varchar(100), pTelefono varchar(15), pComprobante varchar(400))
+SALIR:BEGIN
+    /*
+      Permite modificar una entrada. Controlando que no este haya sido usada(U) o rechazada(R).
+      Devuelve OK + Id o el mensaje de error en Mensaje.
+    */
+
+    DECLARE pIdEvento INT;
+    DECLARE pIdEstablecimiento INT;
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+
+  	IF EXISTS(SELECT IdEntrada FROM Entradas WHERE IdEntrada = pIdEntrada AND (EstadoEnt='U' OR EstadoEnt='R')) THEN
+		SELECT 'La entrada esta usada o rechazada, no puede ser modificada.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
+
+    -- Controla parámetros obligatorios
+    IF pIdZona IS NULL OR
+       pApelname = '' OR pApelname IS NULL OR
+       pDNI = '' OR pDNI IS NULL OR
+       pCorreo = '' OR pCorreo IS NULL OR
+       pTelefono = '' OR pTelefono IS NULL
+        THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+        -- Controla que el establecimiento exista
+	IF NOT EXISTS(SELECT IdZona FROM Zonas WHERE IdZona = pIdZona) THEN
+		SELECT 'No existe la zona.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
+  SET pIdEvento = (SELECT IdEvento FROM Zonas WHERE IdZona = pIdZona);
+  SET pIdEstablecimiento = (SELECT IdEstablecimiento FROM Zonas WHERE IdZona = pIdZona);
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+    -- Insertar la nueva entrada con estado P (Pendiente)
+    UPDATE Entradas SET
+    IdEvento=pIdEvento,
+    IdZona=pIdZona,
+    IdEstablecimiento=pIdEstablecimiento,
+    Apelname=pApelname,
+    DNI=pDNI,
+    Correo=pCorreo,
+    Telefono=pTelefono,
+    Comprobante=pComprobante
+    WHERE IdEntrada = pIdEntrada;
+
+
+    -- Mensaje de éxito
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdEntrada AS Id;
+
+    COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_borra_entrada;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_entrada`(pIdEntrada bigint)
+SALIR:BEGIN
+/*
+	Permite borrar una entrada, solamente usado para limpiar base de datos y en produccion. Devuelve OK o el mensaje de error en Mensaje.
+*/
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+   -- Controla que el Modelo no haya participado nunca
+	IF EXISTS(SELECT IdEntrada FROM Entradas WHERE IdEntrada=pIdEntrada AND (EstadoEnt  = 'A'  OR EstadoEnt  = 'U')) THEN
+		SELECT 'No puede borrar la entrada. Esta entrada esta pagada o usada.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+    START TRANSACTION;
+		-- Borra
+        DELETE FROM Entradas WHERE IdEntrada = pIdEntrada;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+
+
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_dame_entrada;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_entrada`(pIdEntrada bigint)
+SALIR:BEGIN
+/*
+	Procedimiento que sirve para instanciar una entrada desde la base de datos.
+*/
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Entradas
+    WHERE	IdEntrada = pIdEntrada;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campo de la Tabla Entradas}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_abonar_entrada;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_abonar_entrada`(pIdEntrada bigint)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de la entrada a A: Abonado y asignar un comprobante, ademas esta no debe estar usada, abonada ni rechazada.
+  Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+
+  IF EXISTS(SELECT IdEntrada FROM Entradas WHERE IdEntrada = pIdEntrada
+						AND EstadoEnt = 'A') THEN
+		SELECT 'La entrada ya esta abonada.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+ IF EXISTS(SELECT IdEntrada FROM Entradas WHERE IdEntrada = pIdEntrada
+						AND (EstadoEnt = 'U' OR EstadoEnt = 'R')) THEN
+		SELECT 'La entrada esta Usada o rechazada. No se puede abonar' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Entradas SET EstadoEnt = 'A' WHERE IdEntrada = pIdEntrada;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_usar_entrada;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_usar_entrada`(pIdEntrada bigint)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de la entrada a U: Usada siempre y cuando no esté Pendiente, Usada o Rechazada.
+  Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+
+  IF EXISTS(SELECT IdEntrada FROM Entradas WHERE IdEntrada = pIdEntrada
+						AND EstadoEnt = 'U') THEN
+		SELECT 'La entrada ya esta usada.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+ IF EXISTS(SELECT IdEntrada FROM Entradas WHERE IdEntrada = pIdEntrada
+						AND (EstadoEnt = 'P' OR EstadoEnt = 'R')) THEN
+		SELECT 'La entrada esta rechazada o pendiente. No se puede usar' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Entradas SET EstadoEnt = 'U' WHERE IdEntrada = pIdEntrada;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_rechazar_entrada;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_rechazar_entrada`(pIdEntrada bigint)
+SALIR:BEGIN
+/*
+	Permite cambiar el estado de la entrada a R: Rechazada siempre y cuando no esté Rechazada, Abonada o Usada.
+  Devuelve OK o el mensaje de error en Mensaje.
+*/
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+
+  IF EXISTS(SELECT IdEntrada FROM Entradas WHERE IdEntrada = pIdEntrada
+						AND EstadoEnt = 'R') THEN
+		SELECT 'La entrada ya esta rechazada.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+ IF EXISTS(SELECT IdEntrada FROM Entradas WHERE IdEntrada = pIdEntrada
+						AND (EstadoEnt = 'A' OR EstadoEnt = 'U')) THEN
+		SELECT 'La entrada ya esta abonada o usada. No se puede rechazar' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+	-- Da de baja
+    UPDATE Entradas SET EstadoEnt = 'R' WHERE IdEntrada = pIdEntrada;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+-- Mensaje varchar(100)
+END;
+
+
         ";
         DB::unprepared($sql);
 
