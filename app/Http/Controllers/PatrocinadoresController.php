@@ -81,7 +81,10 @@ class PatrocinadoresController extends Controller
             $request->Descripcion,
         ]);
 
-
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            // Si hay un error, devolver un error formateado
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
+        }
         return ResponseFormatter::success($result, 'Patrocinador creado exitosamente.', 201);
 
     }

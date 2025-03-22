@@ -18,7 +18,7 @@ class StoreEntradaPasarelaRequest extends FormRequest
             'Apelname' => 'required|string|max:100',
             'DNI' => 'required|string|max:11',
             'Correo' => 'required|email|max:100',
-            'Cantidad' => 'required|integer',
+            'Cantidad' => 'required|integer|gt:0',
             'Telefono' => 'required|string|max:15',
             'Archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ];
@@ -44,6 +44,9 @@ class StoreEntradaPasarelaRequest extends FormRequest
             'Comprobante.required' => 'El campo Comprobante es obligatorio.',
             'Comprobante.string' => 'El campo Comprobante debe ser una cadena de texto.',
             'Comprobante.max' => 'El campo Comprobante no debe superar los 400 caracteres.',
+            'Cantidad.required' => 'El campo Cantidad es obligatorio.',
+            'Cantidad.integer' => 'El campo Cantidad debe ser un número entero.',
+            'Cantidad.gt' => 'El campo Cantidad debe ser mayor que 0.',
         ];
     }
 }

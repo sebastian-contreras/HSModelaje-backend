@@ -73,7 +73,10 @@ class MetricasController extends Controller
             $request->Metrica,
         ]);
 
-
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            // Si hay un error, devolver un error formateado
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
+        }
         return ResponseFormatter::success($result, 'Metrica creada exitosamente.', 201);
 
     }

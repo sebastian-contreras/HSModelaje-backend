@@ -77,7 +77,10 @@ class ZonasController extends Controller
             $request->Precio,
             $request->Detalle,
         ]);
-
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            // Si hay un error, devolver un error formateado
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
+        }
 
         return ResponseFormatter::success($result, 'Zona creado exitosamente.', 201);
 
