@@ -12,8 +12,11 @@ use App\Http\Requests\UpdateEstablecimientoRequest;
 use App\Http\Requests\UpdateGastoRequest;
 use App\Http\Requests\UpdateModeloRequest;
 use App\Http\Requests\UpdateEntradaRequest;
+use App\Jobs\SendEmailJob;
+use App\Mail\EntradaPendienteMail;
 use DB;
 use Illuminate\Http\Request;
+use Mail;
 
 class EntradasController extends Controller
 {
@@ -127,6 +130,19 @@ class EntradasController extends Controller
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
+
+        $entrada = DB::select('CALL bsp_dame_entrada(?)', [$result[0]->Id]);
+        $zona = DB::select('CALL bsp_dame_zona(?)', [$entrada[0]->IdZona]);
+        $evento = DB::select('CALL bsp_dame_evento(?)', [$entrada[0]->IdEvento]);
+        $establecimiento = DB::select('CALL bsp_dame_establecimiento(?)', [$entrada[0]->IdEstablecimiento]);
+
+
+        SendEmailJob::dispatch($entrada[0]->Correo, new EntradaPendienteMail([
+            'entrada' => $entrada[0],
+            'zona' => $zona[0],
+            'evento' => $evento[0],
+            'establecimiento' => $establecimiento[0],
+        ]));
 
         return ResponseFormatter::success($result, 'Entrada creada exitosamente.', 201);
 

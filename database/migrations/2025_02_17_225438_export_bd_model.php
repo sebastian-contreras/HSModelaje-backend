@@ -36,6 +36,7 @@ CREATE TABLE Entradas(
     Correo               VARCHAR(100)    NOT NULL,
     Telefono             VARCHAR(15)     NOT NULL,
     FechaAlta            DATETIME        NOT NULL,
+    Importe               DECIMAL(15, 2)    NOT NULL,
     Comprobante          VARCHAR(400),
     EstadoEnt            CHAR(1),
     PRIMARY KEY (IdEntrada, IdZona, IdEstablecimiento, IdEvento)

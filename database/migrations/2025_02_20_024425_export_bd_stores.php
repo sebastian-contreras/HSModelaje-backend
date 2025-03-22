@@ -2834,6 +2834,7 @@ SALIR:BEGIN
 
     DECLARE pOcupacionZona INT;
     DECLARE pCapacidadZona INT;
+    DECLARE pImporte decimal(15, 2);
 
     -- Manejo de error en la transacción
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -2867,13 +2868,15 @@ SALIR:BEGIN
   SET pIdEvento = (SELECT IdEvento FROM Zonas WHERE IdZona = pIdZona);
   SET pIdEstablecimiento = (SELECT IdEstablecimiento FROM Zonas WHERE IdZona = pIdZona);
 
+  SET pImporte = (SELECT Precio FROM Zonas WHERE IdZona = pIdZona) * pCantidad;
+
     -- COMIENZO TRANSACCION
     START TRANSACTION;
 
     -- Insertar la nueva entrada con estado P (Pendiente)
     INSERT INTO Entradas
-    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`,`Cantidad`) VALUES
-    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW(),pCantidad);
+    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`,`Cantidad`,`Importe`) VALUES
+    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW(),pCantidad,pImporte);
 
     SET pIdEntrada = LAST_INSERT_ID();
 
@@ -2889,6 +2892,7 @@ SALIR:BEGIN
         LEAVE SALIR;
     END IF;
     UPDATE Zonas SET Ocupacion = pOcupacionZona WHERE IdZona = pIdZona;
+
 
 
     -- Mensaje de éxito
@@ -2922,6 +2926,7 @@ SALIR:BEGIN
 
 	DECLARE pOcupacionZona INT;
     DECLARE pCapacidadZona INT;
+    DECLARE pImporte decimal(15, 2);
 
     -- Manejo de error en la transacción
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -2958,14 +2963,15 @@ SALIR:BEGIN
 
   SET pIdEvento = (SELECT IdEvento FROM Zonas WHERE IdZona = pIdZona);
   SET pIdEstablecimiento = (SELECT IdEstablecimiento FROM Zonas WHERE IdZona = pIdZona);
+  SET pImporte = (SELECT Precio FROM Zonas WHERE IdZona = pIdZona) * pCantidad;
 
     -- COMIENZO TRANSACCION
     START TRANSACTION;
 
     -- Insertar la nueva entrada con estado P (Pendiente)
     INSERT INTO Entradas
-    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`, `Cantidad`) VALUES
-    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW(),pCantidad);
+    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`, `Cantidad`,`Importe`) VALUES
+    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW(),pCantidad,pImporte);
 
     SET pIdEntrada = LAST_INSERT_ID();
 
