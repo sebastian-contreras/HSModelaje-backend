@@ -30,6 +30,7 @@ CREATE TABLE Entradas(
     IdZona               INT             NOT NULL,
     IdEstablecimiento    INT             NOT NULL,
     IdEvento             INT             NOT NULL,
+    Cantidad             INT             NOT NULL,
     ApelName             VARCHAR(100)    NOT NULL,
     DNI                  VARCHAR(11)     NOT NULL,
     Correo               VARCHAR(100)    NOT NULL,

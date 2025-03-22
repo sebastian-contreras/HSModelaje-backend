@@ -2819,7 +2819,8 @@ CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_entrada`(
     pDNI VARCHAR(11),
     pCorreo VARCHAR(100),
     pTelefono VARCHAR(15),
-    pComprobante VARCHAR(400)
+    pComprobante VARCHAR(400),
+    pCantidad INT
 )
 SALIR:BEGIN
     /*
@@ -2830,6 +2831,9 @@ SALIR:BEGIN
     DECLARE pIdEntrada INT;
     DECLARE pIdEvento INT;
     DECLARE pIdEstablecimiento INT;
+
+    DECLARE pOcupacionZona INT;
+    DECLARE pCapacidadZona INT;
 
     -- Manejo de error en la transacción
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -2845,11 +2849,15 @@ SALIR:BEGIN
        pDNI = '' OR pDNI IS NULL OR
        pCorreo = '' OR pCorreo IS NULL OR
        pTelefono = '' OR pTelefono IS NULL OR
+       pCantidad = '' OR pCantidad IS NULL OR
        pComprobante IS NULL THEN
         SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
         LEAVE SALIR;
     END IF;
-
+	IF (pCantidad<1) THEN
+    		SELECT 'La cantidad de entrada debe ser por lo menos una.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
         -- Controla que el establecimiento exista
 	IF NOT EXISTS(SELECT IdZona FROM Zonas WHERE IdZona = pIdZona) THEN
 		SELECT 'No existe la zona.' AS Mensaje,'error' as Response, NULL AS Id;
@@ -2864,10 +2872,24 @@ SALIR:BEGIN
 
     -- Insertar la nueva entrada con estado P (Pendiente)
     INSERT INTO Entradas
-    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`) VALUES
-    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW());
+    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`,`Cantidad`) VALUES
+    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW(),pCantidad);
 
     SET pIdEntrada = LAST_INSERT_ID();
+
+
+    -- Actualizar la cantidad de entradas vendidas en la zona
+    SET pOcupacionZona = (SELECT Ocupacion FROM Zonas WHERE IdZona = pIdZona);
+    SET pCapacidadZona = (SELECT Capacidad FROM Zonas WHERE IdZona = pIdZona);
+    SET pOcupacionZona = pOcupacionZona + pCantidad;
+
+    IF pOcupacionZona > pCapacidadZona THEN
+        SELECT 'No hay capacidad suficiente en la zona.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+        LEAVE SALIR;
+    END IF;
+    UPDATE Zonas SET Ocupacion = pOcupacionZona WHERE IdZona = pIdZona;
+
 
     -- Mensaje de éxito
     SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdEntrada AS Id;
@@ -2884,7 +2906,8 @@ CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_entrada_vendedor`(
     pDNI VARCHAR(11),
     pCorreo VARCHAR(100),
     pTelefono VARCHAR(15),
-    pComprobante VARCHAR(400)
+    pComprobante VARCHAR(400),
+    pCantidad INT
 )
 SALIR:BEGIN
     /*
@@ -2895,6 +2918,10 @@ SALIR:BEGIN
     DECLARE pIdEntrada INT;
     DECLARE pIdEvento INT;
     DECLARE pIdEstablecimiento INT;
+
+
+	DECLARE pOcupacionZona INT;
+    DECLARE pCapacidadZona INT;
 
     -- Manejo de error en la transacción
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -2916,11 +2943,18 @@ SALIR:BEGIN
         LEAVE SALIR;
     END IF;
 
+	IF (pCantidad<1) THEN
+    		SELECT 'La cantidad de entrada debe ser por lo menos una.' AS Mensaje,'error' as Response, NULL AS Id;
+		LEAVE SALIR;
+    END IF;
+
         -- Controla que el establecimiento exista
 	IF NOT EXISTS(SELECT IdZona FROM Zonas WHERE IdZona = pIdZona) THEN
 		SELECT 'No existe la zona.' AS Mensaje,'error' as Response, NULL AS Id;
 		LEAVE SALIR;
     END IF;
+
+
 
   SET pIdEvento = (SELECT IdEvento FROM Zonas WHERE IdZona = pIdZona);
   SET pIdEstablecimiento = (SELECT IdEstablecimiento FROM Zonas WHERE IdZona = pIdZona);
@@ -2930,13 +2964,27 @@ SALIR:BEGIN
 
     -- Insertar la nueva entrada con estado P (Pendiente)
     INSERT INTO Entradas
-    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`) VALUES
-    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW());
+    (`IdEntrada`, `IdEvento`, `IdZona`,`IdEstablecimiento`, `Apelname`, `DNI`, `Correo`, `Telefono`, `Comprobante`, `EstadoEnt`, `FechaAlta`, `Cantidad`) VALUES
+    (0,  pIdEvento,pIdZona,pIdEstablecimiento, pApelname, pDNI, pCorreo, pTelefono, pComprobante, 'P', NOW(),pCantidad);
 
     SET pIdEntrada = LAST_INSERT_ID();
 
+        -- Actualizar la cantidad de entradas vendidas en la zona
+    SET pOcupacionZona = (SELECT Ocupacion FROM Zonas WHERE IdZona = pIdZona);
+    SET pCapacidadZona = (SELECT Capacidad FROM Zonas WHERE IdZona = pIdZona);
+    SET pOcupacionZona = pOcupacionZona + pCantidad;
+
+    IF pOcupacionZona > pCapacidadZona THEN
+        SELECT 'No hay capacidad suficiente en la zona.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+        LEAVE SALIR;
+    END IF;
+
+    UPDATE Zonas SET Ocupacion = pOcupacionZona WHERE IdZona = pIdZona;
+
     -- Mensaje de éxito
     SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdEntrada AS Id;
+
 
     COMMIT;
 
@@ -3140,6 +3188,11 @@ SALIR:BEGIN
 	Permite cambiar el estado de la entrada a R: Rechazada siempre y cuando no esté Rechazada, Abonada o Usada.
   Devuelve OK o el mensaje de error en Mensaje.
 */
+
+    DECLARE pOcupacionZona INT;
+    DECLARE pCapacidadZona INT;
+
+
 DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		SHOW ERRORS;
@@ -3163,6 +3216,13 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 
 	-- Da de baja
     UPDATE Entradas SET EstadoEnt = 'R' WHERE IdEntrada = pIdEntrada;
+
+	    SET pOcupacionZona = (SELECT Ocupacion FROM Zonas WHERE IdZona = pIdZona);
+    SET pCapacidadZona = (SELECT Capacidad FROM Zonas WHERE IdZona = pIdZona);
+    SET pOcupacionZona = pOcupacionZona - pCantidad;
+    UPDATE Zonas SET Ocupacion = pOcupacionZona WHERE IdZona = pIdZona;
+
+
 
     SELECT 'OK' AS Mensaje,'ok' as Response;
 -- Mensaje varchar(100)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseFormatter;
+use App\Http\Requests\StoreEntradaPasarelaRequest;
 use App\Http\Requests\StoreEntradaRequest;
 use App\Http\Requests\StoreEstablecimientoRequest;
 use App\Http\Requests\StoreGastoRequest;
@@ -74,14 +75,50 @@ class EntradasController extends Controller
     {
         //
         $request->validated();
+
+        $comprobantePath = null;
+        if ($request->hasFile('Archivo')) {
+            $comprobantePath = $request->file('Archivo')->store('comprobantes', 'public'); // Guarda en storage/app/public/comprobantes
+        }
+
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_entrada(?, ?, ?,?, ?,?)', [
+        $result = DB::select('CALL bsp_alta_entrada_vendedor(?, ?, ?,?, ?,?,?)', [
             $request->IdZona,
             $request->Apelname,
             $request->DNI,
             $request->Correo,
             $request->Telefono,
-            $request->Comprobante,
+            $comprobantePath,
+            $request->Cantidad,
+
+        ]);
+
+
+        return ResponseFormatter::success($result, 'Entrada creada exitosamente.', 201);
+
+    }
+
+    public function storePasarela(StoreEntradaPasarelaRequest $request)
+    {
+        //
+        $data = $request->validated();
+
+        // Guardar el archivo si se proporciona
+        $comprobantePath = null;
+        if ($request->hasFile('Archivo')) {
+            $comprobantePath = $request->file('Archivo')->store('comprobantes', 'public'); // Guarda en storage/app/public/comprobantes
+        }
+
+        // Llamar al procedimiento almacenado
+        $result = DB::select('CALL bsp_alta_entrada(?, ?, ?,?, ?,?,?)', [
+            $request->IdZona,
+            $request->Apelname,
+            $request->DNI,
+            $request->Correo,
+            $request->Telefono,
+            $comprobantePath,
+            $request->Cantidad,
+
         ]);
 
 

@@ -233,6 +233,7 @@ Route::prefix('entradas')->group(function () {
     Route::get('/show/{IdEntrada}', [EntradasController::class, 'dame'])->name('entradas.dame');
     // Crear una nueva entradas
     Route::post('/', [EntradasController::class, 'store'])->name('entradas.store');
+    Route::post('/pasarela', [EntradasController::class, 'storePasarela'])->name('entradas.storePasarela');
     // Obtener una entradas específica
     Route::get('/{IdEntrada}', [EntradasController::class, 'show'])->name('entradas.show');
     // Actualizar una entradas específica

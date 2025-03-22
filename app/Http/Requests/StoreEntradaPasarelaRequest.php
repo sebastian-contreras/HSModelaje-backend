@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreEntradaRequest extends FormRequest
+class StoreEntradaPasarelaRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -20,7 +20,7 @@ class StoreEntradaRequest extends FormRequest
             'Correo' => 'required|email|max:100',
             'Cantidad' => 'required|integer',
             'Telefono' => 'required|string|max:15',
-            'Archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'Archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ];
     }
 
@@ -41,6 +41,7 @@ class StoreEntradaRequest extends FormRequest
             'Telefono.required' => 'El campo Teléfono es obligatorio.',
             'Telefono.string' => 'El campo Teléfono debe ser una cadena de texto.',
             'Telefono.max' => 'El campo Teléfono no debe superar los 15 caracteres.',
+            'Comprobante.required' => 'El campo Comprobante es obligatorio.',
             'Comprobante.string' => 'El campo Comprobante debe ser una cadena de texto.',
             'Comprobante.max' => 'El campo Comprobante no debe superar los 400 caracteres.',
         ];
