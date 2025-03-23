@@ -15,7 +15,7 @@ class StoreEntradaPasarelaRequest extends FormRequest
     {
         return [
             'IdZona' => 'required|integer',
-            'Apelname' => 'required|string|max:100',
+            'ApelName' => 'required|string|max:100',
             'DNI' => 'required|string|max:11',
             'Correo' => 'required|email|max:100',
             'Cantidad' => 'required|integer|gt:0',

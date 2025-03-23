@@ -34,6 +34,7 @@ CREATE TABLE Entradas(
     ApelName             VARCHAR(100)    NOT NULL,
     DNI                  VARCHAR(11)     NOT NULL,
     Correo               VARCHAR(100)    NOT NULL,
+    Token                CHAR(36)        NULL,
     Telefono             VARCHAR(15)     NOT NULL,
     FechaAlta            DATETIME        NOT NULL,
     Importe               DECIMAL(15, 2)    NOT NULL,

@@ -3144,7 +3144,9 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	END IF;
 
 	-- Da de baja
-    UPDATE Entradas SET EstadoEnt = 'A' WHERE IdEntrada = pIdEntrada;
+    UPDATE Entradas SET EstadoEnt = 'A',
+    Token = uuid()
+    WHERE IdEntrada = pIdEntrada;
 
     SELECT 'OK' AS Mensaje,'ok' as Response;
 -- Mensaje varchar(100)

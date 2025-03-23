@@ -13,8 +13,11 @@ use App\Http\Requests\UpdateGastoRequest;
 use App\Http\Requests\UpdateModeloRequest;
 use App\Http\Requests\UpdateEntradaRequest;
 use App\Jobs\SendEmailJob;
+use App\Mail\EntradaAprobadaMail;
 use App\Mail\EntradaPendienteMail;
+use App\Mail\EntradaRechazadaMail;
 use DB;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Http\Request;
 use Mail;
 
@@ -87,7 +90,7 @@ class EntradasController extends Controller
         // Llamar al procedimiento almacenado
         $result = DB::select('CALL bsp_alta_entrada_vendedor(?, ?, ?,?, ?,?,?)', [
             $request->IdZona,
-            $request->Apelname,
+            $request->ApelName,
             $request->DNI,
             $request->Correo,
             $request->Telefono,
@@ -99,6 +102,12 @@ class EntradasController extends Controller
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
+
+
+        $entrada = DB::select('CALL bsp_dame_entrada(?)', [$result[0]->Id]);
+
+        SendEmailJob::dispatch($entrada[0]->Correo, new EntradaPendienteMail($entrada));
+
 
         return ResponseFormatter::success($result, 'Entrada creada exitosamente.', 201);
 
@@ -118,7 +127,7 @@ class EntradasController extends Controller
         // Llamar al procedimiento almacenado
         $result = DB::select('CALL bsp_alta_entrada(?, ?, ?,?, ?,?,?)', [
             $request->IdZona,
-            $request->Apelname,
+            $request->ApelName,
             $request->DNI,
             $request->Correo,
             $request->Telefono,
@@ -132,17 +141,8 @@ class EntradasController extends Controller
         }
 
         $entrada = DB::select('CALL bsp_dame_entrada(?)', [$result[0]->Id]);
-        $zona = DB::select('CALL bsp_dame_zona(?)', [$entrada[0]->IdZona]);
-        $evento = DB::select('CALL bsp_dame_evento(?)', [$entrada[0]->IdEvento]);
-        $establecimiento = DB::select('CALL bsp_dame_establecimiento(?)', [$entrada[0]->IdEstablecimiento]);
 
-
-        SendEmailJob::dispatch($entrada[0]->Correo, new EntradaPendienteMail([
-            'entrada' => $entrada[0],
-            'zona' => $zona[0],
-            'evento' => $evento[0],
-            'establecimiento' => $establecimiento[0],
-        ]));
+        SendEmailJob::dispatch($entrada[0]->Correo, new EntradaPendienteMail($entrada));
 
         return ResponseFormatter::success($result, 'Entrada creada exitosamente.', 201);
 
@@ -165,7 +165,7 @@ class EntradasController extends Controller
         $result = DB::select('CALL bsp_modifica_entrada(?,?, ?, ?,?,?,?)', [
             $request->IdEntrada,
             $request->IdZona,
-            $request->Apelname,
+            $request->ApelName,
             $request->DNI,
             $request->Correo,
             $request->Telefono,
@@ -211,6 +211,11 @@ class EntradasController extends Controller
             return ResponseFormatter::error('Error al abonar la entrada.', 400);
         }
 
+        $entrada = DB::select('CALL bsp_dame_entrada(?)', [$IdEntrada]);
+        SendEmailJob::dispatch($entrada[0]->Correo, new EntradaAprobadaMail($entrada));
+
+
+
         // Si todo fue exitoso, devolver una respuesta de éxito
         return ResponseFormatter::success(null, 'Entrada abonada exitosamente.', 200);
     }
@@ -241,6 +246,12 @@ class EntradasController extends Controller
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error('Error al rechazar la entrada.', 400);
         }
+
+
+        $entrada = DB::select('CALL bsp_dame_entrada(?)', [$IdEntrada]);
+
+        SendEmailJob::dispatch($entrada[0]->Correo, new EntradaRechazadaMail($entrada));
+
 
         // Si todo fue exitoso, devolver una respuesta de éxito
         return ResponseFormatter::success(null, 'Entrada rechazada exitosamente.', 200);

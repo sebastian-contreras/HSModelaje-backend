@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class EntradaPendienteMail extends Mailable
+class EntradaRechazadaMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -24,6 +24,7 @@ class EntradaPendienteMail extends Mailable
     public function __construct($entrada)
     {
 
+
         $zona = DB::select('CALL bsp_dame_zona(?)', [$entrada[0]->IdZona]);
         $evento = DB::select('CALL bsp_dame_evento(?)', [$entrada[0]->IdEvento]);
         $establecimiento = DB::select('CALL bsp_dame_establecimiento(?)', [$entrada[0]->IdEstablecimiento]);
@@ -34,6 +35,7 @@ class EntradaPendienteMail extends Mailable
             'evento' => $evento[0],
             'establecimiento' => $establecimiento[0],
         ];
+
     }
     /**
      * Get the message envelope.
@@ -41,7 +43,7 @@ class EntradaPendienteMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🛒 ¡Compra confirmada! Tu entrada está en proceso de verificación',
+            subject: '🚫 Entrada Rechazada - Comprobante Inválido',
         );
     }
 
@@ -51,7 +53,7 @@ class EntradaPendienteMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mails.EntradaPendienteMail',
+            markdown: 'mails.EntradaRechazadaMail',
             with: $this->data, // Pasamos la data a la vista
         );
     }
