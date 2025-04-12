@@ -154,7 +154,6 @@ CREATE TABLE Participantes(
     IdEvento              INT             NOT NULL,
     IdModelo              INT             NOT NULL,
     Promotor              VARCHAR(100),
-    EstadoParticipante    CHAR(1)         NOT NULL,
     PRIMARY KEY (IdParticipante, IdEvento, IdModelo)
 )ENGINE=INNODB
 COMMENT=''

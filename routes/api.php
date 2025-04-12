@@ -9,6 +9,7 @@ use App\Http\Controllers\GastosController;
 use App\Http\Controllers\JuecesController;
 use App\Http\Controllers\MetricasController;
 use App\Http\Controllers\ModelosController;
+use App\Http\Controllers\ParticipantesController;
 use App\Http\Controllers\PatrocinadoresController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\UsuariosController;
@@ -244,4 +245,14 @@ Route::prefix('entradas')->group(function () {
     Route::post('/abonar/{IdEntrada}', [EntradasController::class, 'abonar'])->name('entradas.abonar');
     Route::post('/usar/{IdEntrada}', [EntradasController::class, 'usar'])->name('entradas.usar');
     Route::post('/rechazar/{IdEntrada}', [EntradasController::class, 'rechazar'])->name('entradas.rechazar');
+});
+
+
+Route::prefix('participantes')->group(function () {
+    // Obtener todas los participantes
+    Route::get('/busqueda', [ParticipantesController::class, 'busqueda'])->name('participantes.busqueda');
+    // Crear una nueva participantes
+    Route::post('/', [ParticipantesController::class, 'store'])->name('participantes.store');
+    // Obtener una participantes específica
+    Route::delete('/{IdParticipante}', [ParticipantesController::class, 'destroy'])->name('participantes.destroy');
 });
