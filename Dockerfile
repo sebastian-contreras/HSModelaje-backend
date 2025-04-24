@@ -1,8 +1,15 @@
 FROM php:8.2.4
 
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    netcat-openbsd \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN docker-php-ext-install pdo pdo_mysql sockets
-# Instalar dependencias de compilación
-RUN apt-get update && apt-get install -y netcat-openbsd -y libpng-dev libjpeg-dev libfreetype6-dev && rm -rf /var/lib/apt/lists/*
 
 # Instalar la extensión GD
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install gd
