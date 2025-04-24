@@ -154,6 +154,7 @@ CREATE TABLE Participantes(
     IdEvento              INT             NOT NULL,
     IdModelo              INT             NOT NULL,
     Promotor              VARCHAR(100),
+    ActivoVotacion        CHAR(1)         NOT NULL      DEFAULT 'N',
     PRIMARY KEY (IdParticipante, IdEvento, IdModelo)
 )ENGINE=INNODB
 COMMENT=''
@@ -203,7 +204,7 @@ COMMENT=''
 --
 
 CREATE TABLE Votacion(
-    IdVoto            CHAR(10)    NOT NULL,
+    IdVoto            BIGINT    NOT NULL,
     IdMetrica         INT         NOT NULL,
     IdEvento          INT         NOT NULL,
     IdJuez            INT         NOT NULL,

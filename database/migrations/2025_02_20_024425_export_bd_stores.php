@@ -3236,7 +3236,138 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 -- Mensaje varchar(100)
 END;
 
+DROP PROCEDURE IF EXISTS bsp_listar_participantes;
 
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_participantes`(pIdEvento int, pOffset int, pRowCount int)
+SALIR:BEGIN
+/*
+	Permite listar los participantes  de un evento. Tiene paginado.
+*/
+
+ DECLARE pTotalRows int;
+
+       	SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	SET pTotalRows =  (SELECT COUNT(*)
+	FROM		Participantes
+	WHERE
+        IdEvento = pIdEvento
+				);
+
+   -- Consulta final
+   SELECT * , pTotalRows as TotalRows
+   FROM		Participantes JOIN Modelos USING(IdModelo)
+   WHERE
+        IdEvento = pIdEvento
+   ORDER BY IdParticipante DESC LIMIT pOffset, pRowCount;
+
+	SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+
+
+-- {Campos de la Tabla Participantes}
+END;
+
+DROP PROCEDURE IF EXISTS bsp_alta_participante;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_participante`(pIdEvento int, pIdModelo int, pPromotor varchar(100))
+SALIR:BEGIN
+    /*
+        Permite dar de alta un participante en un evento. Devuelve OK + Id o el mensaje de error en Mensaje.
+    */
+    DECLARE pIdParticipante INT;
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Controla parámetros obligatorios
+    IF pIdEvento IS NULL OR
+       pIdModelo = '' OR pIdModelo IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+
+    IF NOT EXISTS (SELECT IdModelo FROM Modelos WHERE IdModelo = pIdModelo) THEN
+              SELECT 'El modelo no existe.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCION
+    START TRANSACTION;
+
+    -- Generar un nuevo ID para el juez
+    SET pIdParticipante = 1 + (SELECT COALESCE(MAX(IdParticipante), 0) FROM Participantes);
+
+    -- Insertar el nuevo juez
+    INSERT INTO Participantes
+    (`IdParticipante`,
+`IdEvento`,
+`IdModelo`,
+`Promotor`) VALUES
+    (pIdParticipante, pIdEvento, pIdModelo, pPromotor);
+
+    -- Mensaje de éxito
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdParticipante AS Id;
+
+    COMMIT;
+
+END;
+
+DROP PROCEDURE IF EXISTS bsp_borra_participante;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_participante`(pIdParticipante int)
+SALIR:BEGIN
+/*
+	Permite borrar un participante. Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+
+	   -- Controla que el participante no haya participado en una votacion
+	IF EXISTS(SELECT IdParticipante FROM Votacion WHERE IdParticipante = pIdParticipante ) THEN
+		SELECT 'No puede borrar el participante. Existen Votaciones asociadas.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+    START TRANSACTION;
+		-- Borra usuario
+        DELETE FROM Participantes WHERE IdParticipante = pIdParticipante;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+
+-- Mensaje varchar(100)
+END;
+
+DROP PROCEDURE IF EXISTS bsp_dame_participante;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_participante`(pIdParticipante int)
+BEGIN
+/*
+	Procedimiento que sirve para instanciar un participante desde la base de datos.
+*/
+
+   SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Participantes
+    WHERE	IdParticipante = pIdParticipante;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- {Campos de la Tabla Participantes}
+END;
         ";
         DB::unprepared($sql);
 
