@@ -22,6 +22,5 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 COPY . .
-RUN composer install
-COPY .env.example .env
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 RUN php artisan key:generate
