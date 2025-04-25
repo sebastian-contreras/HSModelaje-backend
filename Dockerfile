@@ -11,28 +11,24 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Configurar e instalar extensiones PHP
+# Instalar extensiones PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql sockets
 
-# Instalar Composer (solo una forma)
+# Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar solo los archivos necesarios para composer install primero
+# Copiar solo los archivos necesarios para composer primero
 COPY composer.json composer.lock ./
 
-# Instalar dependencias de Composer
+# Instalar dependencias (sin dev para producción)
 RUN composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader --no-scripts
 
-# Copiar el resto de los archivos
+# Copiar el resto de la aplicación
 COPY . .
 
-# Establecer permisos adecuados
+# Establecer permisos
 RUN chown -R www-data:www-data /app \
     && chmod -R 755 /app/storage
-
-# Ejecutar scripts post-instalación si es necesario
-RUN composer dump-autoload --optimize
