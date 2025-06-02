@@ -1664,8 +1664,8 @@ SALIR:BEGIN
 
     -- Insertar el nuevo juez
     INSERT INTO Jueces
-    (`IdJuez`, `IdEvento`, `DNI`, `ApelName`, `Correo`, `Telefono`,`EstadoJuez`) VALUES
-    (pIdJuez, pIdEvento, pDNI, pApelName, pCorreo, pTelefono,'A');
+    (`IdJuez`, `IdEvento`, `DNI`, `ApelName`, `Correo`, `Telefono`,`EstadoJuez`,`Token`) VALUES
+    (pIdJuez, pIdEvento, pDNI, pApelName, pCorreo, pTelefono,'A',UUID());
 
     -- Mensaje de éxito
     SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdJuez AS Id;

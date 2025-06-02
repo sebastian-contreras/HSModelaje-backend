@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\TestEvent;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\EntradasController;
@@ -33,6 +34,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::get('/test', function () {
+    Log::info('Probando el endpoint de test');
+    broadcast(new TestEvent('Hola desde Reverb!'));
+    return 'Evento enviado';
+});
 
 Route::prefix('personas')->group(function () {
     // Obtener todas las personas

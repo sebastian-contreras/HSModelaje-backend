@@ -108,6 +108,7 @@ CREATE TABLE Jueces(
     Correo        VARCHAR(60)    NOT NULL,
     Telefono      VARCHAR(15)    NOT NULL,
     EstadoJuez    CHAR(1)        NOT NULL,
+    Token         CHAR(36)       NULL         UNIQUE,
     PRIMARY KEY (IdJuez, IdEvento)
 )ENGINE=INNODB
 COMMENT=''
