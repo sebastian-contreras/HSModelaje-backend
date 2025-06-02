@@ -1559,6 +1559,55 @@ END;
 
 
 
+
+DROP PROCEDURE IF EXISTS bsp_dame_juez;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_juez`(pIdJuez int)
+SALIR:BEGIN
+/*
+	Procedimiento que sirve para instanciar un juez desde la base de datos.
+*/
+
+
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Jueces
+    WHERE	IdJuez = pIdJuez;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+-- {Campo de la Tabla Modelos}
+END;
+
+
+
+
+DROP PROCEDURE IF EXISTS bsp_dame_juez_token;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_juez_token`(pToken char(36))
+SALIR:BEGIN
+/*
+	Procedimiento que sirve para instanciar un juez desde la base de datos por token.
+*/
+
+
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Jueces
+    WHERE	Token = pToken;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+-- {Campo de la Tabla Modelos}
+END;
+
+
+
+
 DROP PROCEDURE IF EXISTS bsp_listar_jueces;
 CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_jueces`(pIdEvento int, pIncluyeBajas char(1))
 SALIR:BEGIN

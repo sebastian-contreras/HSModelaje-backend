@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreJuezRequest;
 use App\Http\Requests\UpdateJuezRequest;
+use App\Jobs\SendEmailJob;
+use App\Mail\InvitacionJuezMail;
 use DB;
 use Illuminate\Http\Request;
 
@@ -166,5 +168,22 @@ class JuecesController extends Controller
         return ResponseFormatter::success(null, 'Juez activo exitosamente.', 200);
     }
 
+  public function invitar(int $IdJuez)
+    {
+        // Llamar al procedimiento almacenado
+        $result = DB::select('CALL bsp_dame_juez(?)', [$IdJuez]);
+        
+        
+        
+        // Verificar la respuesta del procedimiento almacenado
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            // Si hay un error, devolver un error formateado
+            return ResponseFormatter::error('Error al borrar el juez.', 400);
+        }
+        
+        // Si todo fue exitoso, devolver una respuesta de éxito
+        SendEmailJob::dispatch($result[0]->Correo, new InvitacionJuezMail($result));
+        return ResponseFormatter::success(null, 'Se envio el correo de manera exitosa.', 200);
+    }
 
 }

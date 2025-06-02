@@ -54,18 +54,6 @@ Route::prefix('personas')->group(function () {
 });
 
 
-Route::prefix('cajas')->group(function () {
-    // Obtener todas las cajas
-    Route::get('/', [CajaController::class, 'index'])->name('cajas.index');
-    // Crear una nueva Caja
-    Route::post('/', [CajaController::class, 'store'])->name('cajas.store');
-    // Obtener una Caja específica
-    Route::get('/{id}', [CajaController::class, 'show'])->name('cajas.show');
-    // Actualizar una Caja específica
-    Route::put('/{caja}', [CajaController::class, 'update'])->name('cajas.update');
-    // Eliminar una Caja específica
-    Route::delete('/{caja}', [CajaController::class, 'destroy'])->name('cajas.destroy');
-});
 
 
 Route::prefix('usuarios')->group(function () {
@@ -193,6 +181,7 @@ Route::prefix('jueces')->group(function () {
 
     Route::post('/darbaja/{IdJuez}', [JuecesController::class, 'darBaja'])->name('jueces.darBaja');
     Route::post('/activar/{IdJuez}', [JuecesController::class, 'activar'])->name('jueces.activar');
+    Route::get('/invitar/{IdJuez}', [JuecesController::class, 'invitar'])->name('jueces.invitar');
 });
 
 Route::prefix('zonas')->group(function () {
