@@ -170,6 +170,7 @@ Route::prefix('jueces')->group(function () {
     Route::get('/busqueda', [JuecesController::class, 'busqueda'])->name('jueces.busqueda');
     Route::get('/{IdEvento}', [JuecesController::class, 'index'])->name('jueces.index');
     Route::get('/show/{IdJuez}', [JuecesController::class, 'dame'])->name('jueces.dame');
+    Route::get('/show-token/{Token}', [JuecesController::class, 'dameToken'])->name('jueces.dameToken');
     // Crear una nueva jueces
     Route::post('/', [JuecesController::class, 'store'])->name('jueces.store');
     // Obtener una jueces específica
@@ -205,8 +206,8 @@ Route::prefix('zonas')->group(function () {
 Route::prefix('metricas')->group(function () {
     // Obtener todas los metricas
     Route::get('/busqueda', [MetricasController::class, 'busqueda'])->name('metricas.busqueda');
-    Route::get('/{IdEvento}', [MetricasController::class, 'index'])->name('metricas.index');
     Route::get('/show/{IdMetrica}', [MetricasController::class, 'dame'])->name('metricas.dame');
+    Route::get('/evento/{IdEvento}', [MetricasController::class, 'index'])->name('metricas.index');
     // Crear una nueva metricas
     Route::post('/', [MetricasController::class, 'store'])->name('metricas.store');
     // Obtener una metricas específica
