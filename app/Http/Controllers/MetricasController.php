@@ -22,12 +22,12 @@ class MetricasController extends Controller
         try {
             // Llamar al procedimiento almacenado
             $lista = DB::select('CALL bsp_listar_metricas(?,?)', [$pIdEvento,$pIncluyeBajas]);
-
+            Log:info($lista);
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
         } catch (\Exception $e) {
             // Manejo de errores
-            return ResponseFormatter::error('error al obtener los metricas.', 500);
+            return ResponseFormatter::error($e->getMessage(), 500);
         }
     }
 
