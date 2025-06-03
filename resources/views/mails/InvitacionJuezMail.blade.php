@@ -3,7 +3,7 @@
 
 Hola **{{ $data['juez']->ApelName }}**,
 
-Nos complace invitarte a ser parte de nuestro jurado para el evento **{{ $data['evento']->Evento }}**. 🎤  
+Nos complace invitarte a ser parte de nuestro jurado para el evento **{{ $data['evento']->Evento }}**. 🎤
 
 ---
 
@@ -15,8 +15,8 @@ Nos complace invitarte a ser parte de nuestro jurado para el evento **{{ $data['
 
 ---
 
-Para acceder a tu panel de jurado, por favor ingresa al siguiente enlace:  
-@component('mail::button', ['url' => 'https://x.com/home', 'color' => 'primary'])
+Para acceder a tu panel de jurado, por favor ingresa al siguiente enlace:
+@component('mail::button', ['url' => env('FRONTEND_URL') . '/voto-jurado/' . $data['juez']->Token, 'color' => 'primary'])
 🎟️ Acceder como Jurado
 @endcomponent
 
@@ -24,6 +24,6 @@ Si tienes alguna pregunta o necesitas más información, no dudes en contactarno
 
 ¡Esperamos contar con tu valiosa participación!
 
-Saludos,  
+Saludos,
 **El equipo de {{ config('app.name') }}**
 @endcomponent
