@@ -15,6 +15,36 @@ class JuecesController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    public function dame(string $IdJuez)
+    {
+        // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
+        try {
+            // Llamar al procedimiento almacenado
+            $lista = DB::select('CALL bsp_dame_juez(?)', [$IdJuez]);
+
+            // Devolver el resultado como JSON
+            return ResponseFormatter::success($lista);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return ResponseFormatter::error('error al obtener el juez.', 500);
+        }
+    }
+
+    public function dameToken(string $Token)
+    {
+        // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
+        try {
+            // Llamar al procedimiento almacenado
+            $lista = DB::select('CALL bsp_dame_juez_token(?)', [$Token]);
+
+            // Devolver el resultado como JSON
+            return ResponseFormatter::success($lista);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return ResponseFormatter::error('error al obtener el juez.', 500);
+        }
+    }
     public function index(Request $request)
     {
         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
@@ -23,7 +53,7 @@ class JuecesController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_listar_jueces(?,?)', [$pIdEvento,$pIncluyeBajas]);
+            $lista = DB::select('CALL bsp_listar_jueces(?,?)', [$pIdEvento, $pIncluyeBajas]);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -36,10 +66,10 @@ class JuecesController extends Controller
 
     public function busqueda(Request $request)
     {
-        $pIdEvento = $request->input('pIdEvento',null);
-        $pDNI = $request->input('pDNI',null);
-        $pApelName = $request->input('pApelName',null);
-        $pEstado = $request->input('pEstado',null);
+        $pIdEvento = $request->input('pIdEvento', null);
+        $pDNI = $request->input('pDNI', null);
+        $pApelName = $request->input('pApelName', null);
+        $pEstado = $request->input('pEstado', null);
         $pPagina = $request->input('pPagina', 1); // Valor por defecto 1
         $pCantidad = $request->input('pCantidad', 10); // Valor por defecto 10
 
@@ -48,13 +78,13 @@ class JuecesController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_buscar_juez(?,?,?,?,?,?)', [$pIdEvento,$pDNI, $pApelName,$pEstado, $pOffset, $pCantidad]);
+            $lista = DB::select('CALL bsp_buscar_juez(?,?,?,?,?,?)', [$pIdEvento, $pDNI, $pApelName, $pEstado, $pOffset, $pCantidad]);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
 
             // Devolver el resultado como JSON
-            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows ]);
+            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows]);
         } catch (\Exception $e) {
             // Manejo de errores
             return ResponseFormatter::error('Error al obtener los jueces: ' . $e->getMessage(), 500);
@@ -168,19 +198,19 @@ class JuecesController extends Controller
         return ResponseFormatter::success(null, 'Juez activo exitosamente.', 200);
     }
 
-  public function invitar(int $IdJuez)
+    public function invitar(int $IdJuez)
     {
         // Llamar al procedimiento almacenado
         $result = DB::select('CALL bsp_dame_juez(?)', [$IdJuez]);
-        
-        
-        
+
+
+
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error('Error al borrar el juez.', 400);
         }
-        
+
         // Si todo fue exitoso, devolver una respuesta de éxito
         SendEmailJob::dispatch($result[0]->Correo, new InvitacionJuezMail($result));
         return ResponseFormatter::success(null, 'Se envio el correo de manera exitosa.', 200);
