@@ -135,8 +135,8 @@ class JuecesController extends Controller
             $request->IdJuez,
             $request->DNI,
             $request->ApelName,
-            $request->Correo,
             $request->Telefono,
+            $request->Correo,
         ]);
 
 
