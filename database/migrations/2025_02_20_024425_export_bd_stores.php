@@ -3411,7 +3411,7 @@ BEGIN
    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
     SELECT	*, 'ok' as Response
-    FROM	Participantes
+    FROM	Participantes JOIN Modelos USING(IdModelo)
     WHERE	IdParticipante = pIdParticipante;
 
     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
