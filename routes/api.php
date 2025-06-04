@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\TestEvent;
+use App\Events\VotoModeloIniciado;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\EntradasController;
@@ -38,6 +39,12 @@ Route::get('/test', function () {
     Log::info('Probando el endpoint de test');
     broadcast(new TestEvent('Hola desde Reverb!'));
     return 'Evento enviado';
+});
+
+Route::get('/votacion/modelo/{IdParticipante}', function ($IdParticipante) {
+    $result = DB::select('CALL bsp_dame_participante(?)', [$IdParticipante]);
+    broadcast(new VotoModeloIniciado($result[0]));
+    return $result[0];
 });
 
 Route::prefix('personas')->group(function () {
