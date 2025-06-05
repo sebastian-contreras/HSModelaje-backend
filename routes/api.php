@@ -15,6 +15,7 @@ use App\Http\Controllers\ParticipantesController;
 use App\Http\Controllers\PatrocinadoresController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\VotacionesController;
 use App\Http\Controllers\ZonasController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -174,8 +175,8 @@ Route::prefix('patrocinadores')->group(function () {
 
 Route::prefix('jueces')->group(function () {
     // Obtener todas los jueces
+    Route::get('/lista', [JuecesController::class, 'index'])->name('jueces.index');
     Route::get('/busqueda', [JuecesController::class, 'busqueda'])->name('jueces.busqueda');
-    Route::get('/{IdEvento}', [JuecesController::class, 'index'])->name('jueces.index');
     Route::get('/show/{IdJuez}', [JuecesController::class, 'dame'])->name('jueces.dame');
     Route::get('/show-token/{Token}', [JuecesController::class, 'dameToken'])->name('jueces.dameToken');
     // Crear una nueva jueces
@@ -186,7 +187,7 @@ Route::prefix('jueces')->group(function () {
     Route::put('/{IdJuez}', [JuecesController::class, 'update'])->name('jueces.update');
     // Eliminar una jueces específica
     Route::delete('/{IdJuez}', [JuecesController::class, 'destroy'])->name('jueces.destroy');
-
+    
     Route::post('/darbaja/{IdJuez}', [JuecesController::class, 'darBaja'])->name('jueces.darBaja');
     Route::post('/activar/{IdJuez}', [JuecesController::class, 'activar'])->name('jueces.activar');
     Route::get('/invitar/{IdJuez}', [JuecesController::class, 'invitar'])->name('jueces.invitar');
@@ -258,4 +259,12 @@ Route::prefix('participantes')->group(function () {
     Route::post('/', [ParticipantesController::class, 'store'])->name('participantes.store');
     // Obtener una participantes específica
     Route::delete('/{IdParticipante}', [ParticipantesController::class, 'destroy'])->name('participantes.destroy');
+});
+
+
+Route::prefix('votos')->group(function () {
+    // Obtener todas los votos
+    Route::get('/', [VotacionesController::class, 'listar'])->name('votos.listar');
+    Route::post('/', [VotacionesController::class, 'alta'])->name('votos.alta');
+    
 });
