@@ -9,6 +9,7 @@ use App\Jobs\SendEmailJob;
 use App\Mail\InvitacionJuezMail;
 use DB;
 use Illuminate\Http\Request;
+use Log;
 
 class JuecesController extends Controller
 {
@@ -54,7 +55,8 @@ class JuecesController extends Controller
         try {
             // Llamar al procedimiento almacenado
             $lista = DB::select('CALL bsp_listar_jueces(?,?)', [$pIdEvento, $pIncluyeBajas]);
-
+            Log::info('Lista de jueces obtenida', ['lista' => $lista]);
+            Log::info('pIdEvento', ['pIdEvento' => $pIdEvento]);
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
         } catch (\Exception $e) {
