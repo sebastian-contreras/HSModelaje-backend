@@ -205,7 +205,7 @@ COMMENT=''
 --
 
 CREATE TABLE Votacion(
-    IdVoto            BIGINT    NOT NULL,
+    IdVoto            BIGINT    NOT NULL AUTO_INCREMENT,
     IdMetrica         INT         NOT NULL,
     IdEvento          INT         NOT NULL,
     IdJuez            INT         NOT NULL,
@@ -409,12 +409,12 @@ ALTER TABLE Votacion ADD CONSTRAINT RefMetricas132
 
 ALTER TABLE Votacion ADD CONSTRAINT RefJueces162
     FOREIGN KEY (IdEvento, IdJuez)
-    REFERENCES Jueces(IdJuez, IdEvento)
+    REFERENCES Jueces(IdEvento, IdJuez)
 ;
 
 ALTER TABLE Votacion ADD CONSTRAINT RefParticipantes232
     FOREIGN KEY (IdEvento, IdParticipante, IdModelo)
-    REFERENCES Participantes(IdParticipante, IdEvento, IdModelo)
+    REFERENCES Participantes(IdEvento, IdParticipante, IdModelo)
 ;
 
 
