@@ -3417,6 +3417,92 @@ BEGIN
     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 -- {Campos de la Tabla Participantes}
 END;
+
+
+
+DROP PROCEDURE IF EXISTS bsp_alta_voto;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_voto`(pIdParticipante int, pIdJuez int, pIdMetrica int, pNota int, pDevolucion text)
+SALIR:BEGIN
+/*
+    Permite dar de alta un voto a un participante de un juez para cierta metrica en un evento, este se da de alta con un estado Activo. 
+    Devuelve OK + Id o el mensaje de error en Mensaje.
+*/
+    DECLARE pIdEvento INT;
+    DECLARE pIdModelo INT;
+    DECLARE pIdVoto BIGINT;
+
+    -- Manejo de errores
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Validación de parámetros obligatorios
+    IF pIdParticipante IS NULL OR
+       pIdJuez IS NULL OR
+       pIdMetrica IS NULL OR
+       pNota IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Obtener IdEvento e IdModelo desde Participantes
+    SELECT IdEvento, IdModelo
+    INTO pIdEvento, pIdModelo
+    FROM Participantes
+    WHERE IdParticipante = pIdParticipante;
+
+    -- Validar que se haya encontrado el participante
+    IF pIdEvento IS NULL OR pIdModelo IS NULL THEN
+        SELECT 'Participante inválido o no registrado.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Comenzar transacción
+    START TRANSACTION;
+
+    -- Insertar el voto
+    INSERT INTO Votacion (
+        IdMetrica, IdEvento, IdJuez, IdParticipante, IdModelo, Nota, Devolucion, EstadoVoto
+    ) VALUES (
+        pIdMetrica, pIdEvento, pIdJuez, pIdParticipante, pIdModelo, pNota, pDevolucion, 'A'
+    );
+
+    -- Obtener ID autogenerado
+    SET pIdVoto = LAST_INSERT_ID();
+
+    -- Confirmar
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdVoto AS Id;
+
+    COMMIT;
+
+-- Mensaje varchar(100), Id int
+END;
+
+DROP PROCEDURE IF EXISTS bsp_listar_votos;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_listar_votos`(pIdEvento int)
+SALIR:BEGIN
+/*
+	Permite listar los votos  de un evento.
+*/
+	 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+		SELECT		M.IdModelo,M.DNI AS DNIModelo,M.ApelName AS ApelNameModelo,J.IdJuez,J.DNI AS DNIJuez,J.ApelName AS ApelNameJuez, V.Nota
+		FROM Votacion V
+        JOIN Modelos M USING (IdModelo)
+        JOIN Jueces J USING (IdJuez)
+		WHERE
+					V.IdEvento = pIdEvento
+		ORDER BY J.IdJuez
+		;
+
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- {Campos de la Tabla Votacion,Modelos,Jueces}
+END;
+
+
         ";
         DB::unprepared($sql);
 
