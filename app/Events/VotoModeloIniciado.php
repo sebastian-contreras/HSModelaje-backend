@@ -11,10 +11,12 @@ class VotoModeloIniciado implements ShouldBroadcast
     use InteractsWithSockets;
 
     public $participante;
+    public $accion; //iniciar o  detener
 
-    public function __construct($participante)
+    public function __construct($participante,$accion)
     {
         $this->participante = $participante;
+        $this->accion = $accion;
     }
 
     public function broadcastOn()
