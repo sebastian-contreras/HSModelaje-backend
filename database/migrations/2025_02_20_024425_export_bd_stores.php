@@ -3421,12 +3421,14 @@ END;
 
 
 DROP PROCEDURE IF EXISTS bsp_alta_voto;
-CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_voto`(pIdParticipante int, pIdJuez int, pIdMetrica int, pNota int, pDevolucion text)
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_voto`(
+    pIdParticipante INT,
+    pIdJuez INT,
+    pIdMetrica INT,
+    pNota INT,
+    pDevolucion TEXT
+)
 SALIR:BEGIN
-/*
-    Permite dar de alta un voto a un participante de un juez para cierta metrica en un evento, este se da de alta con un estado Activo. 
-    Devuelve OK + Id o el mensaje de error en Mensaje.
-*/
     DECLARE pIdEvento INT;
     DECLARE pIdModelo INT;
     DECLARE pIdVoto BIGINT;
@@ -3462,7 +3464,14 @@ SALIR:BEGIN
     -- Comenzar transacción
     START TRANSACTION;
 
-    -- Insertar el voto
+    -- Eliminar votos anteriores del mismo juez para el mismo participante, métrica y evento
+    DELETE FROM Votacion
+    WHERE IdMetrica = pIdMetrica
+      AND IdEvento = pIdEvento
+      AND IdJuez = pIdJuez
+      AND IdParticipante = pIdParticipante;
+
+    -- Insertar el nuevo voto
     INSERT INTO Votacion (
         IdMetrica, IdEvento, IdJuez, IdParticipante, IdModelo, Nota, Devolucion, EstadoVoto
     ) VALUES (
@@ -3476,8 +3485,6 @@ SALIR:BEGIN
     SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdVoto AS Id;
 
     COMMIT;
-
--- Mensaje varchar(100), Id int
 END;
 
 DROP PROCEDURE IF EXISTS bsp_listar_votos;
@@ -3488,10 +3495,11 @@ SALIR:BEGIN
 */
 	 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
-		SELECT		M.IdModelo,M.DNI AS DNIModelo,M.ApelName AS ApelNameModelo,J.IdJuez,J.DNI AS DNIJuez,J.ApelName AS ApelNameJuez, V.Nota
+		SELECT		V.IdParticipante,M.DNI AS DNIModelo,M.ApelName AS ApelNameModelo,J.IdJuez,J.DNI AS DNIJuez,J.ApelName AS ApelNameJuez,P.IdMetrica,P.Metrica, V.Nota
 		FROM Votacion V
         JOIN Modelos M USING (IdModelo)
         JOIN Jueces J USING (IdJuez)
+        JOIN Metricas P USING (IdMetrica)
 		WHERE
 					V.IdEvento = pIdEvento
 		ORDER BY J.IdJuez
@@ -3500,6 +3508,40 @@ SALIR:BEGIN
 
 		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 -- {Campos de la Tabla Votacion,Modelos,Jueces}
+END;
+
+
+
+DROP PROCEDURE IF EXISTS bsp_reiniciar_votacion_participante;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_reiniciar_votacion_participante`(pIdParticipante INT)
+SALIR:BEGIN
+/*
+	Procedimiento para reinicar la votacion de un participante, los votos al participante se quedan es estado inicial. 
+    Devuelve OK o el mensaje de error en Mensaje.
+*/
+    -- Manejo de errores
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Validación de parámetros obligatorios
+    IF pIdParticipante IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    -- Comenzar transacción
+    START TRANSACTION;
+
+    -- Eliminar votos anteriores del mismo juez para el mismo participante, métrica y evento
+    DELETE FROM Votacion
+    WHERE IdParticipante = pIdParticipante;
+    -- Confirmar
+    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdVoto AS Id;
+    COMMIT;
+    
 END;
 
 
