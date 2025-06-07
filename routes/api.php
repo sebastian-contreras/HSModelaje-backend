@@ -266,5 +266,8 @@ Route::prefix('votos')->group(function () {
     // Obtener todas los votos
     Route::get('/', [VotacionesController::class, 'listar'])->name('votos.listar');
     Route::post('/', [VotacionesController::class, 'alta'])->name('votos.alta');
+    Route::get('/iniciar-voto', [VotacionesController::class, 'iniciarVoto'])->name('votos.iniciarVoto');
+    Route::get('/detener-voto', [VotacionesController::class, 'detenerVoto'])->name('votos.detenerVoto');
+    Route::get('/reiniciar-voto', [VotacionesController::class, 'reiniciarVoto'])->name('votos.reiniciarVoto');
     
 });
