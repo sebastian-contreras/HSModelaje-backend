@@ -44,7 +44,7 @@ Route::get('/test', function () {
 
 Route::get('/votacion/modelo/{IdParticipante}', function ($IdParticipante) {
     $result = DB::select('CALL bsp_dame_participante(?)', [$IdParticipante]);
-    broadcast(new VotoModeloIniciado($result[0],'iniciar'));
+    broadcast(new VotoModeloIniciado($result[0], 'iniciar'));
     return $result[0];
 });
 
@@ -187,7 +187,7 @@ Route::prefix('jueces')->group(function () {
     Route::put('/{IdJuez}', [JuecesController::class, 'update'])->name('jueces.update');
     // Eliminar una jueces específica
     Route::delete('/{IdJuez}', [JuecesController::class, 'destroy'])->name('jueces.destroy');
-    
+
     Route::post('/darbaja/{IdJuez}', [JuecesController::class, 'darBaja'])->name('jueces.darBaja');
     Route::post('/activar/{IdJuez}', [JuecesController::class, 'activar'])->name('jueces.activar');
     Route::get('/invitar/{IdJuez}', [JuecesController::class, 'invitar'])->name('jueces.invitar');
@@ -233,14 +233,14 @@ Route::prefix('metricas')->group(function () {
 
 Route::prefix('entradas')->group(function () {
     // Obtener todas los entradas
+    Route::get('/dame-token', [EntradasController::class, 'dameToken'])->name('entradas.dameToken');
     Route::get('/busqueda', [EntradasController::class, 'busqueda'])->name('entradas.busqueda');
-    Route::get('/{IdEvento}', [EntradasController::class, 'index'])->name('entradas.index');
     Route::get('/show/{IdEntrada}', [EntradasController::class, 'dame'])->name('entradas.dame');
+    Route::get('/{IdEvento}', [EntradasController::class, 'index'])->name('entradas.index');
     // Crear una nueva entradas
     Route::post('/', [EntradasController::class, 'store'])->name('entradas.store');
     Route::post('/pasarela', [EntradasController::class, 'storePasarela'])->name('entradas.storePasarela');
     // Obtener una entradas específica
-    Route::get('/{IdEntrada}', [EntradasController::class, 'show'])->name('entradas.show');
     // Actualizar una entradas específica
     Route::put('/{IdEntrada}', [EntradasController::class, 'update'])->name('entradas.update');
     // Eliminar una entradas específica
@@ -266,10 +266,10 @@ Route::prefix('votos')->group(function () {
     // Obtener todas los votos
     Route::get('/', [VotacionesController::class, 'listar'])->name('votos.listar');
     Route::get('/iniciar', [VotacionesController::class, 'iniciarVotacion'])->name('votos.iniciarVotacion');
-    Route::get('/finalizar', [VotacionesController::class, 'finalizarVotacion'])->name('votos.finalizarVotacion'); 
+    Route::get('/finalizar', [VotacionesController::class, 'finalizarVotacion'])->name('votos.finalizarVotacion');
     Route::post('/', [VotacionesController::class, 'alta'])->name('votos.alta');
     Route::get('/iniciar-voto', [VotacionesController::class, 'iniciarVotacionParticipante'])->name('votos.iniciarVotacionParticipante');
     Route::get('/detener-voto', [VotacionesController::class, 'detenerVotacionParticipante'])->name('votos.detenerVotacionParticipante');
     Route::get('/reiniciar-voto', [VotacionesController::class, 'reiniciarVoto'])->name('votos.reiniciarVoto');
-    
+
 });

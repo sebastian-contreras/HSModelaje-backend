@@ -3163,6 +3163,27 @@ SALIR:BEGIN
 -- {Campo de la Tabla Entradas}
 END;
 
+
+DROP PROCEDURE IF EXISTS bsp_dame_entrada_token;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_entrada_token`(pToken char(36))
+SALIR:BEGIN
+/*
+	Procedimiento que sirve para instanciar una entrada a partir de token desde la base de datos.
+*/
+    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Entradas
+    WHERE	Token = pToken;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campo de la Tabla Entradas}
+END;
+
+
+
 DROP PROCEDURE IF EXISTS bsp_abonar_entrada;
 
 CREATE DEFINER=`root`@`%` PROCEDURE `bsp_abonar_entrada`(pIdEntrada bigint)

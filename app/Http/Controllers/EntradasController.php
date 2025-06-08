@@ -17,6 +17,7 @@ use App\Mail\EntradaAprobadaMail;
 use App\Mail\EntradaPendienteMail;
 use App\Mail\EntradaRechazadaMail;
 use DB;
+use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Http\Request;
 use Mail;
@@ -42,7 +43,27 @@ class EntradasController extends Controller
         }
     }
 
+    public function dameToken(Request $request)
+    {
+        $Token = $request->input('pToken');
+        Log::alert('$Token');
+        Log::alert($Token);
+        // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
+        try {
+            // Llamar al procedimiento almacenado
+            $lista = DB::select('CALL bsp_dame_entrada_token(?)', [$Token]);
+            if (isset($lista[0]->Response) && $lista[0]->Response === 'error') {
+                // Si hay un error, devolver un error formateado
+                return ResponseFormatter::error('Error al recuperar la entrada.', 400);
+            }
 
+            // Devolver el resultado como JSON
+            return ResponseFormatter::success($lista);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return ResponseFormatter::error('error al obtener entrada.', 500);
+        }
+    }
     public function busqueda(Request $request)
     {
         $pCadena = $request->input('pCadena', null);
