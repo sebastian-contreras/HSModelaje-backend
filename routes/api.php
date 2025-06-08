@@ -44,7 +44,7 @@ Route::get('/test', function () {
 
 Route::get('/votacion/modelo/{IdParticipante}', function ($IdParticipante) {
     $result = DB::select('CALL bsp_dame_participante(?)', [$IdParticipante]);
-    broadcast(new VotoModeloIniciado($result[0]));
+    broadcast(new VotoModeloIniciado($result[0],'iniciar'));
     return $result[0];
 });
 
