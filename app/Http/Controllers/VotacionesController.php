@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ListadoVotosParticipantes;
 use App\Events\VotoModeloIniciado;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\VotosRequest;
@@ -98,6 +99,7 @@ class VotacionesController extends Controller
 
         $IdParticipante = $request->IdParticipante;
         $IdJuez = $request->IdJuez;
+        $IdEvento = $request->IdEvento;
         $votos = $request->votos;
 
         $errores = [];
@@ -118,6 +120,9 @@ class VotacionesController extends Controller
         if (!empty($errores)) {
             return ResponseFormatter::error($errores, 400);
         }
+
+        $listado = $this->listar(new Request(['pIdEvento' => $IdEvento]))->getData()->data;
+        broadcast(new ListadoVotosParticipantes($listado, $IdEvento));
 
         return ResponseFormatter::success(null, 'Votos asignados exitosamente.', 201);
     }
@@ -153,6 +158,7 @@ class VotacionesController extends Controller
     public function reiniciarVoto(Request $request)
     {
         $IdParticipante = $request->input('pIdParticipante');
+        $IdEvento = $request->input('pIdEvento');
 
         // Llamar al procedimiento almacenado
         $result = DB::select('CALL bsp_reiniciar_votacion_participante(?)', [$IdParticipante]);
@@ -162,6 +168,10 @@ class VotacionesController extends Controller
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error('Error al borrar al reiniciar la votacion.', 400);
         }
+
+        $listado = $this->listar(new Request(['pIdEvento' => $IdEvento]))->getData()->data;
+        broadcast(new ListadoVotosParticipantes($listado, $IdEvento));
+
 
         // Si todo fue exitoso, devolver una respuesta de éxito
         return ResponseFormatter::success(null, 'Se reinicio correctamente la votacion del modelo.', 200);
