@@ -135,7 +135,7 @@ class VotacionesController extends Controller
         //
     }
 
-    public function iniciarVoto(Request $request)
+    public function iniciarVotacionParticipante(Request $request)
     {
         //
 
@@ -145,7 +145,7 @@ class VotacionesController extends Controller
         return ResponseFormatter::success($result[0]);
     }
 
-    public function detenerVoto(Request $request)
+    public function detenerVotacionParticipante(Request $request)
     {
         //
 
@@ -192,4 +192,38 @@ class VotacionesController extends Controller
     {
         //
     }
+
+
+
+    public function iniciarVotacion(Request $request)
+    {
+        //
+
+        $IdEvento = $request->input('pIdEvento');
+        $result = DB::select('CALL bsp_iniciar_votacion(?)', [$IdEvento]);
+
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            // Si hay un error, devolver un error formateado
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
+        }
+        return ResponseFormatter::success($result[0]);
+    }
+
+
+
+
+    public function finalizarVotacion(Request $request)
+    {
+        //
+
+        $IdEvento = $request->input('pIdEvento');
+        $result = DB::select('CALL bsp_finalizar_votacion(?)', [$IdEvento]);
+
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            // Si hay un error, devolver un error formateado
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
+        }
+        return ResponseFormatter::success($result[0]);
+    }
+
 }
