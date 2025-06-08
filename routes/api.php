@@ -265,9 +265,11 @@ Route::prefix('participantes')->group(function () {
 Route::prefix('votos')->group(function () {
     // Obtener todas los votos
     Route::get('/', [VotacionesController::class, 'listar'])->name('votos.listar');
+    Route::get('/iniciar', [VotacionesController::class, 'iniciarVotacion'])->name('votos.iniciarVotacion');
+    Route::get('/finalizar', [VotacionesController::class, 'finalizarVotacion'])->name('votos.finalizarVotacion'); 
     Route::post('/', [VotacionesController::class, 'alta'])->name('votos.alta');
-    Route::get('/iniciar-voto', [VotacionesController::class, 'iniciarVoto'])->name('votos.iniciarVoto');
-    Route::get('/detener-voto', [VotacionesController::class, 'detenerVoto'])->name('votos.detenerVoto');
+    Route::get('/iniciar-voto', [VotacionesController::class, 'iniciarVotacionParticipante'])->name('votos.iniciarVotacionParticipante');
+    Route::get('/detener-voto', [VotacionesController::class, 'detenerVotacionParticipante'])->name('votos.detenerVotacionParticipante');
     Route::get('/reiniciar-voto', [VotacionesController::class, 'reiniciarVoto'])->name('votos.reiniciarVoto');
     
 });
