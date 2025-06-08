@@ -3545,6 +3545,87 @@ SALIR:BEGIN
 END;
 
 
+DROP PROCEDURE IF EXISTS bsp_iniciar_votacion;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_iniciar_votacion`(pIdEvento int)
+SALIR:BEGIN
+/*
+	Procedimiento para iniciar la votacion de un evento, controlando que el evento lo permita y que no este iniciada ni finalizada. 
+    Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar que el evento permita votacion
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND Votacion = 'N') THEN
+		SELECT 'El evento no permite votacion.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+    -- Controlar que el evento no este iniciado
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND Votacion = 'P') THEN
+		SELECT 'El evento ya esta en proceso de votacion.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+    
+	-- Controlar que el evento no haya finalizado
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND Votacion = 'F') THEN
+		SELECT 'La votacion ya finalizo.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+
+
+	-- Da de baja
+    UPDATE Eventos SET Votacion = 'P' WHERE IdEvento = pIdEvento;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+
+-- Mensaje varchar(100)
+END;
+
+
+
+DROP PROCEDURE IF EXISTS bsp_finalizar_votacion;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_finalizar_votacion`(pIdEvento int)
+SALIR:BEGIN
+/*
+	Procedimiento para finalizar la votacion de un evento, controlando que el evento lo permita y que este iniciada.
+    Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador.' Mensaje,'error' as Response,
+				NULL AS Id;
+		ROLLBACK;
+	END;
+
+    -- Controlar que el evento permita votacion
+    IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEvento = pIdEvento
+						AND Votacion != 'P') THEN
+		SELECT 'El evento no tiene una votacion en proceso.' AS Mensaje,'error' as Response;
+        LEAVE SALIR;
+	END IF;
+    
+
+
+	-- Da de baja
+    UPDATE Eventos SET Votacion = 'F' WHERE IdEvento = pIdEvento;
+
+    SELECT 'OK' AS Mensaje,'ok' as Response;
+
+
+-- Mensaje varchar(100)
+END;
         ";
         DB::unprepared($sql);
 
