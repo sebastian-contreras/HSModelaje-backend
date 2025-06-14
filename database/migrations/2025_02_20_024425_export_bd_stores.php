@@ -3647,6 +3647,158 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 
 -- Mensaje varchar(100)
 END;
+
+DROP PROCEDURE IF EXISTS bsp_informe_evento_zona;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_informe_evento_zona`(pIdEvento int)
+SALIR:BEGIN
+	/*
+		Procedimiento que sirve para obtener datos de un evento clasificado por zonas.
+	*/
+
+		IF	pIdEvento = '' OR pIdEvento IS NULL THEN
+			SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
+			LEAVE SALIR;
+		END IF;
+		IF NOT EXISTS (SELECT 1 FROM Eventos WHERE IdEvento = pIdEvento) THEN
+			SELECT 'El evento no existe.' AS Mensaje, 'error' AS Response, NULL AS Id;
+			LEAVE SALIR;
+		END IF;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+	SELECT 
+		Zonas.Zona AS Zona,
+		Zonas.Capacidad AS Capacidad,
+		Zonas.Precio AS Precio,
+		Zonas.Capacidad * Zonas.Precio AS GananciaEsperada,
+		COUNT(Entradas.IdZona) AS Vendidas,
+		SUM(Entradas.Importe) AS GananciaReal
+	FROM 
+		Entradas 
+		JOIN Zonas USING(IdZona)
+	WHERE 
+		Entradas.IdEvento = pIdEvento
+	GROUP BY 
+		Zonas.Zona, Zonas.Capacidad, Zonas.Precio
+
+	UNION ALL
+
+	SELECT 
+		'TOTAL' AS Zona,
+		SUM(DISTINCT Zonas.Capacidad) AS Capacidad,
+		SUM(DISTINCT Zonas.Precio) AS Precio,
+		SUM(DISTINCT Zonas.Capacidad * Zonas.Precio) AS GananciaEsperada,
+		COUNT(Entradas.IdZona) AS Vendidas,
+		SUM(Entradas.Importe) AS GananciaReal
+	FROM 
+		Entradas 
+		JOIN Zonas USING(IdZona)
+	WHERE 
+		Entradas.IdEvento = pIdEvento;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+	-- {Campo de informe de eventos por zona}
+	END;
+
+
+DROP PROCEDURE IF EXISTS bsp_informe_evento_estado;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_informe_evento_estado`(pIdEvento int)
+SALIR:BEGIN
+	/*
+		Procedimiento que sirve para obtener datos de un evento clasificado por estado.
+	*/
+
+		IF	pIdEvento = '' OR pIdEvento IS NULL THEN
+			SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
+			LEAVE SALIR;
+		END IF;
+		IF NOT EXISTS (SELECT 1 FROM Eventos WHERE IdEvento = pIdEvento) THEN
+			SELECT 'El evento no existe.' AS Mensaje, 'error' AS Response, NULL AS Id;
+			LEAVE SALIR;
+		END IF;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+SELECT 
+    CASE 
+        WHEN EstadoEnt = 'P' THEN 'Pendiente'
+        WHEN EstadoEnt = 'A' THEN 'Abonada'
+        WHEN EstadoEnt = 'R' THEN 'Rechazada'
+        WHEN EstadoEnt = 'U' THEN 'Usada'
+        WHEN EstadoEnt IS NULL THEN 'Total'
+        ELSE EstadoEnt
+    END AS EstadoEvento,
+    COUNT(*) AS Cantidad,
+    SUM(Importe) AS Importe
+FROM 
+    Entradas
+WHERE 
+    IdEvento = pIdEvento
+GROUP BY 
+    EstadoEnt WITH ROLLUP;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+	-- {Campo de informe de eventos por estado}
+	END;
+
+
+    DROP PROCEDURE IF EXISTS bsp_informe_evento_gastos;
+    CREATE DEFINER=`root`@`%` PROCEDURE `bsp_informe_evento_gastos`(pIdEvento int)
+SALIR:BEGIN
+	/*
+		Procedimiento que sirve para obtener gastos de un evento.
+	*/
+
+		IF	pIdEvento = '' OR pIdEvento IS NULL THEN
+			SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
+			LEAVE SALIR;
+		END IF;
+		IF NOT EXISTS (SELECT 1 FROM Eventos WHERE IdEvento = pIdEvento) THEN
+			SELECT 'El evento no existe.' AS Mensaje, 'error' AS Response, NULL AS Id;
+			LEAVE SALIR;
+		END IF;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+SELECT Gasto,Personal,Monto,Comprobante,FechaCreado FROM Gastos where IdEvento=pIdEvento
+UNION ALL
+SELECT 'Total' as Gasto,NULL as Personal,SUM(Monto) as Monto,NULL AS Comprobante,NULL ASFechaCreado FROM Gastos where IdEvento=pIdEvento;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+	-- {Campo de informe de gastos de eventos}
+	END;
+
+
+    DROP PROCEDURE IF EXISTS bsp_informe_evento_patrocinadores;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_informe_evento_patrocinadores`(pIdEvento int)
+SALIR:BEGIN
+	/*
+		Procedimiento que sirve para obtener patrocinadores de un evento.
+	*/
+
+		IF	pIdEvento = '' OR pIdEvento IS NULL THEN
+			SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
+			LEAVE SALIR;
+		END IF;
+		IF NOT EXISTS (SELECT 1 FROM Eventos WHERE IdEvento = pIdEvento) THEN
+			SELECT 'El evento no existe.' AS Mensaje, 'error' AS Response, NULL AS Id;
+			LEAVE SALIR;
+		END IF;
+
+		SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+Select Patrocinador,Correo,Telefono,DomicilioRef,Descripcion,FechaCreado from Patrocinadores where IdEvento = pIdEvento;
+		SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+
+	-- {Campo de informe de patrocinadores de eventos}
+	END;
+
         ";
         DB::unprepared($sql);
 
