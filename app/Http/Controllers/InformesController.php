@@ -10,6 +10,107 @@ use Illuminate\Http\Request;
 class InformesController extends Controller
 {
     //
+
+    public function informeVotacion(int $pIdEvento)
+    {
+        $IdEvento = intval($pIdEvento); // Valor por defecto 'N'
+        
+        try {
+            $evento = DB::select('CALL bsp_dame_evento(?)', [$IdEvento]);
+            $rawResults = DB::select('CALL bsp_listar_votos(?)', [$IdEvento]);
+
+            $models = [];
+
+            foreach ($rawResults as $row) {
+                $IdParticipante = $row->IdParticipante;
+                $idJuez = $row->IdJuez;
+
+                // Inicializar modelo si no existe
+                if (!isset($models[$IdParticipante])) {
+                    $models[$IdParticipante] = [
+                        'IdParticipante' => $IdParticipante,
+                        'DNIModelo' => $row->DNIModelo,
+                        'Apelname' => $row->ApelNameModelo,
+                        'votes' => [],
+                        'totalScore' => 0,
+                        'metricCount' => 0,
+                        'judgeSet' => [], // para contar votos únicos
+                    ];
+                }
+
+                // Clave para agrupar por juez
+                $judgeKey = "judge_$idJuez";
+                if (!isset($models[$IdParticipante]['votes'][$judgeKey])) {
+                    $models[$IdParticipante]['votes'][$judgeKey] = [
+                        'IdJuez' => $idJuez,
+                        'judgeName' => $row->ApelNameJuez,
+                        'metrics' => [],
+                    ];
+                    $models[$IdParticipante]['judgeSet'][$idJuez] = true; // registrar juez único
+                }
+
+                // Agregar métrica
+                $models[$IdParticipante]['votes'][$judgeKey]['metrics'][] = [
+                    'name' => $row->Metrica,
+                    'score' => floatval($row->Nota),
+                    'maxScore' => 10 // asumido
+                ];
+
+                // Acumular nota
+                $models[$IdParticipante]['totalScore'] += floatval($row->Nota);
+                $models[$IdParticipante]['metricCount']++;
+            }
+
+            // Procesar salida final
+            $output = [];
+            foreach ($models as $model) {
+                $votesArray = array_values($model['votes']);
+                $average = $model['metricCount'] > 0
+                    ? $model['totalScore'] / $model['metricCount']
+                    : 0;
+
+                $output[] = [
+                    'IdParticipante' => $model['IdParticipante'],
+                    'DNIModelo' => $model['DNIModelo'],
+                    'Apelname' => $model['Apelname'],
+                    'averageScore' => round($average, 2),
+                    'totalVotes' => count($model['judgeSet']),
+                    'totalMetrics' => $model['metricCount'],
+                    'votes' => $votesArray
+                ];
+            }
+
+
+
+            $imagePath = public_path('logos-web/logo-color-completo.png');
+            $image = "data:image/png;base64," . base64_encode(file_get_contents($imagePath));
+
+            $viewData = [
+                'image' => $image,
+                'data' => $output,
+                'titulo' => 'Votacion de '.$evento[0]->Evento,
+            ];
+
+            $pdf = Pdf::loadView('InformeTest', $viewData);
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'isPhpEnabled' => true
+            ]);
+
+            $filename = 'informe_votacion_' . now()->format('Ymd_His') . '.pdf';
+
+            return ResponseFormatter::success([
+                'filename' => $filename,
+                "pdf" => base64_encode($pdf->output()),
+            ]);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return ResponseFormatter::error($e->getMessage(), 500);
+        }
+    }
+
+
     public function informeEvento(int $pIdEvento)
     {
         // Ejemplo: obtén varios conjuntos de resultados
