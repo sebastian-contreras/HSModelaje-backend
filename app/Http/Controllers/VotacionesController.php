@@ -142,8 +142,14 @@ class VotacionesController extends Controller
 
         $IdParticipante = $request->input('pIdParticipante');
         $result = DB::select('CALL bsp_dame_participante(?)', [$IdParticipante]);
-        broadcast(new VotoModeloIniciado($result[0], 'iniciar'));
-        return ResponseFormatter::success($result[0]);
+        try {
+            DB::select('CALL bsp_iniciar_votacion_participante(?)', [$IdParticipante]);
+
+            broadcast(new VotoModeloIniciado($result[0], 'iniciar'));
+            return ResponseFormatter::success($result[0]);
+        } catch (\Exception $e) {
+            return ResponseFormatter::error($e->getMessage(), 200);
+        }
     }
 
     public function detenerVotacionParticipante(Request $request)
@@ -152,8 +158,13 @@ class VotacionesController extends Controller
 
         $IdParticipante = $request->input('pIdParticipante');
         $result = DB::select('CALL bsp_dame_participante(?)', [$IdParticipante]);
-        broadcast(new VotoModeloIniciado($result[0], 'detener'));
-        return ResponseFormatter::success($result[0]);
+        try {
+            DB::select('CALL bsp_detener_votacion_participante(?)', [$IdParticipante]);
+            broadcast(new VotoModeloIniciado($result[0], 'detener'));
+            return ResponseFormatter::success($result[0]);
+        } catch (\Exception $e) {
+            return ResponseFormatter::error($e->getMessage(), 200);
+        }
     }
 
     public function reiniciarVoto(Request $request)
@@ -161,25 +172,36 @@ class VotacionesController extends Controller
         $IdParticipante = $request->input('pIdParticipante');
         $IdEvento = $request->input('pIdEvento');
 
-        try{
+        try {
 
             $result = DB::select('CALL bsp_reiniciar_votacion_participante(?)', [$IdParticipante]);
-    
+
             // Verificar la respuesta del procedimiento almacenado
             if (isset($result[0]->Response) && $result[0]->Response === 'error') {
                 // Si hay un error, devolver un error formateado
                 return ResponseFormatter::error('Error al borrar al reiniciar la votacion.', 400);
             }
-    
+
             $listado = $this->listar(new Request(['pIdEvento' => $IdEvento]))->getData()->data;
             broadcast(new ListadoVotosParticipantes($listado, $IdEvento));
-    
-    
+
+
             // Si todo fue exitoso, devolver una respuesta de éxito
             return ResponseFormatter::success(null, 'Se reinicio correctamente la votacion del modelo.', 200);
+        } catch (\Exception $e) {
+            return ResponseFormatter::error($e->getMessage(), 200);
         }
-        catch (\Exception $e) {
-            return ResponseFormatter::error($e->getMessage(),  200);
+    }
+    public function ActivoVotacionParticipante(Request $request)
+    {
+        //
+
+        $IdEvento = $request->input('pIdEvento');
+        try {
+            $result = DB::select('CALL bsp_dame_votacion_participante(?)', [$IdEvento]);
+            return ResponseFormatter::success($result[0]);
+        } catch (\Exception $e) {
+            return ResponseFormatter::error($e->getMessage(), 200);
         }
     }
 
