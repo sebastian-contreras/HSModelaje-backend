@@ -3560,7 +3560,7 @@ SALIR:BEGIN
     DELETE FROM Votacion
     WHERE IdParticipante = pIdParticipante;
     -- Confirmar
-    SELECT 'OK' AS Mensaje, 'ok' AS Response, pIdVoto AS Id;
+    SELECT 'OK' AS Mensaje, 'ok' AS Response;
     COMMIT;
     
 END;
