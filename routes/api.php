@@ -275,3 +275,4 @@ Route::prefix('votos')->group(function () {
 
 });
 Route::get('/informes/{pIdEvento}', [InformesController::class, 'informeEvento'])->name('informes.informeEvento');
+Route::get('/dashboard/{pIdEvento}', [InformesController::class, 'dashboard'])->name('informes.dashboard');
