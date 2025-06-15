@@ -98,11 +98,20 @@ class VotacionesController extends Controller
     {
         $data = $request->validated();
 
+
+
         $IdParticipante = $request->IdParticipante;
         $IdJuez = $request->IdJuez;
+        $Token = $request->Token;
         $IdEvento = $request->IdEvento;
         $votos = $request->votos;
 
+            $lista = DB::select('CALL bsp_dame_juez(?)', [$IdJuez]);
+
+        if($lista[0]->Token != $Token){
+        return ResponseFormatter::error('No se pudo asignar el voto, token erroneo.', 201);
+
+        }
         $errores = [];
         foreach ($votos as $voto) {
             $result = DB::select('CALL bsp_alta_voto(?, ?, ?, ?, ?)', [
