@@ -199,7 +199,7 @@ class VotacionesController extends Controller
         $IdEvento = $request->input('pIdEvento');
         try {
             $result = DB::select('CALL bsp_dame_votacion_participante(?)', [$IdEvento]);
-            return ResponseFormatter::success($result[0]);
+            return ResponseFormatter::success($result);
         } catch (\Exception $e) {
             return ResponseFormatter::error($e->getMessage(), 200);
         }
