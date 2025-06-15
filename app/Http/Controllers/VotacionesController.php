@@ -8,6 +8,7 @@ use App\Helpers\ResponseFormatter;
 use App\Http\Requests\VotosRequest;
 use DB;
 use Illuminate\Http\Request;
+use Log;
 
 class VotacionesController extends Controller
 {
@@ -160,21 +161,26 @@ class VotacionesController extends Controller
         $IdParticipante = $request->input('pIdParticipante');
         $IdEvento = $request->input('pIdEvento');
 
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_reiniciar_votacion_participante(?)', [$IdParticipante]);
+        try{
 
-        // Verificar la respuesta del procedimiento almacenado
-        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
-            // Si hay un error, devolver un error formateado
-            return ResponseFormatter::error('Error al borrar al reiniciar la votacion.', 400);
+            $result = DB::select('CALL bsp_reiniciar_votacion_participante(?)', [$IdParticipante]);
+    
+            // Verificar la respuesta del procedimiento almacenado
+            if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+                // Si hay un error, devolver un error formateado
+                return ResponseFormatter::error('Error al borrar al reiniciar la votacion.', 400);
+            }
+    
+            $listado = $this->listar(new Request(['pIdEvento' => $IdEvento]))->getData()->data;
+            broadcast(new ListadoVotosParticipantes($listado, $IdEvento));
+    
+    
+            // Si todo fue exitoso, devolver una respuesta de éxito
+            return ResponseFormatter::success(null, 'Se reinicio correctamente la votacion del modelo.', 200);
         }
-
-        $listado = $this->listar(new Request(['pIdEvento' => $IdEvento]))->getData()->data;
-        broadcast(new ListadoVotosParticipantes($listado, $IdEvento));
-
-
-        // Si todo fue exitoso, devolver una respuesta de éxito
-        return ResponseFormatter::success(null, 'Se reinicio correctamente la votacion del modelo.', 200);
+        catch (\Exception $e) {
+            return ResponseFormatter::error($e->getMessage(),  200);
+        }
     }
 
     /**
