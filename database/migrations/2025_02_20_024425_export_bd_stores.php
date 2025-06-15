@@ -3523,6 +3523,8 @@ SALIR:BEGIN
         JOIN Metricas P USING (IdMetrica)
 		WHERE
 					V.IdEvento = pIdEvento
+					AND J.EstadoJuez = 'A'
+					AND P.EstadoMetrica = 'A'
 		ORDER BY J.IdJuez
 		;
 
