@@ -47,6 +47,7 @@ Route::get('metricas/evento/{IdEvento}', [MetricasController::class, 'index'])->
 Route::get('eventos/show/{IdEvento}', [EventosController::class, 'dame'])->name('eventos.dame');
 Route::get('establecimientos/{IdEstablecimiento}', [EstablecimientosController::class, 'dame'])->name('establecimientos.dame');
 Route::post('votos/', [VotacionesController::class, 'alta'])->name('votos.alta');
+Route::get('voto-activo/', [VotacionesController::class, 'ActivoVotacionParticipante'])->name('votos.ActivoVotacionParticipante');
 Route::get('zonas/busqueda', [ZonasController::class, 'busqueda'])->name('zonas.busqueda');
 Route::post('entradas/pasarela', [EntradasController::class, 'storePasarela'])->name('entradas.storePasarela');
 
