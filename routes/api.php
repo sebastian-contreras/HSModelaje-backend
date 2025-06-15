@@ -274,5 +274,6 @@ Route::prefix('votos')->group(function () {
     Route::get('/reiniciar-voto', [VotacionesController::class, 'reiniciarVoto'])->name('votos.reiniciarVoto');
 
 });
+Route::post('/informe-votacion/{pIdEvento}', [InformesController::class, 'informeVotacion'])->name('informes.informeVotacion');
 Route::get('/informes/{pIdEvento}', [InformesController::class, 'informeEvento'])->name('informes.informeEvento');
 Route::get('/dashboard/{pIdEvento}', [InformesController::class, 'dashboard'])->name('informes.dashboard');
