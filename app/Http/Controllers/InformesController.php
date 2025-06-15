@@ -88,4 +88,17 @@ class InformesController extends Controller
             "pdf" => base64_encode($pdf->output()),
         ]);
     }
+    public function dashboard(int $pIdEvento)
+    {
+        // Ejemplo: obtén varios conjuntos de resultados
+        $resultadosZona = DB::select("CALL bsp_informe_evento_zona(?)", [$pIdEvento]);
+        $resultadosEstado = DB::select("CALL bsp_informe_evento_estado(?)", [$pIdEvento]); // Ejemplo
+        $resultadosGastos = DB::select("CALL bsp_informe_evento_gastos(?)", [$pIdEvento]); // Ejemplo
+
+        return ResponseFormatter::success([
+            'zona' => $resultadosZona,
+            'estado' => $resultadosEstado,
+            'gastos' => $resultadosGastos
+        ]);
+    }
 }
