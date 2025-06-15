@@ -3801,6 +3801,128 @@ Select Patrocinador,Correo,Telefono,DomicilioRef,Descripcion,FechaCreado from Pa
 	-- {Campo de informe de patrocinadores de eventos}
 	END;
 
+
+
+    DROP PROCEDURE IF EXISTS bsp_iniciar_votacion_participante;
+    CREATE DEFINER=`root`@`%` PROCEDURE `bsp_iniciar_votacion_participante`(pIdParticipante INT)
+SALIR:BEGIN
+/*
+	Procedimiento para iniciar la votacion de un participante, controlando que no haya otra votacion en curso en el mismo evento. 
+    Devuelve OK o el mensaje de error en Mensaje.
+*/
+    DECLARE pIdEvento INT;
+
+    -- Manejo de errores
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Validación de parámetros obligatorios
+    IF pIdParticipante IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+    
+
+    SET pIdEvento = (SELECT IdEvento FROM Participantes WHERE IdParticipante=pIdParticipante);
+    
+	IF pIdEvento IS NULL THEN
+        SELECT 'Participante no encontrado.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+        LEAVE SALIR;
+    END IF;
+
+    -- Comenzar transacción
+    START TRANSACTION;
+    
+	IF EXISTS (
+        SELECT IdParticipante FROM Participantes
+        WHERE (IdEvento = pIdEvento AND ActivoVotacion = 'S')
+    ) THEN
+		SELECT 'Ya existe un participante con la votacion activa.' AS Mensaje, 'error' AS Response, NULL AS Id;
+		ROLLBACK;
+        LEAVE SALIR;
+    END IF;
+
+    -- Eliminar votos anteriores del mismo juez para el mismo participante, métrica y evento
+    UPDATE Participantes SET
+	ActivoVotacion = 'S'
+    WHERE IdParticipante = pIdParticipante;
+    
+    -- Confirmar
+    SELECT 'OK' AS Mensaje, 'ok' AS Response;
+    COMMIT;
+    
+END;
+
+DROP PROCEDURE IF EXISTS bsp_detener_votacion_participante;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_detener_votacion_participante`(pIdParticipante INT)
+SALIR:BEGIN
+/*
+	Procedimiento para detener la votacion de un participante. 
+    Devuelve OK o el mensaje de error en Mensaje.
+*/
+    DECLARE pIdEvento INT;
+
+    -- Manejo de errores
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+    END;
+
+    -- Validación de parámetros obligatorios
+    IF pIdParticipante IS NULL THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+    
+	IF (SELECT ActivoVotacion from Participantes WHERE IdParticipante=pIdParticipante) = 'N' THEN
+        SELECT 'El participante no tiene votacion activa.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        LEAVE SALIR;
+    END IF;
+
+    SET pIdEvento = (SELECT IdEvento FROM Participantes WHERE IdParticipante=pIdParticipante);
+    
+	IF pIdEvento IS NULL THEN
+        SELECT 'Participante no encontrado.' AS Mensaje, 'error' AS Response, NULL AS Id;
+        ROLLBACK;
+        LEAVE SALIR;
+    END IF;
+
+    -- Comenzar transacción
+    START TRANSACTION;
+    
+
+    UPDATE Participantes SET
+	ActivoVotacion = 'N'
+    WHERE IdParticipante = pIdParticipante;
+    
+    -- Confirmar
+    SELECT 'OK' AS Mensaje, 'ok' AS Response;
+    COMMIT;
+    
+END;
+
+
+DROP PROCEDURE IF EXISTS bsp_dame_votacion_participante;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_votacion_participante`(pIdEvento int)
+BEGIN
+/*
+	Procedimiento para obtener participante con votacion activa. Devuelve OK o el mensaje de error en Mensaje.
+*/
+
+   SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+    SELECT	*, 'ok' as Response
+    FROM	Participantes JOIN Modelos USING(IdModelo)
+    WHERE	IdEvento = pIdEvento AND ActivoVotacion='S' LIMIT 1;
+
+    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- {Campos de la Tabla Participantes}
+END;
         ";
         DB::unprepared($sql);
 
