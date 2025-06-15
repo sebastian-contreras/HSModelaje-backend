@@ -52,11 +52,7 @@ Route::get('/votacion/modelo/{IdParticipante}', function ($IdParticipante) {
 
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
-    Route::group(['middleware' => ['auth:sanctum']], function () {
-
-
-
-
+    Route::group(['middleware' => ['auth:sanctum', 'role:A']], function () {
 
         Route::prefix('personas')->group(function () {
             // Obtener todas las personas
@@ -70,9 +66,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Eliminar una persona específica
             Route::delete('/{id}', [PersonaController::class, 'destroy'])->name('personas.destroy');
         });
-
-
-
 
         Route::prefix('usuarios')->group(function () {
             // Obtener todas las usuarios
@@ -107,26 +100,55 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             Route::post('/activar/{IdEstablecimiento}', [EstablecimientosController::class, 'activar'])->name('establecimientos.activar');
         });
 
+        Route::prefix('gastos')->group(function () {
+            // Obtener todas los modelos
+            Route::get('/busqueda', [GastosController::class, 'busqueda'])->name('gastos.busqueda');
+            Route::get('/{IdEvento}', [GastosController::class, 'index'])->name('gastos.index');
+            Route::get('/show/{IdGasto}', [GastosController::class, 'dame'])->name('gastos.dame');
+            // Crear una nueva gastos
+            Route::post('/', [GastosController::class, 'store'])->name('gastos.store');
+            // Obtener una gastos específica
+            Route::get('/{IdGasto}', [GastosController::class, 'show'])->name('gastos.show');
+            // Actualizar una gastos específica
+            Route::put('/{IdGasto}', [GastosController::class, 'update'])->name('gastos.update');
+            // Eliminar una gastos específica
+            Route::delete('/{IdGasto}', [GastosController::class, 'destroy'])->name('gastos.destroy');
 
-        Route::prefix('eventos')->group(function () {
-            // Obtener todas los eventos
-            Route::get('/', [EventosController::class, 'index'])->name('eventos.index');
-            Route::get('/show/{IdEvento}', [EventosController::class, 'dame'])->name('eventos.dame');
-            Route::get('/busqueda', [EventosController::class, 'busqueda'])->name('eventos.busqueda');
-            // Crear una nueva eventos
-            Route::post('/', [EventosController::class, 'store'])->name('eventos.store');
-            // Obtener una eventos específica
-            Route::get('/{IdEvento}', [EventosController::class, 'show'])->name('eventos.show');
-            // Actualizar una eventos específica
-            Route::put('/{IdEvento}', [EventosController::class, 'update'])->name('eventos.update');
-            // Eliminar una eventos específica
-            Route::delete('/{IdEvento}', [EventosController::class, 'destroy'])->name('eventos.destroy');
-
-            Route::post('/darbaja/{IdEvento}', [EventosController::class, 'darBaja'])->name('eventos.darBaja');
-            Route::post('/activar/{IdEvento}', [EventosController::class, 'activar'])->name('eventos.activar');
-            Route::post('/finalizar/{IdEvento}', [EventosController::class, 'finalizar'])->name('eventos.finalizar');
         });
 
+        Route::prefix('patrocinadores')->group(function () {
+            // Obtener todas los patrocinadores
+            Route::get('/busqueda', [PatrocinadoresController::class, 'busqueda'])->name('patrocinadores.busqueda');
+            Route::get('/{IdEvento}', [PatrocinadoresController::class, 'index'])->name('patrocinadores.index');
+            Route::get('/show/{IdPatrocinador}', [PatrocinadoresController::class, 'dame'])->name('patrocinadores.dame');
+            // Crear una nueva patrocinadores
+            Route::post('/', [PatrocinadoresController::class, 'store'])->name('patrocinadores.store');
+            // Obtener una patrocinadores específica
+            Route::get('/{IdPatrocinador}', [PatrocinadoresController::class, 'show'])->name('patrocinadores.show');
+            // Actualizar una patrocinadores específica
+            Route::put('/{IdPatrocinador}', [PatrocinadoresController::class, 'update'])->name('patrocinadores.update');
+            // Eliminar una patrocinadores específica
+            Route::delete('/{IdPatrocinador}', [PatrocinadoresController::class, 'destroy'])->name('patrocinadores.destroy');
+
+        });
+
+        Route::prefix('zonas')->group(function () {
+            // Obtener todas los zonas
+            Route::get('/busqueda', [ZonasController::class, 'busqueda'])->name('zonas.busqueda');
+            Route::get('/{IdEvento}', [ZonasController::class, 'index'])->name('zonas.index');
+            Route::get('/show/{IdZona}', [ZonasController::class, 'dame'])->name('zonas.dame');
+            // Crear una nueva zonas
+            Route::post('/', [ZonasController::class, 'store'])->name('zonas.store');
+            // Obtener una zonas específica
+            Route::get('/{IdZona}', [ZonasController::class, 'show'])->name('zonas.show');
+            // Actualizar una zonas específica
+            Route::put('/{IdZona}', [ZonasController::class, 'update'])->name('zonas.update');
+            // Eliminar una zonas específica
+            Route::delete('/{IdZona}', [ZonasController::class, 'destroy'])->name('zonas.destroy');
+
+            Route::post('/darbaja/{IdZona}', [ZonasController::class, 'darBaja'])->name('zonas.darBaja');
+            Route::post('/activar/{IdZona}', [ZonasController::class, 'activar'])->name('zonas.activar');
+        });
 
         Route::prefix('modelos')->group(function () {
             // Obtener todas los modelos
@@ -146,42 +168,54 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             Route::post('/activar/{IdModelo}', [ModelosController::class, 'activar'])->name('modelos.activar');
         });
 
+        Route::post('/informe-votacion/{pIdEvento}', [InformesController::class, 'informeVotacion'])->name('informes.informeVotacion');
+        Route::get('/informes/{pIdEvento}', [InformesController::class, 'informeEvento'])->name('informes.informeEvento');
+        Route::get('/dashboard/{pIdEvento}', [InformesController::class, 'dashboard'])->name('informes.dashboard');
 
-        Route::prefix('gastos')->group(function () {
-            // Obtener todas los modelos
-            Route::get('/busqueda', [GastosController::class, 'busqueda'])->name('gastos.busqueda');
-            Route::get('/{IdEvento}', [GastosController::class, 'index'])->name('gastos.index');
-            Route::get('/show/{IdGasto}', [GastosController::class, 'dame'])->name('gastos.dame');
-            // Crear una nueva gastos
-            Route::post('/', [GastosController::class, 'store'])->name('gastos.store');
-            // Obtener una gastos específica
-            Route::get('/{IdGasto}', [GastosController::class, 'show'])->name('gastos.show');
-            // Actualizar una gastos específica
-            Route::put('/{IdGasto}', [GastosController::class, 'update'])->name('gastos.update');
-            // Eliminar una gastos específica
-            Route::delete('/{IdGasto}', [GastosController::class, 'destroy'])->name('gastos.destroy');
+    });
+    Route::group(['middleware' => ['auth:sanctum', 'role:A,G']], function () {
+        Route::prefix('entradas')->group(function () {
+            // Obtener todas los entradas
+            Route::get('/dame-token', [EntradasController::class, 'dameToken'])->name('entradas.dameToken');
+            Route::get('/busqueda', [EntradasController::class, 'busqueda'])->name('entradas.busqueda');
+            Route::get('/show/{IdEntrada}', [EntradasController::class, 'dame'])->name('entradas.dame');
+            Route::get('/{IdEvento}', [EntradasController::class, 'index'])->name('entradas.index');
+            // Crear una nueva entradas
+            Route::post('/', [EntradasController::class, 'store'])->name('entradas.store');
+            Route::post('/pasarela', [EntradasController::class, 'storePasarela'])->name('entradas.storePasarela');
+            // Obtener una entradas específica
+            // Actualizar una entradas específica
+            Route::put('/{IdEntrada}', [EntradasController::class, 'update'])->name('entradas.update');
+            // Eliminar una entradas específica
+            Route::delete('/{IdEntrada}', [EntradasController::class, 'destroy'])->name('entradas.destroy');
 
+            Route::post('/abonar/{IdEntrada}', [EntradasController::class, 'abonar'])->name('entradas.abonar');
+            Route::post('/usar/{IdEntrada}', [EntradasController::class, 'usar'])->name('entradas.usar');
+            Route::post('/rechazar/{IdEntrada}', [EntradasController::class, 'rechazar'])->name('entradas.rechazar');
         });
+    });
 
 
-        Route::prefix('patrocinadores')->group(function () {
-            // Obtener todas los patrocinadores
-            Route::get('/busqueda', [PatrocinadoresController::class, 'busqueda'])->name('patrocinadores.busqueda');
-            Route::get('/{IdEvento}', [PatrocinadoresController::class, 'index'])->name('patrocinadores.index');
-            Route::get('/show/{IdPatrocinador}', [PatrocinadoresController::class, 'dame'])->name('patrocinadores.dame');
-            // Crear una nueva patrocinadores
-            Route::post('/', [PatrocinadoresController::class, 'store'])->name('patrocinadores.store');
-            // Obtener una patrocinadores específica
-            Route::get('/{IdPatrocinador}', [PatrocinadoresController::class, 'show'])->name('patrocinadores.show');
-            // Actualizar una patrocinadores específica
-            Route::put('/{IdPatrocinador}', [PatrocinadoresController::class, 'update'])->name('patrocinadores.update');
-            // Eliminar una patrocinadores específica
-            Route::delete('/{IdPatrocinador}', [PatrocinadoresController::class, 'destroy'])->name('patrocinadores.destroy');
+    Route::group(['middleware' => ['auth:sanctum', 'role:A,M']], function () {
 
+        Route::prefix('eventos')->group(function () {
+            // Obtener todas los eventos
+            Route::get('/', [EventosController::class, 'index'])->name('eventos.index');
+            Route::get('/show/{IdEvento}', [EventosController::class, 'dame'])->name('eventos.dame');
+            Route::get('/busqueda', [EventosController::class, 'busqueda'])->name('eventos.busqueda');
+            // Crear una nueva eventos
+            Route::post('/', [EventosController::class, 'store'])->name('eventos.store');
+            // Obtener una eventos específica
+            Route::get('/{IdEvento}', [EventosController::class, 'show'])->name('eventos.show');
+            // Actualizar una eventos específica
+            Route::put('/{IdEvento}', [EventosController::class, 'update'])->name('eventos.update');
+            // Eliminar una eventos específica
+            Route::delete('/{IdEvento}', [EventosController::class, 'destroy'])->name('eventos.destroy');
+
+            Route::post('/darbaja/{IdEvento}', [EventosController::class, 'darBaja'])->name('eventos.darBaja');
+            Route::post('/activar/{IdEvento}', [EventosController::class, 'activar'])->name('eventos.activar');
+            Route::post('/finalizar/{IdEvento}', [EventosController::class, 'finalizar'])->name('eventos.finalizar');
         });
-
-
-
 
         Route::prefix('jueces')->group(function () {
             // Obtener todas los jueces
@@ -203,24 +237,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             Route::get('/invitar/{IdJuez}', [JuecesController::class, 'invitar'])->name('jueces.invitar');
         });
 
-        Route::prefix('zonas')->group(function () {
-            // Obtener todas los zonas
-            Route::get('/busqueda', [ZonasController::class, 'busqueda'])->name('zonas.busqueda');
-            Route::get('/{IdEvento}', [ZonasController::class, 'index'])->name('zonas.index');
-            Route::get('/show/{IdZona}', [ZonasController::class, 'dame'])->name('zonas.dame');
-            // Crear una nueva zonas
-            Route::post('/', [ZonasController::class, 'store'])->name('zonas.store');
-            // Obtener una zonas específica
-            Route::get('/{IdZona}', [ZonasController::class, 'show'])->name('zonas.show');
-            // Actualizar una zonas específica
-            Route::put('/{IdZona}', [ZonasController::class, 'update'])->name('zonas.update');
-            // Eliminar una zonas específica
-            Route::delete('/{IdZona}', [ZonasController::class, 'destroy'])->name('zonas.destroy');
-
-            Route::post('/darbaja/{IdZona}', [ZonasController::class, 'darBaja'])->name('zonas.darBaja');
-            Route::post('/activar/{IdZona}', [ZonasController::class, 'activar'])->name('zonas.activar');
-        });
-
         Route::prefix('metricas')->group(function () {
             // Obtener todas los metricas
             Route::get('/busqueda', [MetricasController::class, 'busqueda'])->name('metricas.busqueda');
@@ -239,29 +255,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             Route::post('/activar/{IdMetrica}', [MetricasController::class, 'activar'])->name('metricas.activar');
         });
 
-
-
-        Route::prefix('entradas')->group(function () {
-            // Obtener todas los entradas
-            Route::get('/dame-token', [EntradasController::class, 'dameToken'])->name('entradas.dameToken');
-            Route::get('/busqueda', [EntradasController::class, 'busqueda'])->name('entradas.busqueda');
-            Route::get('/show/{IdEntrada}', [EntradasController::class, 'dame'])->name('entradas.dame');
-            Route::get('/{IdEvento}', [EntradasController::class, 'index'])->name('entradas.index');
-            // Crear una nueva entradas
-            Route::post('/', [EntradasController::class, 'store'])->name('entradas.store');
-            Route::post('/pasarela', [EntradasController::class, 'storePasarela'])->name('entradas.storePasarela');
-            // Obtener una entradas específica
-            // Actualizar una entradas específica
-            Route::put('/{IdEntrada}', [EntradasController::class, 'update'])->name('entradas.update');
-            // Eliminar una entradas específica
-            Route::delete('/{IdEntrada}', [EntradasController::class, 'destroy'])->name('entradas.destroy');
-
-            Route::post('/abonar/{IdEntrada}', [EntradasController::class, 'abonar'])->name('entradas.abonar');
-            Route::post('/usar/{IdEntrada}', [EntradasController::class, 'usar'])->name('entradas.usar');
-            Route::post('/rechazar/{IdEntrada}', [EntradasController::class, 'rechazar'])->name('entradas.rechazar');
-        });
-
-
         Route::prefix('participantes')->group(function () {
             // Obtener todas los participantes
             Route::get('/busqueda', [ParticipantesController::class, 'busqueda'])->name('participantes.busqueda');
@@ -270,7 +263,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Obtener una participantes específica
             Route::delete('/{IdParticipante}', [ParticipantesController::class, 'destroy'])->name('participantes.destroy');
         });
-
 
         Route::prefix('votos')->group(function () {
             // Obtener todas los votos
@@ -283,9 +275,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             Route::get('/reiniciar-voto', [VotacionesController::class, 'reiniciarVoto'])->name('votos.reiniciarVoto');
 
         });
-        Route::post('/informe-votacion/{pIdEvento}', [InformesController::class, 'informeVotacion'])->name('informes.informeVotacion');
-        Route::get('/informes/{pIdEvento}', [InformesController::class, 'informeEvento'])->name('informes.informeEvento');
-        Route::get('/dashboard/{pIdEvento}', [InformesController::class, 'dashboard'])->name('informes.dashboard');
 
     });
 });
