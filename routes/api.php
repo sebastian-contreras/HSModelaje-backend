@@ -8,6 +8,7 @@ use App\Http\Controllers\EntradasController;
 use App\Http\Controllers\EstablecimientosController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\GastosController;
+use App\Http\Controllers\InformesController;
 use App\Http\Controllers\JuecesController;
 use App\Http\Controllers\MetricasController;
 use App\Http\Controllers\ModelosController;
@@ -273,3 +274,4 @@ Route::prefix('votos')->group(function () {
     Route::get('/reiniciar-voto', [VotacionesController::class, 'reiniciarVoto'])->name('votos.reiniciarVoto');
 
 });
+Route::get('/informes/{pIdEvento}', [InformesController::class, 'informeEvento'])->name('informes.informeEvento');
