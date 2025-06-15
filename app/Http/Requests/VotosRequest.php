@@ -24,6 +24,7 @@ class VotosRequest extends FormRequest
         return [
             'IdParticipante' => 'required|integer',
             'IdJuez' => 'required|integer',
+            'Token' => 'required',
             'votos' => 'required|array',
             'votos.*.IdMetrica' => 'required|integer',
             'votos.*.Nota' => 'required|integer|min:0|max:10',
