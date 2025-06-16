@@ -717,7 +717,7 @@ DROP PROCEDURE IF EXISTS bsp_alta_evento ;
 
 
 
-CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_evento`(pEvento varchar(150), pFechaProbableInicio datetime, pFechaProbableFinal datetime, pVotacion char(1), pIdEstablecimiento  int)
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_alta_evento`(pEvento varchar(150), pFechaProbableInicio datetime, pFechaProbableFinal datetime, pVotacion char(1), pIdEstablecimiento  int, pTitularCuenta VARCHAR(150), pAlias VARCHAR(40), pCBU VARCHAR(30))
 SALIR:BEGIN
 /*
 	Permite dar de alta un evento. Lo da de alta con estado A: Activa. Devuelve OK + Id o el mensaje de error en Mensaje.
@@ -737,6 +737,9 @@ SALIR:BEGIN
 	IF	pEvento = '' OR pEvento IS NULL OR
 		pFechaProbableInicio IS NULL OR
         pFechaProbableFinal IS NULL OR
+        pTitularCuenta IS NULL OR
+        pAlias IS NULL OR
+        pCBU IS NULL OR
         pVotacion = '' OR pVotacion IS NULL OR
         pIdEstablecimiento = '' OR pIdEstablecimiento IS NULL THEN
 		SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
@@ -766,14 +769,23 @@ INSERT INTO `Eventos`
 `FechaProbableFinal`,
 `Votacion`,
 `IdEstablecimiento`,
-`EstadoEvento`)
+`EstadoEvento`,
+`TitularCuenta`,
+`Alias`,
+`CBU`
+)
 VALUES
 (0,
 pEvento,
 pFechaProbableInicio,
 pFechaProbableFinal,
 pVotacion,
-pIdEstablecimiento,'A');
+pIdEstablecimiento,
+'A',
+pTitularCuenta,
+pAlias,
+pCBU
+);
 
 
 		SET pIdEvento = LAST_INSERT_ID();
@@ -788,7 +800,7 @@ DROP PROCEDURE IF EXISTS bsp_modifica_evento ;
 
 
 
-CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_evento`(pIdEvento int, pEvento varchar(150), pFechaProbableInicio date, pFechaProbableFinal date, pVotacion char(1), pFechaInicio date, pFechaFinal date, pIdEstablecimiento  int)
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_evento`(pIdEvento int, pEvento varchar(150), pFechaProbableInicio date, pFechaProbableFinal date, pVotacion char(1), pFechaInicio date, pFechaFinal date, pIdEstablecimiento  int, pTitularCuenta varchar(150), pAlias varchar(40), pCBU varchar(30))
 SALIR:BEGIN
 /*
 	Permite modificar el evento. Controlando que no este dado de Baja o finalizado Devuelve OK + Id o el mensaje de error en Mensaje.
@@ -808,7 +820,10 @@ SALIR:BEGIN
     -- Controla parámetros obligatorios
 	IF	pEvento = '' OR pEvento IS NULL OR
 		pFechaProbableInicio IS NULL OR
-         pFechaProbableFinal IS NULL OR
+        pFechaProbableFinal IS NULL OR
+        pTitularCuenta IS NULL OR
+        pAlias IS NULL OR
+        pCBU IS NULL OR
         pVotacion = '' OR pVotacion IS NULL OR
         pIdEstablecimiento = '' OR pIdEstablecimiento IS NULL THEN
 		SELECT 'Faltan datos obligatorios.' AS Mensaje,'error' as Response, NULL AS Id;
@@ -846,13 +861,16 @@ SALIR:BEGIN
 
 
 	      UPDATE Eventos SET
-              Evento = pEvento
+               Evento = pEvento
              , FechaProbableInicio = pFechaProbableInicio
              , FechaProbableFinal = pFechaProbableFinal
              , Votacion = pVotacion
              , FechaInicio = pFechaInicio
              , FechaFinal = pFechaFinal
              , IdEstablecimiento = pIdEstablecimiento
+             , TitularCuenta = pTitularCuenta
+             , Alias = pAlias
+             , CBU = pCBU
              WHERE IdEvento = pIdEvento;
 
 
