@@ -55,6 +55,7 @@ class EstablecimientosController extends Controller
             return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows ]);
         } catch (\Exception $e) {
             // Manejo de errores
+            Log::info('Error al obtener los establecimientos: ' . $e->getMessage());
             return ResponseFormatter::error('Error al obtener los establecimientos: ' . $e->getMessage(), 500);
         }
     }

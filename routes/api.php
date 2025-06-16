@@ -45,7 +45,6 @@ Route::get('/test', function () {
 Route::get('jueces/show-token/{Token}', [JuecesController::class, 'dameToken'])->name('jueces.dameToken');
 Route::get('metricas/evento/{IdEvento}', [MetricasController::class, 'index'])->name('metricas.index');
 Route::get('eventos/show/{IdEvento}', [EventosController::class, 'dame'])->name('eventos.dame');
-Route::get('establecimientos/{IdEstablecimiento}', [EstablecimientosController::class, 'dame'])->name('establecimientos.dame');
 Route::post('votos/', [VotacionesController::class, 'alta'])->name('votos.alta');
 Route::get('voto-activo/', [VotacionesController::class, 'ActivoVotacionParticipante'])->name('votos.ActivoVotacionParticipante');
 Route::get('zonas/busqueda', [ZonasController::class, 'busqueda'])->name('zonas.busqueda');
@@ -94,8 +93,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
         Route::prefix('establecimientos')->group(function () {
             // Obtener todas las usuarios
-            Route::get('/', [EstablecimientosController::class, 'index'])->name('establecimientos.index');
             Route::get('/busqueda', [EstablecimientosController::class, 'busqueda'])->name('establecimientos.busqueda');
+            Route::get('/', [EstablecimientosController::class, 'index'])->name('establecimientos.index');
             // Crear una nueva establecimientos
             Route::post('/', [EstablecimientosController::class, 'store'])->name('establecimientos.store');
             // Obtener una establecimientos específica
@@ -280,3 +279,5 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     });
 });
+
+Route::get('establecimientos/{IdEstablecimiento}', [EstablecimientosController::class, 'dame'])->name('establecimientos.dame');
