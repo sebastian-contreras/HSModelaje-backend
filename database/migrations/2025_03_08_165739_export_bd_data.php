@@ -11,6 +11,8 @@ return new class extends Migration {
     public function up(): void
     {
         DB::statement('CALL `bsp_alta_usuario`(?, ?, ?, ?, ?,?,?,?)', ['admin', 'contreras', 'sebastian', '1999-06-19', '3813852476', 'admin@admin.com', 'password', 'A']);
+        DB::statement('CALL `bsp_alta_usuario`(?, ?, ?, ?, ?,?,?,?)', ['portero', 'portero', 'apellido', '1999-06-19', '3813852476', 'portero@portero.com', 'password', 'G']);
+        DB::statement('CALL `bsp_alta_usuario`(?, ?, ?, ?, ?,?,?,?)', ['moderador', 'moderador', 'apellido', '1999-06-19', '3813852476', 'moderador@moderador.com', 'password', 'M']);
         // Establecimientos
         $establecimientos = [
             ['Café Tortoni', 'Buenos Aires', 100],
@@ -41,20 +43,20 @@ return new class extends Migration {
 
         // Datos eventos
         $eventos = [
-            ['Festival de Luz', '2023-11-01', '2023-11-05', 'S', 1],
-            ['Concierto de Estrellas', '2023-11-10', '2023-11-12', 'N', 2],
-            ['Cuentos de Otoño', '2023-11-15', '2023-11-20', 'S', 3],
-            ['Mercado Mágico', '2023-11-25', '2023-11-30', 'N', 4],
-            ['Aventura en el Bosque', '2023-12-01', '2023-12-05', 'S', 5],
-            ['Noche de Dragones', '2023-12-10', '2023-12-15', 'N', 6],
-            ['Baile de los Elementos', '2023-12-20', '2023-12-25', 'S', 7],
-            ['Fiesta de los Sueños', '2023-12-26', '2023-12-30', 'N', 8],
-            ['Caminata de los Espíritus', '2024-01-05', '2024-01-10', 'S', 9],
-            ['Reyes de la Noche', '2024-01-15', '2024-01-20', 'N', 10],
+            ['Festival de Luz', '2023-11-01', '2023-11-05', 'S', 1,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Concierto de Estrellas', '2023-11-10', '2023-11-12', 'N', 2,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Cuentos de Otoño', '2023-11-15', '2023-11-20', 'S', 3,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Mercado Mágico', '2023-11-25', '2023-11-30', 'N', 4,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Aventura en el Bosque', '2023-12-01', '2023-12-05', 'S', 5,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Noche de Dragones', '2023-12-10', '2023-12-15', 'N', 6,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Baile de los Elementos', '2023-12-20', '2023-12-25', 'S', 7,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Fiesta de los Sueños', '2023-12-26', '2023-12-30', 'N', 8,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Caminata de los Espíritus', '2024-01-05', '2024-01-10', 'S', 9,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
+            ['Reyes de la Noche', '2024-01-15', '2024-01-20', 'N', 10,'Sebastian Contreras','SEBASCON.NARANJA','0001255437652346553465'],
         ];
 
         foreach ($eventos as $evento) {
-            DB::statement('CALL `bsp_alta_evento`(?, ?, ?, ?, ?)', $evento);
+            DB::statement('CALL `bsp_alta_evento`(?, ?, ?, ?, ?,?,?,?)', $evento);
         }
 
         $gastos = [
