@@ -69,11 +69,14 @@ CREATE TABLE Eventos(
     Evento                  VARCHAR(150)    NOT NULL,
     FechaInicio             DATETIME,
     FechaFinal              DATETIME,
-    FechaProbableInicio    DATETIME        NOT NULL,
+    FechaProbableInicio     DATETIME        NOT NULL,
     FechaProbableFinal      DATETIME        NOT NULL,
     Votacion                CHAR(1)         NOT NULL,
     EstadoEvento            CHAR(1)         NOT NULL,
     IdEstablecimiento       INT             NOT NULL,
+    TitularCuenta           VARCHAR(150)    NULL,
+    Alias                   VARCHAR(40)     NULL,
+    CBU                     VARCHAR(30)     NULL,
     PRIMARY KEY (IdEvento)
 )ENGINE=INNODB
 COMMENT=''
