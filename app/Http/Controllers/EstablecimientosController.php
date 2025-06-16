@@ -7,6 +7,8 @@ use App\Http\Requests\StoreEstablecimientoRequest;
 use App\Http\Requests\UpdateEstablecimientoRequest;
 use DB;
 use Illuminate\Http\Request;
+use Log;
+use function Laravel\Prompts\warning;
 
 class EstablecimientosController extends Controller
 {
