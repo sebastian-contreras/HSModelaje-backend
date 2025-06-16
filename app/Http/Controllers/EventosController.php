@@ -89,12 +89,15 @@ class EventosController extends Controller
         //
         $request->validated();
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_evento(?, ?, ?,?,?)', [
+        $result = DB::select('CALL bsp_alta_evento(?, ?, ?,?,?,?,?,?)', [
             $request->Evento,
             $request->FechaProbableInicio,
             $request->FechaProbableFinal,
             $request->Votacion,
             $request->IdEstablecimiento,
+            $request->TitularCuenta,
+            $request->Alias,
+            $request->CBU,
         ]);
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
@@ -119,7 +122,7 @@ class EventosController extends Controller
     {
         //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_evento(?, ?, ?,?,?,?,?,?)', [
+        $result = DB::select('CALL bsp_modifica_evento(?, ?, ?,?,?,?,?,?,?,?,?)', [
             $request->IdEvento,
             $request->Evento,
             $request->FechaProbableInicio,
@@ -128,6 +131,9 @@ class EventosController extends Controller
             null,
             null,
             $request->IdEstablecimiento,
+            $request->TitularCuenta,
+            $request->Alias,
+            $request->CBU,
         ]);
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
