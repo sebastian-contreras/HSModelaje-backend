@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -87,32 +88,14 @@ return new class extends Migration {
         }
 
 
-        $patrocinadores = [
-            [1, 'Tech Innovations S.A.', 'contacto@techinnovations.com', '5551234567', null, 'Líder en soluciones tecnológicas.'],
-            [2, 'Cultura y Arte Ltda.', 'info@culturayarte.com', '5552345678', null, 'Promoviendo el arte y la cultura.'],
-            [3, 'Música y Eventos S.R.L.', 'info@musiayeventos.com', '5553456789', null, 'Organización de eventos musicales.'],
-            [4, 'Ferias y Exposiciones S.A.', 'contacto@feriaseexposiciones.com', '5554567890', null, 'Expertos en ferias comerciales.'],
-            [5, 'Conferencias Globales S.A.', 'info@conferenciasglobales.com', '5555678901', null, 'Conectando ideas y personas.'],
-            [6, 'Exposiciones Creativas Ltda.', 'contacto@exposicionescreativas.com', '5556789012', null, 'Fomentando la creatividad en eventos.'],
-            [7, 'Deportes y Aventura S.R.L.', 'info@deportesyaventura.com', '5557890123', null, 'Patrocinador de eventos deportivos.'],
-            [8, 'Moda y Estilo S.A.', 'contacto@modayestilo.com', '5558901234', null, 'Tendencias en moda y estilo.'],
-            [9, 'Tecnología Avanzada S.A.', 'info@tecnologiaavanzada.com', '5559012345', null, 'Innovación en tecnología.'],
-            [10, 'Arte y Diseño Ltda.', 'contacto@arteydiseño.com', '5550123456', null, 'Creando experiencias artísticas.'],
-            [1, 'Salud y Bienestar S.A.', 'info@saludybienestar.com', '5551234568', null, 'Promoviendo la salud y el bienestar.'],
-            [2, 'Educación y Futuro Ltda.', 'contacto@educacionyfuturo.com', '5552345679', null, 'Comprometidos con la educación.'],
-            [3, 'Gastronomía Gourmet S.R.L.', 'info@gastronomiagourmet.com', '5553456780', null, 'Experiencias culinarias únicas.'],
-            [4, 'Turismo y Aventura S.A.', 'contacto@turismoyaventura.com', '5554567891', null, 'Descubre el mundo con nosotros.'],
-            [5, 'Entretenimiento Total Ltda.', 'info@entretenimientototal.com', '5555678902', null, 'Diversión para todos.'],
-            [6, 'Eventos Corporativos S.R.L.', 'contacto@eventoscorporativos.com', '5556789013', null, 'Soluciones para eventos empresariales.'],
-            [7, 'Innovación Educativa S.A.', 'info@innovacioneducativa.com', '5557890124', null, 'Transformando la educación.'],
-            [8, 'Cine y Televisión Ltda.', 'contacto@cineytelevision.com', '5558901235', null, 'Producción y promoción de eventos.'],
-            [9, 'Marketing Creativo S.A.', 'info@marketingcreativo.com', '5559012346', null, 'Estrategias innovadoras de marketing.'],
-            [10, 'Desarrollo Sostenible Ltda.', 'contacto@desarrollosostenible.com', '5550123457', null, 'Comprometidos con el medio ambiente.']
-        ];
-        foreach ($patrocinadores as $patrocinador) {
-            DB::statement('CALL `bsp_alta_patrocinador`(?, ?, ?, ?, ?,?)', $patrocinador);
-        }
-
+            DB::table('Patrocinadores')->insert([
+            ['IdEvento' => 10, 'Patrocinador' => 'ModaXpress', 'Correo' => 'contacto@modaxpress.com', 'Telefono' => '1155550011', 'DomicilioRef' => 'Av. Corrientes 1234, CABA', 'Descripcion' => 'Tienda de ropa urbana con estilo innovador.', 'FechaCreado' => Carbon::now()],
+            ['IdEvento' => 10, 'Patrocinador' => 'Belleza Total', 'Correo' => 'info@bellezatotal.com', 'Telefono' => '1155550012', 'DomicilioRef' => 'Calle Mendoza 432, Rosario', 'Descripcion' => 'Centro estético especializado en eventos.', 'FechaCreado' => Carbon::now()],
+            ['IdEvento' => 10, 'Patrocinador' => 'Revista Glam', 'Correo' => 'glam@revistas.com', 'Telefono' => '1155550013', 'DomicilioRef' => 'Diagonal Norte 1000, CABA', 'Descripcion' => 'Revista líder en moda y tendencias.', 'FechaCreado' => Carbon::now()],
+            ['IdEvento' => 10, 'Patrocinador' => 'Agua Viva', 'Correo' => 'ventas@aguaviva.com', 'Telefono' => '1155550014', 'DomicilioRef' => 'Ruta 8 km 55, Pilar', 'Descripcion' => 'Distribuidor oficial de agua mineral para eventos.', 'FechaCreado' => Carbon::now()],
+            ['IdEvento' => 10, 'Patrocinador' => 'Studio Flash', 'Correo' => 'studio@flashphoto.com', 'Telefono' => '1155550015', 'DomicilioRef' => 'San Martín 300, Córdoba', 'Descripcion' => 'Estudio de fotografía profesional con experiencia en desfiles.', 'FechaCreado' => Carbon::now()],
+        ]);
+        
         $jueces = [
             [1, '12345678901', 'Juan Pérez', 'juan.perez@example.com', '1234567890'],
             [2, '23456789012', 'María López', 'maria.lopez@example.com', '1234567891'],
@@ -131,8 +114,8 @@ return new class extends Migration {
             [5, '57924680315', 'Ricardo Romero', 'ricardo.romero@example.com', '1234567804'],
             [6, '68035791426', 'Gabriela Herrera', 'gabriela.herrera@example.com', '1234567805'],
             [7, '79146802537', 'Samuel Mendoza', 'samuel.mendoza@example.com', '1234567806'],
-            [8, '80257913648', 'Isabel Castro', 'isabel.castro@example.com', '1234567807'],
-            [9, '91368024759', 'Hugo Salazar', 'hugo.salazar@example.com', '1234567808'],
+            [10, '80257913648', 'Isabel Castro', 'isabel.castro@example.com', '1234567807'],
+            [10, '91368024759', 'Hugo Salazar', 'hugo.salazar@example.com', '1234567808'],
             [10, '02479135860', 'Natalia Paredes', 'natalia.paredes@example.com', '1234567809']
         ];
 
@@ -222,19 +205,55 @@ return new class extends Migration {
                 [10, 'Ramírez Camila', '39012345', 'camila.ramirez@example.com', '1223456789', 'comp_010', 1],
                 [11, 'Torres Nicolás', '40123456', 'nicolas.torres@example.com', '1234567890', 'comp_011', 1],
                 [12, 'Flores Sofía', '41234567', 'sofia.flores@example.com', '1245678901', 'comp_012', 1],
-                [13, 'Álvarez Juan', '42345678', 'juan.alvarez@example.com', '1256789012', 'comp_013', 1],
-                [14, 'Morales Agustina', '43456789', 'agustina.morales@example.com', '1267890123', 'comp_014', 1],
-                [15, 'Castro Bruno', '44567890', 'bruno.castro@example.com', '1278901234', 'comp_015', 1],
-                [16, 'Ortiz Emilia', '45678901', 'emilia.ortiz@example.com', '1289012345', 'comp_016', 1],
-                [17, 'Méndez Santiago', '46789012', 'santiago.mendez@example.com', '1290123456', 'comp_017', 1],
-                [18, 'Vargas Lucía', '47890123', 'lucia.vargas@example.com', '1301234567', 'comp_018', 1],
-                [19, 'Rojas Facundo', '48901234', 'facundo.rojas@example.com', '1312345678', 'comp_019', 1],
+                [20, 'Álvarez Juan', '42345678', 'juan.alvarez@example.com', '1256789012', 'comp_013', 1],
+                [10, 'Morales Agustina', '43456789', 'agustina.morales@example.com', '1267890123', 'comp_014', 1],
+                [10, 'Castro Bruno', '44567890', 'bruno.castro@example.com', '1278901234', 'comp_015', 1],
+                [10, 'Ortiz Emilia', '45678901', 'emilia.ortiz@example.com', '1289012345', 'comp_016', 1],
+                [10, 'Méndez Santiago', '46789012', 'santiago.mendez@example.com', '1290123456', 'comp_017', 1],
+                [20, 'Vargas Lucía', '47890123', 'lucia.vargas@example.com', '1301234567', 'comp_018', 1],
+                [20, 'Rojas Facundo', '48901234', 'facundo.rojas@example.com', '1312345678', 'comp_019', 1],
                 [20, 'Navarro Julieta', '49012345', 'julieta.navarro@example.com', '1323456789', 'comp_020', 1]
             ]
         ;
         foreach ($entradas as $entrada) {
             DB::statement('CALL `bsp_alta_entrada`(?, ?,?,?,?,?,?)', $entrada);
         }
+
+        DB::table('Modelos')->insert([
+            ['DNI' => '10000001', 'ApelName' => 'Ana Pérez', 'FechaNacimiento' => '1998-04-12', 'Sexo' => 'F', 'Telefono' => '1155550001', 'Correo' => 'ana.perez@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000002', 'ApelName' => 'Juan López', 'FechaNacimiento' => '1995-09-22', 'Sexo' => 'M', 'Telefono' => '1155550002', 'Correo' => 'juan.lopez@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000003', 'ApelName' => 'Lucía García', 'FechaNacimiento' => '2000-06-10', 'Sexo' => 'F', 'Telefono' => '1155550003', 'Correo' => 'lucia.garcia@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000004', 'ApelName' => 'Carlos Díaz', 'FechaNacimiento' => '1999-02-01', 'Sexo' => 'M', 'Telefono' => '1155550004', 'Correo' => 'carlos.diaz@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000005', 'ApelName' => 'Valentina Ruiz', 'FechaNacimiento' => '2001-07-18', 'Sexo' => 'F', 'Telefono' => '1155550005', 'Correo' => 'valentina.ruiz@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000006', 'ApelName' => 'Marcos Gómez', 'FechaNacimiento' => '1997-11-09', 'Sexo' => 'M', 'Telefono' => '1155550006', 'Correo' => 'marcos.gomez@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000007', 'ApelName' => 'Julieta Castro', 'FechaNacimiento' => '2000-01-21', 'Sexo' => 'F', 'Telefono' => '1155550007', 'Correo' => 'julieta.castro@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000008', 'ApelName' => 'Martín Rivas', 'FechaNacimiento' => '1996-05-30', 'Sexo' => 'M', 'Telefono' => '1155550008', 'Correo' => 'martin.rivas@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000009', 'ApelName' => 'Sofía Blanco', 'FechaNacimiento' => '1998-08-25', 'Sexo' => 'F', 'Telefono' => '1155550009', 'Correo' => 'sofia.blanco@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000010', 'ApelName' => 'Diego Herrera', 'FechaNacimiento' => '2002-03-17', 'Sexo' => 'M', 'Telefono' => '1155550010', 'Correo' => 'diego.herrera@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000011', 'ApelName' => 'Camila Torres', 'FechaNacimiento' => '1999-10-03', 'Sexo' => 'F', 'Telefono' => '1155550011', 'Correo' => 'camila.torres@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000012', 'ApelName' => 'Nicolás Vega', 'FechaNacimiento' => '1997-12-12', 'Sexo' => 'M', 'Telefono' => '1155550012', 'Correo' => 'nicolas.vega@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000013', 'ApelName' => 'Agustina Luna', 'FechaNacimiento' => '2000-04-05', 'Sexo' => 'F', 'Telefono' => '1155550013', 'Correo' => 'agustina.luna@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000014', 'ApelName' => 'Tomás Moreno', 'FechaNacimiento' => '1996-06-14', 'Sexo' => 'M', 'Telefono' => '1155550014', 'Correo' => 'tomas.moreno@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000015', 'ApelName' => 'Milagros Cabrera', 'FechaNacimiento' => '2001-02-27', 'Sexo' => 'F', 'Telefono' => '1155550015', 'Correo' => 'milagros.cabrera@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000016', 'ApelName' => 'Lucas Navarro', 'FechaNacimiento' => '1995-09-19', 'Sexo' => 'M', 'Telefono' => '1155550016', 'Correo' => 'lucas.navarro@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000017', 'ApelName' => 'Martina Peña', 'FechaNacimiento' => '2003-01-11', 'Sexo' => 'F', 'Telefono' => '1155550017', 'Correo' => 'martina.pena@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000018', 'ApelName' => 'Facundo Silva', 'FechaNacimiento' => '1998-07-20', 'Sexo' => 'M', 'Telefono' => '1155550018', 'Correo' => 'facundo.silva@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000019', 'ApelName' => 'Brenda Salas', 'FechaNacimiento' => '2002-12-06', 'Sexo' => 'F', 'Telefono' => '1155550019', 'Correo' => 'brenda.salas@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000020', 'ApelName' => 'Gabriel Fuentes', 'FechaNacimiento' => '1996-11-23', 'Sexo' => 'M', 'Telefono' => '1155550020', 'Correo' => 'gabriel.fuentes@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000021', 'ApelName' => 'Emilia Bravo', 'FechaNacimiento' => '2000-10-08', 'Sexo' => 'F', 'Telefono' => '1155550021', 'Correo' => 'emilia.bravo@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000022', 'ApelName' => 'Julián Romero', 'FechaNacimiento' => '1997-03-04', 'Sexo' => 'M', 'Telefono' => '1155550022', 'Correo' => 'julian.romero@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000023', 'ApelName' => 'Melina Ferreira', 'FechaNacimiento' => '2001-08-15', 'Sexo' => 'F', 'Telefono' => '1155550023', 'Correo' => 'melina.ferreira@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000024', 'ApelName' => 'Franco Aguirre', 'FechaNacimiento' => '1999-05-01', 'Sexo' => 'M', 'Telefono' => '1155550024', 'Correo' => 'franco.aguirre@example.com', 'EstadoMod' => 'A'],
+            ['DNI' => '10000025', 'ApelName' => 'Rocío Méndez', 'FechaNacimiento' => '1998-01-31', 'Sexo' => 'F', 'Telefono' => '1155550025', 'Correo' => 'rocio.mendez@example.com', 'EstadoMod' => 'A'],
+        ]);
+
+        DB::table('Metricas')->insert([
+            ['IdEvento' => 10, 'Metrica' => 'Porte y elegancia en pasarela', 'EstadoMetrica' => 'A'],
+            ['IdEvento' => 10, 'Metrica' => 'Vestimenta y presentación', 'EstadoMetrica' => 'A'],
+            ['IdEvento' => 10, 'Metrica' => 'Actitud y seguridad', 'EstadoMetrica' => 'A'],
+            ['IdEvento' => 10, 'Metrica' => 'Originalidad del desfile', 'EstadoMetrica' => 'A'],
+            ['IdEvento' => 10, 'Metrica' => 'Interacción con el público', 'EstadoMetrica' => 'A'],
+        ]);
 
 
     }
