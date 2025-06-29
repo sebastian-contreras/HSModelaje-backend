@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Classes\Usuario;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -30,16 +31,9 @@ class UsuariosController extends Controller
     public function store(StoreUserRequest $request)
     {
         $request->validated();
-        $result = $this->gestorUsuarios->Alta(
-            $request->Username,
-            $request->Apellidos,
-            $request->Nombres,
-            $request->FechaNacimiento,
-            $request->Telefono,
-            $request->Email,
-            $request->Contrasena,
-            $request->Rol
-        );
+        $usuario = new Usuario($request->all());
+        $result = $this->gestorUsuarios->Alta($usuario);
+
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
@@ -49,17 +43,8 @@ class UsuariosController extends Controller
     public function update(UpdateUserRequest $request, int $IdUsuario)
     {
         $request->validated();
-        $result = $this->gestorUsuarios->Modifica(
-            $IdUsuario,
-            $request->Username,
-            $request->Apellidos,
-            $request->Nombres,
-            $request->FechaNacimiento,
-            $request->Telefono,
-            $request->Email,
-            $request->Contrasena,
-            $request->Rol
-        );
+        $usuario = new Usuario($request->all());
+        $result = $this->gestorUsuarios->Modifica($usuario);
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
@@ -74,10 +59,10 @@ class UsuariosController extends Controller
         }
         return ResponseFormatter::success(null, 'Usuario borrado exitosamente.', 200);
     }
-
     public function darBaja(int $IdUsuario)
     {
-        $result = $this->gestorUsuarios->DarBaja($IdUsuario);
+        $usuario = new Usuario(['IdUsuario' => $IdUsuario]);
+        $result = $usuario->DarBaja();
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
@@ -86,7 +71,8 @@ class UsuariosController extends Controller
 
     public function activar(int $IdUsuario)
     {
-        $result = $this->gestorUsuarios->Activar($IdUsuario);
+        $usuario = new Usuario(['IdUsuario' => $IdUsuario]);
+        $result = $usuario->Activar();
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
