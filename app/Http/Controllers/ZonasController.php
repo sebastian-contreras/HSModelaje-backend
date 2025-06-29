@@ -2,17 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Zonas;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreZonaRequest;
 use App\Http\Requests\UpdateZonaRequest;
+use App\Services\GestorZonas;
 use DB;
 use Illuminate\Http\Request;
+use Log;
 
 class ZonasController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+        protected $gestorZonas;
+
+    public function __construct(GestorZonas $gestorZonas)
+    {
+        $this->gestorZonas = $gestorZonas;
+    }
     public function index(Request $request)
     {
         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
@@ -21,7 +30,7 @@ class ZonasController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_listar_zonas(?,?)', [$pIdEvento,$pIncluyeBajas]);
+            $lista = $this->gestorZonas->Listar($pIdEvento, $pIncluyeBajas);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -46,7 +55,7 @@ class ZonasController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_buscar_zonas(?,?,?,?,?,?)', [$pIdEvento,$pZona, $pAccesoDisc,$pEstado, $pOffset, $pCantidad]);
+            $lista = $this->gestorZonas->Buscar($pIdEvento, $pZona, $pAccesoDisc, $pEstado, $pOffset, $pCantidad);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
@@ -69,14 +78,10 @@ class ZonasController extends Controller
         //
         $request->validated();
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_zona( ?, ?,?, ?, ?,?)', [
-            $request->IdEvento,
-            $request->Zona,
-            $request->Capacidad,
-            $request->AccesoDisc,
-            $request->Precio,
-            $request->Detalle,
-        ]);
+        $zona = new Zonas($request->all());
+        Log::info('Creando zona con datos: ', [$zona]);
+        $result = $this->gestorZonas->Alta($zona);
+
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
@@ -90,33 +95,29 @@ class ZonasController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $zona = new Zonas(['IdZona' => $id]);
+            $result = $zona->Dame();
+            return ResponseFormatter::success($result);
+        } catch (\Exception $e) {
+            return ResponseFormatter::error('Error al obtener la zona.', 500);
+        }
     }
-
     /**
      * Update the specified resource in storage.
      */
     public function update(UpdateZonaRequest $request, int $IdZona)
     {
-        //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_zona(?, ?,?, ?, ?,?)', [
-            $request->IdZona,
-            $request->Zona,
-            $request->Capacidad,
-            $request->AccesoDisc,
-            $request->Precio,
-            $request->Detalle,
-        ]);
-
-
+        $data = $request->all();
+        $data['IdZona'] = $IdZona;
+        $zona = new Zonas($data);
+        $result = $this->gestorZonas->Modifica($zona);
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
-            // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
         return ResponseFormatter::success($result, 'Zona modificado exitosamente.', 201);
-
     }
 
     /**
@@ -124,49 +125,34 @@ class ZonasController extends Controller
      */
     public function destroy(int $IdZona)
     {
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_borra_zona(?)', [$IdZona]);
+        $result = $this->gestorZonas->Borra($IdZona);
 
-        // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
-            // Si hay un error, devolver un error formateado
-            return ResponseFormatter::error('Error al borrar el zona.', 400);
+            return ResponseFormatter::error('Error al borrar la zona.', 400);
         }
-
-        // Si todo fue exitoso, devolver una respuesta de éxito
         return ResponseFormatter::success(null, 'Zona borrado exitosamente.', 200);
     }
 
-
-    public function darBaja(int $IdZona)
+  public function darBaja(int $IdZona)
     {
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_darbaja_zona(?)', [$IdZona]);
+        $zona = new Zonas(['IdZona' => $IdZona]);
+        $result = $zona->DarBaja();
 
-        // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
-            // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
-
-        // Si todo fue exitoso, devolver una respuesta de éxito
         return ResponseFormatter::success(null, 'Zona dado de baja exitosamente.', 200);
     }
 
     public function activar(int $IdZona)
     {
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_activar_zona(?)', [$IdZona]);
+        $zona = new Zonas(['IdZona' => $IdZona]);
+        $result = $zona->Activar();
 
-        // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
-            // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
-
-        // Si todo fue exitoso, devolver una respuesta de éxito
         return ResponseFormatter::success(null, 'Zona activo exitosamente.', 200);
     }
-
 
 }
