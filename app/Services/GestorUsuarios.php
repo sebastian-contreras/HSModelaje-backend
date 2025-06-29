@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Classes\Usuario;
 use Illuminate\Support\Facades\DB;
 
 class GestorUsuarios
@@ -11,32 +12,32 @@ class GestorUsuarios
         return DB::select('CALL bsp_listar_usuarios(?)', [$pIncluyeBajas]);
     }
 
-    public function Alta($Username, $Apellidos, $Nombres, $FechaNacimiento, $Telefono, $Email, $Contrasena, $Rol)
+   public function Alta(Usuario $usuario)
     {
         return DB::select('CALL bsp_alta_usuario(?, ?, ?, ?, ?, ?, ?, ?)', [
-            $Username,
-            $Apellidos,
-            $Nombres,
-            $FechaNacimiento,
-            $Telefono,
-            $Email,
-            $Contrasena,
-            $Rol,
+            $usuario->Username,
+            $usuario->Apellidos,
+            $usuario->Nombres,
+            $usuario->FechaNacimiento,
+            $usuario->Telefono,
+            $usuario->Email,
+            $usuario->Contrasena,
+            $usuario->Rol,
         ]);
     }
 
-    public function Modifica($IdUsuario, $Username, $Apellidos, $Nombres, $FechaNacimiento, $Telefono, $Email, $Contrasena, $Rol)
+    public function Modifica(Usuario $usuario)
     {
         return DB::select('CALL bsp_modifica_perfil(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
-            $IdUsuario,
-            $Username,
-            $Apellidos,
-            $Nombres,
-            $FechaNacimiento,
-            $Telefono,
-            $Email,
-            $Contrasena,
-            $Rol,
+            $usuario->IdUsuario,
+            $usuario->Username,
+            $usuario->Apellidos,
+            $usuario->Nombres,
+            $usuario->FechaNacimiento,
+            $usuario->Telefono,
+            $usuario->Email,
+            $usuario->Contrasena,
+            $usuario->Rol,
         ]);
     }
 
@@ -45,13 +46,8 @@ class GestorUsuarios
         return DB::select('CALL bsp_borra_usuario(?)', [$IdUsuario]);
     }
 
-    public function DarBaja($IdUsuario)
+    public function ModificaRol($IdUsuario, $Rol)
     {
-        return DB::select('CALL bsp_darbaja_usuario(?)', [$IdUsuario]);
-    }
-
-    public function Activar($IdUsuario)
-    {
-        return DB::select('CALL bsp_activar_usuario(?)', [$IdUsuario]);
+        return DB::select('CALL bsp_activar_usuario(?,?)', [$IdUsuario, $Rol]);
     }
 }
