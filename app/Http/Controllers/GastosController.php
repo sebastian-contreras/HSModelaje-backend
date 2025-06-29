@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Gastos;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreEstablecimientoRequest;
 use App\Http\Requests\StoreGastoRequest;
@@ -9,6 +10,7 @@ use App\Http\Requests\StoreModeloRequest;
 use App\Http\Requests\UpdateEstablecimientoRequest;
 use App\Http\Requests\UpdateGastoRequest;
 use App\Http\Requests\UpdateModeloRequest;
+use App\Services\GestorGastos;
 use DB;
 use Illuminate\Http\Request;
 
@@ -17,13 +19,19 @@ class GastosController extends Controller
     /**
      * Display a listing of the resource.
      */
+    protected $gestorGastos;
+
+    public function __construct(GestorGastos $gestorGastos)
+    {
+        $this->gestorGastos = $gestorGastos;
+    }
     public function index($IdEvento)
     {
         $IdEvento = intval($IdEvento);
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_listar_gastos(?)', [$IdEvento]);
+            $lista = $this->gestorGastos->Listar($IdEvento);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -37,7 +45,7 @@ class GastosController extends Controller
     public function busqueda(Request $request)
     {
         $pIdEvento = intval($request->input('pIdEvento'));
-        $pGasto = $request->input('pGasto',null);
+        $pGasto = $request->input('pGasto', null);
 
         $pPagina = $request->input('pPagina', 1); // Valor por defecto 1
         $pCantidad = $request->input('pCantidad', 10); // Valor por defecto 10
@@ -47,13 +55,13 @@ class GastosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_buscar_gastos(?,?,?,?)', [$pIdEvento, $pGasto,$pOffset, $pCantidad]);
+            $lista = $this->gestorGastos->Buscar($pIdEvento, $pGasto, $pOffset, $pCantidad);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
 
             // Devolver el resultado como JSON
-            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows ]);
+            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows]);
         } catch (\Exception $e) {
             // Manejo de errores
             return ResponseFormatter::error('Error al obtener los gastos: ' . $e->getMessage(), 500);
@@ -70,13 +78,9 @@ class GastosController extends Controller
         //
         $request->validated();
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_gasto(?, ?, ?,?, ?)', [
-            $request->IdEvento,
-            $request->Gasto,
-            $request->Personal,
-            $request->Monto,
-            $request->Comprobante,
-        ]);
+        $gasto = new Gastos($request->all());
+        $result = $this->gestorGastos->Alta($gasto);
+
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
@@ -90,7 +94,13 @@ class GastosController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $gasto = new Gastos(['IdGasto' => $id]);
+            $result = $gasto->Dame();
+            return ResponseFormatter::success($result);
+        } catch (\Exception $e) {
+            return ResponseFormatter::error('Error al obtener el gasto.', 500);
+        }
     }
 
     /**
@@ -100,14 +110,10 @@ class GastosController extends Controller
     {
         //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_gasto(?,?, ?, ?,?)', [
-            $request->IdGasto,
-            $request->Gasto,
-            $request->Personal,
-            $request->Monto,
-            $request->Comprobante,
-        ]);
-
+        $data = $request->all();
+        $data['IdGasto'] = $IdGasto;
+        $gasto = new Gastos($data);
+        $result = $this->gestorGastos->Modifica($gasto);
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
@@ -123,7 +129,7 @@ class GastosController extends Controller
     public function destroy(int $IdGasto)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_borra_gasto(?)', [$IdGasto]);
+        $result = $this->gestorGastos->Borra($IdGasto);
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
