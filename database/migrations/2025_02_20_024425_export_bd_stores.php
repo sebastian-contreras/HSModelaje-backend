@@ -944,7 +944,7 @@ SALIR:BEGIN
 
 
 	-- Controla que el Evento no tenga patrocinadores asociadas
-	IF EXISTS(SELECT IdPatrocinador FROM Patrocinador WHERE IdEvento = pIdEvento) THEN
+	IF EXISTS(SELECT IdPatrocinador FROM Patrocinadores WHERE IdEvento = pIdEvento) THEN
 		SELECT 'No puede borrar el Evento. Existen patrocinadores asociados.' AS Mensaje,'error' as Response;
 		LEAVE SALIR;
     END IF;

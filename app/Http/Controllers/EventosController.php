@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Eventos;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreEventoRequest;
 use App\Http\Requests\UpdateEventoRequest;
+use App\Services\GestorEventos;
 use DB;
 use Illuminate\Http\Request;
 use Number;
@@ -16,21 +18,27 @@ class EventosController extends Controller
      * Display a listing of the resource.
      */
 
+    protected $gestorEventos;
 
-     public function dame(string $IdEvento)
-     {
-         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
-         try {
-             // Llamar al procedimiento almacenado
-             $lista = DB::select('CALL bsp_dame_evento(?)', [$IdEvento]);
+    public function __construct(GestorEventos $gestorEventos)
+    {
+        $this->gestorEventos = $gestorEventos;
+    }
 
-             // Devolver el resultado como JSON
-             return ResponseFormatter::success($lista);
-         } catch (\Exception $e) {
-             // Manejo de errores
-             return ResponseFormatter::error('error al obtener el evento.', 500);
-         }
-     }
+    public function dame(string $IdEvento)
+    {
+        // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
+        try {
+            // Llamar al procedimiento almacenado
+            $evento = new Eventos(['IdEvento' => $IdEvento]);
+            $lista = $evento->Dame();
+            // Devolver el resultado como JSON
+            return ResponseFormatter::success($lista);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return ResponseFormatter::error('error al obtener el evento.', 500);
+        }
+    }
     public function index(Request $request)
     {
         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
@@ -38,7 +46,7 @@ class EventosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_listar_evento(?)', [$pIncluyeBajas]);
+            $lista = $this->gestorEventos->Listar($pIncluyeBajas);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -66,13 +74,13 @@ class EventosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_buscar_evento(?,?,?,?,?,?,?)', [$pCadena,$pEstado, $pIncluyeVotacion,$pFechaInicio, $pFechaFinal ,$pOffset, $pCantidad]);
+            $lista = $this->gestorEventos->Buscar($pCadena, $pEstado, $pIncluyeVotacion, $pFechaInicio, $pFechaFinal, $pOffset, $pCantidad);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
 
             // Devolver el resultado como JSON
-            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows ]);
+            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows]);
         } catch (\Exception $e) {
             // Manejo de errores
             return ResponseFormatter::error('Error al obtener los eventos: ' . $e->getMessage(), 500);
@@ -86,19 +94,10 @@ class EventosController extends Controller
      */
     public function store(StoreEventoRequest $request)
     {
-        //
-        $request->validated();
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_evento(?, ?, ?,?,?,?,?,?)', [
-            $request->Evento,
-            $request->FechaProbableInicio,
-            $request->FechaProbableFinal,
-            $request->Votacion,
-            $request->IdEstablecimiento,
-            $request->TitularCuenta,
-            $request->Alias,
-            $request->CBU,
-        ]);
+             $request->validated();
+        $evento = new Eventos($request->all());
+        $result = $this->gestorEventos->Alta($evento);
+
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
@@ -121,20 +120,12 @@ class EventosController extends Controller
     public function update(UpdateEventoRequest $request, int $IdEvento)
     {
         //
-        $request->validated();
-        $result = DB::select('CALL bsp_modifica_evento(?, ?, ?,?,?,?,?,?,?,?,?)', [
-            $request->IdEvento,
-            $request->Evento,
-            $request->FechaProbableInicio,
-            $request->FechaProbableFinal,
-            $request->Votacion,
-            null,
-            null,
-            $request->IdEstablecimiento,
-            $request->TitularCuenta,
-            $request->Alias,
-            $request->CBU,
-        ]);
+             $request->validated();
+        $data = $request->all();
+        $data['IdEvento'] = $IdEvento;
+        $evento = new Eventos($data);
+        $result = $this->gestorEventos->Modifica($evento);
+
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
@@ -150,12 +141,12 @@ class EventosController extends Controller
     public function destroy(int $IdEvento)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_borra_evento(?)', [$IdEvento]);
+        $result = $this->gestorEventos->Borra($IdEvento);
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
-            return ResponseFormatter::error('Error al borrar el evento.', 400);
+            return ResponseFormatter::error($result[0]->Mensaje, 400,);
         }
 
         // Si todo fue exitoso, devolver una respuesta de éxito
@@ -166,7 +157,8 @@ class EventosController extends Controller
     public function darBaja(int $IdEvento)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_darbaja_evento(?)', [$IdEvento]);
+         $evento = new Eventos(['IdEvento' => $IdEvento]);
+        $result = $evento->DarBaja();
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -180,8 +172,8 @@ class EventosController extends Controller
 
     public function activar(int $IdEvento)
     {
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_activar_evento(?)', [$IdEvento]);
+        $evento = new Eventos(['IdEvento' => $IdEvento]);
+        $result = $evento->Activar();
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -193,15 +185,12 @@ class EventosController extends Controller
         return ResponseFormatter::success(null, 'Evento activo exitosamente.', 200);
     }
 
-    public function finalizar(int $IdEvento,Request $request)
+    public function finalizar(int $IdEvento, Request $request)
     {
-
-        $pFechaInicio = $request->input('pFechaInicio'); // Valor por defecto ''
-        $pFechaFinal = $request->input('pFechaFinal'); // Valor por defecto 'N'
-
-
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_finalizar_evento(?,?,?)', [$IdEvento, $pFechaInicio, $pFechaFinal]);
+        $pFechaInicio = $request->input('pFechaInicio');
+        $pFechaFinal = $request->input('pFechaFinal');
+        $evento = new Eventos(['IdEvento' => $IdEvento]);
+        $result = $evento->Finalizar($pFechaInicio, $pFechaFinal);
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
