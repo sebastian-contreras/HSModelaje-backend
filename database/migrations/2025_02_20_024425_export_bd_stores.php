@@ -3099,8 +3099,7 @@ SALIR:BEGIN
 END;
 
 DROP PROCEDURE IF EXISTS bsp_modifica_entrada;
-
-CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_entrada`(pIdEntrada bigint, pIdZona int, pApelname varchar(100), pDNI varchar(11), pCorreo varchar(100), pTelefono varchar(15), pComprobante varchar(400))
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_entrada`(pIdEntrada bigint, pIdZona int, pApelname varchar(100), pDNI varchar(11), pCorreo varchar(100), pTelefono varchar(15),pCantidad int, pComprobante varchar(400))
 SALIR:BEGIN
     /*
       Permite modificar una entrada. Controlando que no este haya sido usada(U) o rechazada(R).
@@ -3155,6 +3154,7 @@ SALIR:BEGIN
     IdEstablecimiento=pIdEstablecimiento,
     Apelname=pApelname,
     DNI=pDNI,
+    Cantidad=pCantidad,
     Correo=pCorreo,
     Telefono=pTelefono,
     Comprobante=pComprobante
