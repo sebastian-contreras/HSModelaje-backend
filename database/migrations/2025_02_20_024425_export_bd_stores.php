@@ -560,6 +560,41 @@ SALIR:BEGIN
     -- {Campos de la Tabla Establecimientos}
 END ;
 
+DROP PROCEDURE IF EXISTS bsp_borra_establecimiento ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_borra_establecimiento`(pIdEstablecimiento int)
+SALIR:BEGIN
+/*
+	Permite borrar un establecimiento, solamente usado para limpiar base de datos y en produccion. Devuelve OK o el mensaje de error en Mensaje.
+*/
+   DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		-- SHOW ERRORS;
+		SELECT 'Error en la transacción. Contáctese con el administrador' Mensaje,'error' as Response;
+        ROLLBACK;
+    END;
+
+		-- Controla que el Evento no tenga gastos asociadas
+	IF EXISTS(SELECT IdEvento FROM Eventos WHERE IdEstablecimiento = pIdEstablecimiento) THEN
+		SELECT 'No puede borrar el Evento. Existen Eventos asociados.' AS Mensaje,'error' as Response;
+		LEAVE SALIR;
+    END IF;
+
+
+
+    START TRANSACTION;
+		-- Borra usuario
+        DELETE FROM Establecimientos WHERE IdEstablecimiento = pIdEstablecimiento;
+
+        SELECT 'OK' Mensaje,'ok' as Response;
+    COMMIT;
+
+
+
+-- Mensaje varchar(100)
+END
+
+
 DROP PROCEDURE IF EXISTS bsp_dame_establecimiento ;
 
 CREATE DEFINER=`root`@`%` PROCEDURE `bsp_dame_establecimiento`(pIdEstablecimiento int)

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Establecimientos;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreEstablecimientoRequest;
 use App\Http\Requests\UpdateEstablecimientoRequest;
+use App\Services\GestorEstablecimientos;
 use DB;
 use Illuminate\Http\Request;
 use Log;
@@ -12,6 +14,13 @@ use function Laravel\Prompts\warning;
 
 class EstablecimientosController extends Controller
 {
+    protected $gestorEstablecimientos;
+
+    public function __construct(GestorEstablecimientos $gestorEstablecimientos)
+    {
+        $this->gestorEstablecimientos = $gestorEstablecimientos;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -22,7 +31,7 @@ class EstablecimientosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_listar_establecimiento(?)', [$pIncluyeBajas]);
+            $lista = $this->gestorEstablecimientos->Listar($pIncluyeBajas);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -46,13 +55,12 @@ class EstablecimientosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_buscar_establecimiento(?,?,?,?)', [$pCadena, $pIncluyeInactivos, $pOffset, $pCantidad]);
-            // Verificar si hay resultados y calcular la cantidad total de páginas
+            $lista = $this->gestorEstablecimientos->Buscar($pCadena, $pIncluyeInactivos, $pOffset, $pCantidad);
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
 
             // Devolver el resultado como JSON
-            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows ]);
+            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows]);
         } catch (\Exception $e) {
             // Manejo de errores
             Log::info('Error al obtener los establecimientos: ' . $e->getMessage());
@@ -70,11 +78,9 @@ class EstablecimientosController extends Controller
         //
         $request->validated();
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_establecimiento(?, ?, ?)', [
-            $request->Establecimiento,
-            $request->Ubicacion,
-            $request->Capacidad,
-        ]);
+        $establecimiento = new Establecimientos($request->all());
+        $result = $this->gestorEstablecimientos->Alta($establecimiento);
+
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
@@ -91,8 +97,8 @@ class EstablecimientosController extends Controller
         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_dame_establecimiento(?)', [$IdEstablecimiento]);
-
+            $establecimiento = new Establecimientos(['IdEstablecimiento' => $IdEstablecimiento]);
+            $lista = $establecimiento->Dame();
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
         } catch (\Exception $e) {
@@ -107,12 +113,11 @@ class EstablecimientosController extends Controller
     {
         //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_establecimiento(?, ?, ?, ?)', [
-            $request->IdEstablecimiento,
-            $request->Establecimiento,
-            $request->Ubicacion,
-            $request->Capacidad,
-        ]);
+        $data = $request->all();
+        $data['IdEstablecimiento'] = $IdEstablecimiento;
+        $establecimiento = new Establecimientos($data);
+        $result = $this->gestorEstablecimientos->Modifica($establecimiento);
+
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
@@ -127,7 +132,7 @@ class EstablecimientosController extends Controller
     public function destroy(int $IdEstablecimiento)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_borra_establecimiento(?)', [$IdEstablecimiento]);
+        $result = $this->gestorEstablecimientos->Borra($IdEstablecimiento);
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -142,8 +147,8 @@ class EstablecimientosController extends Controller
 
     public function darBaja(int $IdEstablecimiento)
     {
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_darbaja_establecimiento(?)', [$IdEstablecimiento]);
+        $establecimiento = new Establecimientos(['IdEstablecimiento' => $IdEstablecimiento]);
+        $result = $establecimiento->DarBaja();
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -158,7 +163,8 @@ class EstablecimientosController extends Controller
     public function activar(int $IdEstablecimiento)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_activar_establecimiento(?)', [$IdEstablecimiento]);
+        $establecimiento = new Establecimientos(['IdEstablecimiento' => $IdEstablecimiento]);
+        $result = $establecimiento->Activar();
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {

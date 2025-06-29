@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Classes\Usuario;
+use App\Classes\Usuarios;
 use Illuminate\Support\Facades\DB;
 
 class GestorUsuarios
@@ -12,7 +12,7 @@ class GestorUsuarios
         return DB::select('CALL bsp_listar_usuarios(?)', [$pIncluyeBajas]);
     }
 
-   public function Alta(Usuario $usuario)
+   public function Alta(Usuarios $usuario)
     {
         return DB::select('CALL bsp_alta_usuario(?, ?, ?, ?, ?, ?, ?, ?)', [
             $usuario->Username,
@@ -26,7 +26,7 @@ class GestorUsuarios
         ]);
     }
 
-    public function Modifica(Usuario $usuario)
+    public function Modifica(Usuarios $usuario)
     {
         return DB::select('CALL bsp_modifica_perfil(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $usuario->IdUsuario,

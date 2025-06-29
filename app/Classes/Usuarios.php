@@ -4,7 +4,7 @@ namespace App\Classes;
 
 use DB;
 
-class Usuario
+class Usuarios
 {
     public $IdUsuario;
     public $Username;
@@ -15,7 +15,7 @@ class Usuario
     public $Email;
     public $Contrasena;
     public $Rol;
-    public $Activo;
+    public $EstadoUsuario;
 
     public function __construct(array $data)
     {
@@ -28,7 +28,7 @@ class Usuario
         $this->Email = $data['Email'] ?? null;
         $this->Contrasena = $data['Contrasena'] ?? null;
         $this->Rol = $data['Rol'] ?? null;
-        $this->Activo = $data['Activo'] ?? null;
+        $this->EstadoUsuario = $data['EstadoUsuario'] ?? null;
     }
 
 
