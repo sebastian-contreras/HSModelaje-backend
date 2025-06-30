@@ -2,16 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Modelos;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreEstablecimientoRequest;
 use App\Http\Requests\StoreModeloRequest;
 use App\Http\Requests\UpdateEstablecimientoRequest;
 use App\Http\Requests\UpdateModeloRequest;
+use App\Services\GestorModelos;
 use DB;
 use Illuminate\Http\Request;
 
 class ModelosController extends Controller
 {
+        protected $gestorModelos;
+
+    public function __construct(GestorModelos $gestorModelos)
+    {
+        $this->gestorModelos = $gestorModelos;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -22,7 +30,7 @@ class ModelosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_listar_modelos(?)', [$pIncluyeBajas]);
+            $lista = $this->gestorModelos->Listar($pIncluyeBajas);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -49,7 +57,7 @@ class ModelosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_buscar_modelo(?,?,?,?,?,?,?,?)', [$pDNI, $pApelName,$pFechaNacimientoMin,$pFechaNacimientoMax,$pSexo,$pEstado, $pOffset, $pCantidad]);
+            $lista = $this->gestorModelos->Buscar($pDNI, $pApelName, $pFechaNacimientoMin, $pFechaNacimientoMax, $pSexo, $pEstado, $pOffset, $pCantidad);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
@@ -71,15 +79,9 @@ class ModelosController extends Controller
     {
         //
         $request->validated();
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_modelo(?, ?, ?,?, ?, ?)', [
-            $request->DNI,
-            $request->ApelName,
-            $request->FechaNacimiento,
-            $request->Sexo,
-            $request->Telefono,
-            $request->Correo,
-        ]);
+        $modelo = new Modelos($request->all());
+        $result = $this->gestorModelos->Alta($modelo);
+
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
@@ -93,33 +95,30 @@ class ModelosController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $modelo = new Modelos(['IdModelo' => $id]);
+            $result = $modelo->Dame();
+            return ResponseFormatter::success($result);
+        } catch (\Exception $e) {
+            return ResponseFormatter::error('Error al obtener el modelo.', 500);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateModeloRequest $request, int $IdModelo)
+     public function update(UpdateModeloRequest $request, int $IdModelo)
     {
-        //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_modelo(?,?, ?, ?,?, ?, ?)', [
-            $request->IdModelo,
-            $request->DNI,
-            $request->ApelName,
-            $request->FechaNacimiento,
-            $request->Sexo,
-            $request->Telefono,
-            $request->Correo,
-        ]);
-
+        $data = $request->all();
+        $data['IdModelo'] = $IdModelo;
+        $modelo = new Modelos($data);
+        $result = $this->gestorModelos->Modifica($modelo);
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
-            // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
         return ResponseFormatter::success($result, 'Modelo modificado exitosamente.', 201);
-
     }
 
     /**
@@ -128,12 +127,12 @@ class ModelosController extends Controller
     public function destroy(int $IdModelo)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_borra_modelo(?)', [$IdModelo]);
+        $result = $this->gestorModelos->Borra($IdModelo);
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
-            return ResponseFormatter::error('Error al borrar el modelo.', 400);
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
 
         // Si todo fue exitoso, devolver una respuesta de éxito
@@ -144,7 +143,8 @@ class ModelosController extends Controller
     public function darBaja(int $IdModelo)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_darbaja_modelo(?)', [$IdModelo]);
+        $modelo = new Modelos(['IdModelo' => $IdModelo]);
+        $result = $modelo->DarBaja();
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -159,7 +159,8 @@ class ModelosController extends Controller
     public function activar(int $IdModelo)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_activar_modelo(?)', [$IdModelo]);
+        $modelo = new Modelos(['IdModelo' => $IdModelo]);
+        $result = $modelo->Activar();
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
