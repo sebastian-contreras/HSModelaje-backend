@@ -2,17 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Jueces;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreJuezRequest;
 use App\Http\Requests\UpdateJuezRequest;
 use App\Jobs\SendEmailJob;
 use App\Mail\InvitacionJuezMail;
+use App\Services\GestorJueces;
 use DB;
 use Illuminate\Http\Request;
 use Log;
 
 class JuecesController extends Controller
 {
+        protected $gestorJueces;
+
+    public function __construct(GestorJueces $gestorJueces)
+    {
+        $this->gestorJueces = $gestorJueces;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -22,8 +31,8 @@ class JuecesController extends Controller
         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_dame_juez(?)', [$IdJuez]);
-
+          $juez = new Jueces(['IdJuez' => $IdJuez]);
+            $lista = $juez->Dame();
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
         } catch (\Exception $e) {
@@ -37,8 +46,9 @@ class JuecesController extends Controller
         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_dame_juez_token(?)', [$Token]);
-
+  $juez = new Jueces(['Token' => $Token]);
+            $lista = $juez->DamePorToken();
+           
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
         } catch (\Exception $e) {
@@ -54,7 +64,7 @@ class JuecesController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_listar_jueces(?,?)', [$pIdEvento, $pIncluyeBajas]);
+            $lista = $this->gestorJueces->Listar($pIdEvento, $pIncluyeBajas);
             Log::info('Lista de jueces obtenida', ['lista' => $lista]);
             Log::info('pIdEvento', ['pIdEvento' => $pIdEvento]);
             // Devolver el resultado como JSON
@@ -80,7 +90,7 @@ class JuecesController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_buscar_juez(?,?,?,?,?,?)', [$pIdEvento, $pDNI, $pApelName, $pEstado, $pOffset, $pCantidad]);
+            $lista = $this->gestorJueces->Buscar($pIdEvento, $pDNI, $pApelName, $pEstado, $pOffset, $pCantidad);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
@@ -102,14 +112,9 @@ class JuecesController extends Controller
     {
         //
         $request->validated();
-        // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_juez( ?, ?,?, ?, ?)', [
-            $request->IdEvento,
-            $request->DNI,
-            $request->ApelName,
-            $request->Correo,
-            $request->Telefono,
-        ]);
+        $juez = new Jueces($request->all());
+        $result = $this->gestorJueces->Alta($juez);
+
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
             return ResponseFormatter::error($result[0]->Mensaje, 400);
@@ -133,13 +138,10 @@ class JuecesController extends Controller
     {
         //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_juez(?, ?,?, ?, ?)', [
-            $request->IdJuez,
-            $request->DNI,
-            $request->ApelName,
-            $request->Telefono,
-            $request->Correo,
-        ]);
+        $data = $request->all();
+        $data['IdJuez'] = $IdJuez;
+        $juez = new Jueces($data);
+        $result = $this->gestorJueces->Modifica($juez);
 
 
 
@@ -157,7 +159,7 @@ class JuecesController extends Controller
     public function destroy(int $IdJuez)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_borra_juez(?)', [$IdJuez]);
+        $result = $this->gestorJueces->Borra($IdJuez);
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -173,7 +175,8 @@ class JuecesController extends Controller
     public function darBaja(int $IdJuez)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_darbaja_juez(?)', [$IdJuez]);
+        $juez = new Jueces(['IdJuez' => $IdJuez]);
+        $result = $juez->DarBaja();
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -188,7 +191,8 @@ class JuecesController extends Controller
     public function activar(int $IdJuez)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_activar_juez(?)', [$IdJuez]);
+        $juez = new Jueces(['IdJuez' => $IdJuez]);
+        $result = $juez->Activar();
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -203,7 +207,8 @@ class JuecesController extends Controller
     public function invitar(int $IdJuez)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_dame_juez(?)', [$IdJuez]);
+        $juez = new Jueces(['IdJuez' => $IdJuez]);
+        $result = $juez->Dame();
 
 
 
