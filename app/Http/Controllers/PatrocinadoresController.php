@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Patrocinadores;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreEstablecimientoRequest;
 use App\Http\Requests\StoreGastoRequest;
@@ -11,11 +12,19 @@ use App\Http\Requests\UpdateEstablecimientoRequest;
 use App\Http\Requests\UpdateGastoRequest;
 use App\Http\Requests\UpdateModeloRequest;
 use App\Http\Requests\UpdatePatrocinadorRequest;
+use App\Services\GestorPatrocinadores;
 use DB;
 use Illuminate\Http\Request;
 
 class PatrocinadoresController extends Controller
 {
+        protected $gestorPatrocinadores;
+
+    public function __construct(GestorPatrocinadores $gestorPatrocinadores)
+    {
+        $this->gestorPatrocinadores = $gestorPatrocinadores;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -25,7 +34,7 @@ class PatrocinadoresController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_listar_patrocinadores(?)', [$IdEvento]);
+            $lista = $this->gestorPatrocinadores->Listar($IdEvento);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -49,7 +58,7 @@ class PatrocinadoresController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = DB::select('CALL bsp_buscar_patrocinadores(?,?,?,?)', [$pIdEvento, $pPatrocinador, $pOffset, $pCantidad]);
+            $lista = $this->gestorPatrocinadores->Buscar($pIdEvento, $pPatrocinador, $pOffset, $pCantidad);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
@@ -72,14 +81,9 @@ class PatrocinadoresController extends Controller
         //
         $request->validated();
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_alta_patrocinador(?, ?, ?,?, ?,?)', [
-            $request->IdEvento,
-            $request->Patrocinador,
-            $request->Correo,
-            $request->Telefono,
-            $request->DomicilioRef,
-            $request->Descripcion,
-        ]);
+        $patrocinador = new Patrocinadores($request->all());
+        $result = $this->gestorPatrocinadores->Alta($patrocinador);
+
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
@@ -93,7 +97,13 @@ class PatrocinadoresController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $patrocinador = new Patrocinadores(['IdPatrocinador' => $id]);
+            $result = $patrocinador->Dame();
+            return ResponseFormatter::success($result);
+        } catch (\Exception $e) {
+            return ResponseFormatter::error('Error al obtener el patrocinador.', 500);
+        }
     }
 
     /**
@@ -103,14 +113,10 @@ class PatrocinadoresController extends Controller
     {
         //
         $request->validated();
-        $result = DB::select('CALL bsp_modifica_patrocinador(?,?, ?, ?,?,?)', [
-            $request->IdPatrocinador,
-            $request->Patrocinador,
-            $request->Correo,
-            $request->Telefono,
-            $request->DomicilioRef,
-            $request->Descripcion,
-        ]);
+        $data = $request->all();
+        $data['IdPatrocinador'] = $IdPatrocinador;
+        $patrocinador = new Patrocinadores($data);
+        $result = $this->gestorPatrocinadores->Modifica($patrocinador);
 
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -127,7 +133,7 @@ class PatrocinadoresController extends Controller
     public function destroy(int $IdPatrocinador)
     {
         // Llamar al procedimiento almacenado
-        $result = DB::select('CALL bsp_borra_patrocinador(?)', [$IdPatrocinador]);
+        $result = $this->gestorPatrocinadores->Borra($IdPatrocinador);
 
         // Verificar la respuesta del procedimiento almacenado
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
