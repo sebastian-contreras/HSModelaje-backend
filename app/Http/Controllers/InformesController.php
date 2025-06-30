@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Eventos;
 use App\Helpers\ResponseFormatter;
+use App\Services\GestorEventos;
+use App\Services\GestorInformes;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
 use Illuminate\Http\Request;
@@ -10,14 +13,23 @@ use Illuminate\Http\Request;
 class InformesController extends Controller
 {
     //
+        protected $gestorInformes;
+
+    public function __construct(GestorInformes $gestorInformes,GestorEventos $gestorEventos)
+    {
+        $this->gestorInformes = $gestorInformes;
+        $this->gestorEventos = $gestorEventos;
+    }
+
 
     public function informeVotacion(int $pIdEvento)
     {
         $IdEvento = intval($pIdEvento); // Valor por defecto 'N'
         
         try {
-            $evento = DB::select('CALL bsp_dame_evento(?)', [$IdEvento]);
-            $rawResults = DB::select('CALL bsp_listar_votos(?)', [$IdEvento]);
+
+            $evento = (new Eventos(['IdEvento'=>$IdEvento]))->Dame();
+            $rawResults = $this->gestorInformes->ListarVotos($IdEvento);
 
             $models = [];
 
@@ -113,11 +125,10 @@ class InformesController extends Controller
 
     public function informeEvento(int $pIdEvento)
     {
-        // Ejemplo: obtén varios conjuntos de resultados
-        $resultadosZona = DB::select("CALL bsp_informe_evento_zona(?)", [$pIdEvento]);
-        $resultadosEstado = DB::select("CALL bsp_informe_evento_estado(?)", [$pIdEvento]); // Ejemplo
-        $resultadosGastos = DB::select("CALL bsp_informe_evento_gastos(?)", [$pIdEvento]); // Ejemplo
-        $resultadosPatrocinadores = DB::select("CALL bsp_informe_evento_patrocinadores(?)", [$pIdEvento]); // Ejemplo 
+        $resultadosZona = $this->gestorInformes->InformeZona($pIdEvento);
+        $resultadosEstado = $this->gestorInformes->InformeEstado($pIdEvento);
+        $resultadosGastos = $this->gestorInformes->InformeGastos($pIdEvento);
+        $resultadosPatrocinadores = $this->gestorInformes->InformePatrocinadores($pIdEvento);
 
         $tablas = [
             [
@@ -192,9 +203,9 @@ class InformesController extends Controller
     public function dashboard(int $pIdEvento)
     {
         // Ejemplo: obtén varios conjuntos de resultados
-        $resultadosZona = DB::select("CALL bsp_informe_evento_zona(?)", [$pIdEvento]);
-        $resultadosEstado = DB::select("CALL bsp_informe_evento_estado(?)", [$pIdEvento]); // Ejemplo
-        $resultadosGastos = DB::select("CALL bsp_informe_evento_gastos(?)", [$pIdEvento]); // Ejemplo
+        $resultadosZona = $this->gestorInformes->InformeZona($pIdEvento);
+        $resultadosEstado = $this->gestorInformes->InformeEstado($pIdEvento);
+        $resultadosGastos = $this->gestorInformes->InformeGastos($pIdEvento);
 
         return ResponseFormatter::success([
             'zona' => $resultadosZona,
