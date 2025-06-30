@@ -2,16 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\Votaciones;
 use App\Events\ListadoVotosParticipantes;
 use App\Events\VotoModeloIniciado;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\VotosRequest;
+use App\Services\GestorJueces;
+use App\Services\GestorVotaciones;
 use DB;
 use Illuminate\Http\Request;
 use Log;
 
 class VotacionesController extends Controller
 {
+    protected $gestorJueces;
+    protected $gestorVotaciones;
+
+    public function __construct(GestorVotaciones $gestorVotaciones, GestorJueces $gestorJueces)
+    {
+        $this->gestorJueces = $gestorJueces;
+        $this->gestorVotaciones = $gestorVotaciones;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -20,7 +32,7 @@ class VotacionesController extends Controller
         $pIdEvento = intval($request->input('pIdEvento')); // Valor por defecto 'N'
 
         try {
-            $rawResults = DB::select('CALL bsp_listar_votos(?)', [$pIdEvento]);
+            $rawResults = $this->gestorVotaciones->Listar($pIdEvento);
 
             $models = [];
 
@@ -106,21 +118,21 @@ class VotacionesController extends Controller
         $IdEvento = $request->IdEvento;
         $votos = $request->votos;
 
-            $lista = DB::select('CALL bsp_dame_juez(?)', [$IdJuez]);
+        $lista = DB::select('CALL bsp_dame_juez(?)', [$IdJuez]);
 
-        if($lista[0]->Token != $Token){
-        return ResponseFormatter::error('No se pudo asignar el voto, token erroneo.', 201);
+        if ($lista[0]->Token != $Token) {
+            return ResponseFormatter::error('No se pudo asignar el voto, token erroneo.', 201);
 
         }
         $errores = [];
         foreach ($votos as $voto) {
-            $result = DB::select('CALL bsp_alta_voto(?, ?, ?, ?, ?)', [
-                $IdParticipante,
-                $IdJuez,
-                $voto['IdMetrica'],
-                $voto['Nota'],
-                null
+            $votacion = new Votaciones([
+                'IdParticipante' => $IdParticipante,
+                'IdJuez' => $IdJuez,
+                'IdMetrica' => $voto['IdMetrica'],
+                'Nota' => $voto['Nota'],
             ]);
+            $result = $this->gestorVotaciones->AltaVoto($votacion);
 
             if (isset($result[0]->Response) && $result[0]->Response === 'error') {
                 $errores[] = $result[0]->Mensaje;
@@ -152,8 +164,7 @@ class VotacionesController extends Controller
         $IdParticipante = $request->input('pIdParticipante');
         $result = DB::select('CALL bsp_dame_participante(?)', [$IdParticipante]);
         try {
-            DB::select('CALL bsp_iniciar_votacion_participante(?)', [$IdParticipante]);
-
+            $this->gestorVotaciones->Iniciar($IdParticipante);
             broadcast(new VotoModeloIniciado($result[0], 'iniciar'));
             return ResponseFormatter::success($result[0]);
         } catch (\Exception $e) {
@@ -168,7 +179,7 @@ class VotacionesController extends Controller
         $IdParticipante = $request->input('pIdParticipante');
         $result = DB::select('CALL bsp_dame_participante(?)', [$IdParticipante]);
         try {
-            DB::select('CALL bsp_detener_votacion_participante(?)', [$IdParticipante]);
+            $this->gestorVotaciones->DetenerParticipante($IdParticipante);
             broadcast(new VotoModeloIniciado($result[0], 'detener'));
             return ResponseFormatter::success($result[0]);
         } catch (\Exception $e) {
@@ -182,8 +193,7 @@ class VotacionesController extends Controller
         $IdEvento = $request->input('pIdEvento');
 
         try {
-
-            $result = DB::select('CALL bsp_reiniciar_votacion_participante(?)', [$IdParticipante]);
+            $result =$this->gestorVotaciones->ReiniciarParticipante($IdParticipante);
 
             // Verificar la respuesta del procedimiento almacenado
             if (isset($result[0]->Response) && $result[0]->Response === 'error') {
@@ -207,7 +217,7 @@ class VotacionesController extends Controller
 
         $IdEvento = $request->input('pIdEvento');
         try {
-            $result = DB::select('CALL bsp_dame_votacion_participante(?)', [$IdEvento]);
+            $result = $this->gestorVotaciones->DameVotacionParticipante($IdEvento);
             return ResponseFormatter::success($result);
         } catch (\Exception $e) {
             return ResponseFormatter::error($e->getMessage(), 200);
@@ -237,7 +247,7 @@ class VotacionesController extends Controller
         //
 
         $IdEvento = $request->input('pIdEvento');
-        $result = DB::select('CALL bsp_iniciar_votacion(?)', [$IdEvento]);
+        $result = $this->gestorVotaciones->Iniciar($IdEvento);
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
@@ -254,7 +264,7 @@ class VotacionesController extends Controller
         //
 
         $IdEvento = $request->input('pIdEvento');
-        $result = DB::select('CALL bsp_finalizar_votacion(?)', [$IdEvento]);
+        $result = $this->gestorVotaciones->Finalizar($IdEvento);
 
         if (isset($result[0]->Response) && $result[0]->Response === 'error') {
             // Si hay un error, devolver un error formateado
