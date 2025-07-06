@@ -12,9 +12,9 @@ class GestorMetricas
         return DB::select('CALL bsp_listar_metricas(?,?)', [$IdEvento, $pIncluyeBajas]);
     }
 
-    public function Buscar($IdEvento, $Metrica, $Estado, $Offset, $Cantidad)
+    public function Buscar($IdEvento, $Metrica, $pIncluyeInactivos, $Offset, $Cantidad)
     {
-        return DB::select('CALL bsp_buscar_metricas(?,?,?,?,?)', [$IdEvento, $Metrica, $Estado, $Offset, $Cantidad]);
+        return DB::select('CALL bsp_buscar_metricas(?,?,?,?,?)', [$IdEvento, $Metrica, $pIncluyeInactivos, $Offset, $Cantidad]);
     }
 
     public function Alta(Metricas $metrica)

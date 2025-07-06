@@ -35,13 +35,13 @@ class MetricasController extends Controller
     {
         $pIdEvento = $request->input('pIdEvento', null);
         $pMetrica = $request->input('pMetrica', null);
-        $pEstado = $request->input('pEstado', null);
+        $pIncluyeInactivos = $request->input('pIncluyeInactivos', 'N');
         $pPagina = $request->input('pPagina', 1);
         $pCantidad = $request->input('pCantidad', 10);
         $pOffset = ($pPagina - 1) * $pCantidad;
 
         try {
-            $lista = $this->gestorMetricas->Buscar($pIdEvento, $pMetrica, $pEstado, $pOffset, $pCantidad);
+            $lista = $this->gestorMetricas->Buscar($pIdEvento, $pMetrica, $pIncluyeInactivos, $pOffset, $pCantidad);
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
             return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows ]);

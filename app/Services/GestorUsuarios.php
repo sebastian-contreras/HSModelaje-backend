@@ -12,7 +12,14 @@ class GestorUsuarios
         return DB::select('CALL bsp_listar_usuarios(?)', [$pIncluyeBajas]);
     }
 
-   public function Alta(Usuarios $usuario)
+
+    public function Buscar($Cadena, $Nombre, $Apellido, $Rol, $IncluyeInactivos, $Offset, $Cantidad)
+    {
+        return DB::select('CALL bsp_buscar_usuario(?,?,?,?,?,?,?)', [$Cadena, $Nombre, $Apellido, $Rol, $IncluyeInactivos, $Offset, $Cantidad]);
+    }
+
+
+    public function Alta(Usuarios $usuario)
     {
         return DB::select('CALL bsp_alta_usuario(?, ?, ?, ?, ?, ?, ?, ?)', [
             $usuario->Username,

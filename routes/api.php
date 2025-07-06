@@ -77,7 +77,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
         Route::prefix('usuarios')->group(function () {
             // Obtener todas las usuarios
+            Route::get('/busqueda', [UsuariosController::class, 'busqueda'])->name('usuarios.busqueda');
             Route::get('/', [UsuariosController::class, 'index'])->name('usuarios.index');
+            Route::post('/darbaja/{IdUsuario}', [UsuariosController::class, 'darBaja'])->name('usuarios.darBaja');
+            Route::post('/activar/{IdUsuario}', [UsuariosController::class, 'activar'])->name('usuarios.activar');
             // Crear una nueva usuarios
             Route::post('/', [UsuariosController::class, 'store'])->name('usuarios.store');
             // Obtener una usuarios específica
@@ -87,8 +90,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Eliminar una usuarios específica
             Route::delete('/{IdUsuario}', [UsuariosController::class, 'destroy'])->name('usuarios.destroy');
 
-            Route::post('/darbaja/{IdUsuario}', [UsuariosController::class, 'darBaja'])->name('usuarios.darBaja');
-            Route::post('/activar/{IdUsuario}', [UsuariosController::class, 'activar'])->name('usuarios.activar');
+            
         });
 
         Route::prefix('establecimientos')->group(function () {

@@ -28,6 +28,42 @@ class UsuariosController extends Controller
         }
     }
 
+    public function busqueda(Request $request)
+    {
+        $pCadena = $request->input('pCadena');
+        $pApellidos = $request->input('pApellidos');
+        $pNombres = $request->input('pNombres');
+        $pRol = $request->input('pRol');
+        $pIncluyeInactivos = $request->input('pIncluyeInactivos','N');
+        $pPagina = $request->input('pPagina', 1); // Valor por defecto 1
+        $pCantidad = $request->input('pCantidad', 10); // Valor por defecto 10
+
+        // Calcular el offset
+        $pOffset = ($pPagina - 1) * $pCantidad;
+
+
+        try {
+            // Llamar al procedimiento almacenado
+            $lista = $this->gestorUsuarios->Buscar(
+                $pCadena,
+                $pApellidos,
+                $pNombres,
+                $pRol,
+                $pIncluyeInactivos,
+                $pOffset,
+                $pCantidad
+            );
+            $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
+            $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
+
+            // Devolver el resultado como JSON
+            return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows]);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return ResponseFormatter::error('Error al obtener los usuarios: ' . $e->getMessage(), 500);
+        }
+    }
+
     public function store(StoreUserRequest $request)
     {
         $request->validated();

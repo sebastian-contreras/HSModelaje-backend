@@ -125,6 +125,111 @@ SALIR:BEGIN
     COMMIT;
 END ;
 
+DROP PROCEDURE IF EXISTS bsp_buscar_usuario ;
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_usuario`(
+	pCadena varchar(60),
+	pApellidos varchar(30),
+	pNombres varchar(30),
+	pRol char(1),
+	pIncluyeInactivos char(1),
+	pOffset int,
+	pRowCount int
+)
+SALIR :BEGIN
+/*
+ Permite buscar los usuarios por nombre y apellido a partir de una cadena, solo si la cadena tiene mas de 3 caracteres  
+ sino por filtros particulares de nombre, apellidos y Rol. Puede incluir o no los inactivos (pIncluyeInactivos: S: Si - N: No). 
+ Para todos, cadena vacía. Incluye paginado.
+ */
+DECLARE pTotalRows int;
+
+SET
+	SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+IF CHAR_LENGTH(pCadena) > 1
+AND CHAR_LENGTH(pCadena) < 3 THEN
+SELECT
+	'Sea más específico en la búsqueda' AS Mensaje;
+
+LEAVE SALIR;
+
+END IF;
+
+SET
+	pTotalRows = (
+		SELECT
+			COUNT(*)
+		FROM
+			Usuarios
+		WHERE
+			(
+				pCadena IS NULL
+				OR pCadena = ''
+				OR (
+					Nombres LIKE CONCAT('%', pCadena, '%')
+					OR Apellidos LIKE CONCAT('%', pCadena, '%')
+				)
+			)
+			AND (
+				pNombres IS NULL
+				OR Nombres LIKE CONCAT('%', pNombres, '%')
+			)
+			AND (
+				pApellidos IS NULL
+				OR Apellidos LIKE CONCAT('%', pApellidos, '%')
+			)
+			AND (
+				pRol IS NULL
+				OR Rol LIKE CONCAT('%', pRol, '%')
+			)
+			AND (
+				pIncluyeInactivos = 'S'
+				OR EstadoUsuario = 'A'
+			)
+	);
+
+-- Consulta final
+SELECT
+	*,
+	pTotalRows as TotalRows
+FROM
+	Usuarios
+	WHERE
+			(
+				pCadena IS NULL
+				OR pCadena = ''
+				OR (
+					Nombres LIKE CONCAT('%', pCadena, '%')
+					OR Apellidos LIKE CONCAT('%', pCadena, '%')
+				)
+			)
+			AND (
+				pNombres IS NULL
+				OR Nombres LIKE CONCAT('%', pNombres, '%')
+			)
+			AND (
+				pApellidos IS NULL
+				OR Apellidos LIKE CONCAT('%', pApellidos, '%')
+			)
+			AND (
+				pRol IS NULL
+				OR Rol LIKE CONCAT('%', pRol, '%')
+			)
+			AND (
+				pIncluyeInactivos = 'S'
+				OR EstadoUsuario = 'A'
+			)
+ORDER BY
+	IdUsuario DESC
+LIMIT
+	pOffset, pRowCount;
+
+SET
+	SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- {Campos de la Tabla Usuarios}
+END;
+
 DROP PROCEDURE IF EXISTS bsp_dame_usuario ;
 
 CREATE  PROCEDURE bsp_dame_usuario(pIdUsuario smallint)
@@ -2336,7 +2441,7 @@ END;
 
 DROP PROCEDURE IF EXISTS bsp_buscar_metricas;
 
-CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_metricas`(pIdEvento int, pMetrica varchar(150) ,pEstado char(1), pOffset int, pRowCount int )
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_metricas`(pIdEvento int, pMetrica varchar(150) ,pIncluyeInactivos char(1), pOffset int, pRowCount int )
 SALIR:BEGIN
 /*
 	Permite buscar las metricas registrados en un evento.
@@ -2355,7 +2460,7 @@ SALIR:BEGIN
 	FROM		Metricas
 	WHERE
         (pMetrica IS NULL OR Metrica LIKE CONCAT('%',pMetrica, '%')) AND
-        (pEstado IS NULL OR EstadoMetrica = pEstado) AND
+        (pIncluyeInactivos = 'S' OR EstadoMetrica = 'A') AND
         IdEvento = pIdEvento
 				);
 
@@ -2364,7 +2469,7 @@ SALIR:BEGIN
    FROM		Metricas
    WHERE
         (pMetrica IS NULL OR Metrica LIKE CONCAT('%',pMetrica, '%')) AND
-        (pEstado IS NULL OR EstadoMetrica = pEstado) AND
+        (pIncluyeInactivos = 'S' OR EstadoMetrica = 'A') AND
         IdEvento = pIdEvento
    ORDER BY IdMetrica DESC LIMIT pOffset, pRowCount;
 
