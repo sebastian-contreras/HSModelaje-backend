@@ -331,7 +331,6 @@ SALIR:BEGIN
 	Permite modificar el perfil usuario controlando que el username ni el correo electronico esten registrados.,
     ademas que el mismo no este dado de Baja  Devuelve OK + Id o el mensaje de error en Mensaje.
 */
-	DECLARE pIdUsuario int;
     -- Manejo de error en la transacción
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -697,7 +696,7 @@ SALIR:BEGIN
 
 
 -- Mensaje varchar(100)
-END
+END;
 
 
 DROP PROCEDURE IF EXISTS bsp_dame_establecimiento ;
