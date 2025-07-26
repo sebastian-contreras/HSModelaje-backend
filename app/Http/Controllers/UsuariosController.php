@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Classes\Usuarios;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateContrasenaRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Services\GestorUsuarios; // Importa el servicio
 use Illuminate\Http\Request;
@@ -113,5 +114,16 @@ class UsuariosController extends Controller
             return ResponseFormatter::error($result[0]->Mensaje, 400);
         }
         return ResponseFormatter::success(null, 'Usuario activo exitosamente.', 200);
+    }
+
+        public function modificarContrasena(UpdateContrasenaRequest $request)
+    {
+        $user = auth()->user();
+        $usuario = new Usuarios(['IdUsuario' => $user->IdUsuario]);
+        $result = $usuario->ModificaContrasena($request->Contrasena, $request->ContrasenaActual);
+        if (isset($result[0]->Response) && $result[0]->Response === 'error') {
+            return ResponseFormatter::error($result[0]->Mensaje, 400);
+        }
+        return ResponseFormatter::success(null, 'Contraseña modificada exitosamente.', 200);
     }
 }

@@ -90,6 +90,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Eliminar una usuarios específica
             Route::delete('/{IdUsuario}', [UsuariosController::class, 'destroy'])->name('usuarios.destroy');
 
+            Route::post('/modifica-contrasena', [UsuariosController::class, 'modificarContrasena'])->name('usuarios.modificarContrasena');
             
         });
 

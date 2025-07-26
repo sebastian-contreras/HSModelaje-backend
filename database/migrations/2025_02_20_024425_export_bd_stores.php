@@ -504,6 +504,62 @@ BEGIN
 -- {Campos de la Tabla Establecimientos}
 END ;
 
+DROP PROCEDURE IF EXISTS bsp_modifica_contrasena ;
+
+CREATE DEFINER=`root`@`%` PROCEDURE `bsp_modifica_contrasena`(
+    pIdUsuario smallint,
+    pContrasenaActual char(32),
+    pContrasenaNueva char(32)
+)
+SALIR:BEGIN
+/*
+    Permite cambiar la contraseña de un usuario.
+    Verifica que el usuario exista y que la contraseña actual sea correcta.
+    Devuelve OK si fue actualizada correctamente o un mensaje de error.
+*/
+
+    -- Manejo de error en la transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        SELECT 'Error en la transacción. Contáctese con el administrador.' AS Mensaje, 'error' AS Response;
+        ROLLBACK;
+    END;
+
+    -- Validación de parámetros obligatorios
+    IF pIdUsuario IS NULL OR pIdUsuario = '' OR
+       pContrasenaActual IS NULL OR pContrasenaActual = '' OR
+       pContrasenaNueva IS NULL OR pContrasenaNueva = '' THEN
+        SELECT 'Faltan datos obligatorios.' AS Mensaje, 'error' AS Response;
+        LEAVE SALIR;
+    END IF;
+
+    -- Validar longitud de la nueva contraseña
+    IF CHAR_LENGTH(pContrasenaNueva) < 6 THEN
+        SELECT 'La nueva contraseña debe tener al menos 6 caracteres.' AS Mensaje, 'error' AS Response;
+        LEAVE SALIR;
+    END IF;
+
+    -- Verificar que el usuario exista y que la contraseña actual coincida
+    IF NOT EXISTS (
+        SELECT 1 FROM Usuarios 
+        WHERE IdUsuario = pIdUsuario AND Contrasena = MD5(pContrasenaActual)
+    ) THEN
+        SELECT 'Usuario o contraseña actual incorrecta.' AS Mensaje, 'error' AS Response;
+        LEAVE SALIR;
+    END IF;
+
+    -- COMIENZO TRANSACCIÓN
+    START TRANSACTION;
+        UPDATE Usuarios 
+        SET Contrasena = MD5(pContrasenaNueva)
+        WHERE IdUsuario = pIdUsuario;
+
+        SELECT 'Contraseña modificada correctamente.' AS Mensaje, 'ok' AS Response;
+    COMMIT;
+
+END;
+
 DROP PROCEDURE IF EXISTS bsp_buscar_establecimiento ;
 
 CREATE DEFINER=`root`@`%` PROCEDURE `bsp_buscar_establecimiento`( pCadena varchar(50), pIncluyeInactivos char(1), pOffset int, pRowCount int)

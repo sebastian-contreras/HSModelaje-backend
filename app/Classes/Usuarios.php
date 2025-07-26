@@ -46,4 +46,10 @@ class Usuarios
     {
         return DB::select('CALL bsp_darbaja_usuario(?)', [$this->IdUsuario]);
     }
+
+    public function ModificaContrasena($Contrasena, $ContrasenaActual)
+    {
+        return DB::select('CALL bsp_modifica_contrasena(?,?,?)', [$this->IdUsuario, $ContrasenaActual, $Contrasena]);
+    }
+
 }
