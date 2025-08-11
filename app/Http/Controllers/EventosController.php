@@ -74,7 +74,7 @@ class EventosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorEventos->Buscar($pCadena, $pEstado, $pIncluyeVotacion, $pFechaInicio, $pFechaFinal, $pOffset, $pCantidad);
+            $lista = $this->gestorEventos->Buscar($pOffset, $pCantidad,$pCadena, $pEstado, $pIncluyeVotacion, $pFechaInicio, $pFechaFinal, );
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;

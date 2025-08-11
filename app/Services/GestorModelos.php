@@ -5,21 +5,21 @@ namespace App\Services;
 use App\Classes\Modelos;
 use Illuminate\Support\Facades\DB;
 
-class GestorModelos
+class GestorModelos extends GestorBase
 {
     public function Listar($pIncluyeBajas = 'N')
     {
         return DB::select('CALL bsp_listar_modelos(?)', [$pIncluyeBajas]);
     }
 
-    public function Buscar($pDNI, $pApelName, $pFechaNacimientoMin, $pFechaNacimientoMax, $pSexo, $pEstado, $pOffset, $pCantidad)
+    public function Buscar($pOffset,$pCantidad,$pDNI = null, $pApelName = null, $pFechaNacimientoMin = null, $pFechaNacimientoMax = null, $pSexo = null, $pEstado = null)
     {
         return DB::select('CALL bsp_buscar_modelo(?,?,?,?,?,?,?,?)', [
             $pDNI, $pApelName, $pFechaNacimientoMin, $pFechaNacimientoMax, $pSexo, $pEstado, $pOffset, $pCantidad
         ]);
     }
 
-    public function Alta(Modelos $modelo)
+    public function Alta($modelo)
     {
         return DB::select('CALL bsp_alta_modelo(?, ?, ?, ?, ?, ?)', [
             $modelo->DNI,
@@ -31,7 +31,7 @@ class GestorModelos
         ]);
     }
 
-    public function Modifica(Modelos $modelo)
+    public function Modifica($modelo)
     {
         return DB::select('CALL bsp_modifica_modelo(?, ?, ?, ?, ?, ?, ?)', [
             $modelo->IdModelo,

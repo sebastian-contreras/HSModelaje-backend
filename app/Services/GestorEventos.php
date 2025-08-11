@@ -5,21 +5,21 @@ namespace App\Services;
 use App\Classes\Eventos;
 use Illuminate\Support\Facades\DB;
 
-class GestorEventos
+class GestorEventos extends GestorBase
 {
     public function Listar($pIncluyeBajas = 'N')
     {
         return DB::select('CALL bsp_listar_evento(?)', [$pIncluyeBajas]);
     }
 
-    public function Buscar($pCadena, $pEstado, $pIncluyeVotacion, $pFechaInicio, $pFechaFinal, $pOffset, $pCantidad)
+    public function Buscar($pOffset, $pCantidad,$pCadena=null, $pEstado=null, $pIncluyeVotacion=null, $pFechaInicio=null, $pFechaFinal=null)
     {
         return DB::select('CALL bsp_buscar_evento(?,?,?,?,?,?,?)', [
             $pCadena, $pEstado, $pIncluyeVotacion, $pFechaInicio, $pFechaFinal, $pOffset, $pCantidad
         ]);
     }
 
-    public function Alta(Eventos $evento)
+    public function Alta($evento)
     {
         return DB::select('CALL bsp_alta_evento(?, ?, ?,?,?,?,?,?)', [
             $evento->Evento,
@@ -33,7 +33,7 @@ class GestorEventos
         ]);
     }
 
-    public function Modifica(Eventos $evento)
+    public function Modifica($evento)
     {
         return DB::select('CALL bsp_modifica_evento(?, ?, ?,?,?,?,?,?,?,?,?)', [
             $evento->IdEvento,

@@ -5,19 +5,19 @@ namespace App\Services;
 use App\Classes\Jueces;
 use Illuminate\Support\Facades\DB;
 
-class GestorJueces
+class GestorJueces extends GestorBaseEvento
 {
     public function Listar($IdEvento, $pIncluyeBajas = 'N')
     {
         return DB::select('CALL bsp_listar_jueces(?,?)', [$IdEvento, $pIncluyeBajas]);
     }
 
-    public function Buscar($IdEvento, $DNI, $ApelName, $Estado, $Offset, $Cantidad)
+    public function Buscar($Offset, $Cantidad, $IdEvento, $DNI = null, $ApelName = null, $Estado = null)
     {
         return DB::select('CALL bsp_buscar_juez(?,?,?,?,?,?)', [$IdEvento, $DNI, $ApelName, $Estado, $Offset, $Cantidad]);
     }
 
-    public function Alta(Jueces $juez)
+    public function Alta($juez)
     {
         return DB::select('CALL bsp_alta_juez(?, ?, ?, ?, ?)', [
             $juez->IdEvento,
@@ -28,7 +28,7 @@ class GestorJueces
         ]);
     }
 
-    public function Modifica(Jueces $juez)
+    public function Modifica($juez)
     {
         return DB::select('CALL bsp_modifica_juez(?, ?, ?, ?, ?)', [
             $juez->IdJuez,

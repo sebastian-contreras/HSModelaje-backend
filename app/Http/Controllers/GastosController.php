@@ -55,7 +55,7 @@ class GastosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorGastos->Buscar($pIdEvento, $pGasto, $pOffset, $pCantidad);
+            $lista = $this->gestorGastos->Buscar($pOffset, $pCantidad, $pIdEvento, $pGasto); 
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;

@@ -48,4 +48,30 @@ class Eventos
     {
         return DB::select('CALL bsp_finalizar_evento(?,?,?)', [$this->IdEvento, $fechaInicio, $fechaFinal]);
     }
+
+
+    public function ListarVotos()
+    {
+        return DB::select('CALL bsp_listar_votos(?)', [$this->IdEvento]);
+    }
+
+    public function InformeZona()
+    {
+        return DB::select('CALL bsp_informe_evento_zona(?)', [$this->IdEvento]);
+    }
+
+    public function InformeEstado()
+    {
+        return DB::select('CALL bsp_informe_evento_estado(?)', [$this->IdEvento]);
+    }
+
+    public function InformeGastos()
+    {
+        return DB::select('CALL bsp_informe_evento_gastos(?)', [$this->IdEvento]);
+    }
+
+    public function InformePatrocinadores()
+    {
+        return DB::select('CALL bsp_informe_evento_patrocinadores(?)', [$this->IdEvento]);
+    }
 }

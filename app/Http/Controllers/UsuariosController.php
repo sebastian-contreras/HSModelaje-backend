@@ -46,13 +46,13 @@ class UsuariosController extends Controller
         try {
             // Llamar al procedimiento almacenado
             $lista = $this->gestorUsuarios->Buscar(
+                $pOffset,
+                $pCantidad,
                 $pCadena,
                 $pApellidos,
                 $pNombres,
                 $pRol,
-                $pIncluyeInactivos,
-                $pOffset,
-                $pCantidad
+                $pIncluyeInactivos
             );
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;

@@ -55,7 +55,7 @@ class ZonasController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorZonas->Buscar($pIdEvento, $pZona, $pAccesoDisc, $pEstado, $pOffset, $pCantidad);
+            $lista = $this->gestorZonas->Buscar($pOffset, $pCantidad, $pIdEvento, $pZona, $pEstado, AccesoDisc: $pAccesoDisc); 
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;

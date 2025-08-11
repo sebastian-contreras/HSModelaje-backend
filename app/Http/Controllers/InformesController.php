@@ -13,9 +13,9 @@ use Illuminate\Http\Request;
 class InformesController extends Controller
 {
     //
-        protected $gestorInformes;
+    protected $gestorInformes;
 
-    public function __construct(GestorInformes $gestorInformes,GestorEventos $gestorEventos)
+    public function __construct(GestorInformes $gestorInformes, GestorEventos $gestorEventos)
     {
         $this->gestorInformes = $gestorInformes;
         $this->gestorEventos = $gestorEventos;
@@ -25,11 +25,11 @@ class InformesController extends Controller
     public function informeVotacion(int $pIdEvento)
     {
         $IdEvento = intval($pIdEvento); // Valor por defecto 'N'
-        
+
         try {
 
-            $evento = (new Eventos(['IdEvento'=>$IdEvento]))->Dame();
-            $rawResults = $this->gestorInformes->ListarVotos($IdEvento);
+            $evento = new Eventos(['IdEvento' => $IdEvento]);
+            $rawResults = $evento->ListarVotos();
 
             $models = [];
 
@@ -100,7 +100,7 @@ class InformesController extends Controller
             $viewData = [
                 'image' => $image,
                 'data' => $output,
-                'titulo' => 'Votacion de '.$evento[0]->Evento,
+                'titulo' => 'Votacion de ' . $evento[0]->Evento,
             ];
 
             $pdf = Pdf::loadView('InformeTest', $viewData);
@@ -125,10 +125,11 @@ class InformesController extends Controller
 
     public function informeEvento(int $pIdEvento)
     {
-        $resultadosZona = $this->gestorInformes->InformeZona($pIdEvento);
-        $resultadosEstado = $this->gestorInformes->InformeEstado($pIdEvento);
-        $resultadosGastos = $this->gestorInformes->InformeGastos($pIdEvento);
-        $resultadosPatrocinadores = $this->gestorInformes->InformePatrocinadores($pIdEvento);
+        $evento = new Eventos(['IdEvento' => $pIdEvento]);
+        $resultadosZona = $evento->InformeZona();
+        $resultadosEstado = $evento->InformeEstado();
+        $resultadosGastos = $evento->InformeGastos();
+        $resultadosPatrocinadores = $evento->InformePatrocinadores();
 
         $tablas = [
             [
@@ -202,10 +203,11 @@ class InformesController extends Controller
     }
     public function dashboard(int $pIdEvento)
     {
+        $evento = new Eventos(['IdEvento' => $pIdEvento]);
         // Ejemplo: obtén varios conjuntos de resultados
-        $resultadosZona = $this->gestorInformes->InformeZona($pIdEvento);
-        $resultadosEstado = $this->gestorInformes->InformeEstado($pIdEvento);
-        $resultadosGastos = $this->gestorInformes->InformeGastos($pIdEvento);
+        $resultadosZona = $evento->InformeZona();
+        $resultadosEstado = $evento->InformeEstado();
+        $resultadosGastos = $evento->InformeGastos();
 
         return ResponseFormatter::success([
             'zona' => $resultadosZona,

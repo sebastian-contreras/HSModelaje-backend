@@ -5,19 +5,19 @@ namespace App\Services;
 use App\Classes\Patrocinadores;
 use Illuminate\Support\Facades\DB;
 
-class GestorPatrocinadores
+class GestorPatrocinadores extends GestorBaseEvento
 {
     public function Listar($IdEvento)
     {
         return DB::select('CALL bsp_listar_patrocinadores(?)', [$IdEvento]);
     }
 
-    public function Buscar($IdEvento, $Patrocinador, $Offset, $Cantidad)
+    public function Buscar($Offset, $Cantidad, $IdEvento, $Patrocinador = null)
     {
         return DB::select('CALL bsp_buscar_patrocinadores(?,?,?,?)', [$IdEvento, $Patrocinador, $Offset, $Cantidad]);
     }
 
-    public function Alta(Patrocinadores $patrocinador)
+    public function Alta($patrocinador)
     {
         return DB::select('CALL bsp_alta_patrocinador(?, ?, ?, ?, ?, ?)', [
             $patrocinador->IdEvento,
@@ -29,7 +29,7 @@ class GestorPatrocinadores
         ]);
     }
 
-    public function Modifica(Patrocinadores $patrocinador)
+    public function Modifica($patrocinador)
     {
         return DB::select('CALL bsp_modifica_patrocinador(?, ?, ?, ?, ?, ?)', [
             $patrocinador->IdPatrocinador,

@@ -55,7 +55,7 @@ class EstablecimientosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorEstablecimientos->Buscar($pCadena, $pIncluyeInactivos, $pOffset, $pCantidad);
+            $lista = $this->gestorEstablecimientos->Buscar($pOffset, $pCantidad,$pCadena, $pIncluyeInactivos);
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
 

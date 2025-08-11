@@ -41,7 +41,7 @@ class MetricasController extends Controller
         $pOffset = ($pPagina - 1) * $pCantidad;
 
         try {
-            $lista = $this->gestorMetricas->Buscar($pIdEvento, $pMetrica, $pIncluyeInactivos, $pOffset, $pCantidad);
+            $lista = $this->gestorMetricas->Buscar($pOffset, $pCantidad, $pIdEvento, $pMetrica, $pIncluyeInactivos);  
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
             return ResponseFormatter::success(['data' => $lista, 'total_pagina' => $totalPaginas, 'total_row' => $totalRows ]);

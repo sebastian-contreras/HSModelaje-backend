@@ -5,19 +5,19 @@ namespace App\Services;
 use App\Classes\Establecimientos;
 use Illuminate\Support\Facades\DB;
 
-class GestorEstablecimientos
+class GestorEstablecimientos extends GestorBase
 {
     public function Listar($pIncluyeBajas = 'N')
     {
         return DB::select('CALL bsp_listar_establecimiento(?)', [$pIncluyeBajas]);
     }
-    public function Buscar($pCadena, $pIncluyeInactivos, $pOffset, $pCantidad)
+    public function Buscar( $pOffset, $pCantidad,$pCadena = null, $pIncluyeInactivos=null)
     {
         return DB::select('CALL bsp_buscar_establecimiento(?,?,?,?)', [$pCadena, $pIncluyeInactivos, $pOffset, $pCantidad]);
 
     }
 
-    public function Alta(Establecimientos $establecimiento)
+    public function Alta($establecimiento)
     {
         return DB::select('CALL bsp_alta_establecimiento(?, ?, ?)', [
             $establecimiento->Establecimiento,
@@ -27,7 +27,7 @@ class GestorEstablecimientos
     }
 
 
-    public function Modifica(Establecimientos $establecimiento)
+    public function Modifica($establecimiento)
     {
         return DB::select('CALL bsp_modifica_establecimiento(?, ?, ?, ?)', [
             $establecimiento->IdEstablecimiento,

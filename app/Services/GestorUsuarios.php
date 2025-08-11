@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Classes\Usuarios;
 use Illuminate\Support\Facades\DB;
 
-class GestorUsuarios
+class GestorUsuarios extends GestorBase
 {
     public function Listar($pIncluyeBajas = 'N')
     {
@@ -13,13 +13,13 @@ class GestorUsuarios
     }
 
 
-    public function Buscar($Cadena, $Nombre, $Apellido, $Rol, $IncluyeInactivos, $Offset, $Cantidad)
+    public function Buscar( $Offset, $Cantidad,$Cadena = null, $Nombre=null, $Apellido=null, $Rol=null, $IncluyeInactivos = 'N')
     {
         return DB::select('CALL bsp_buscar_usuario(?,?,?,?,?,?,?)', [$Cadena, $Nombre, $Apellido, $Rol, $IncluyeInactivos, $Offset, $Cantidad]);
     }
 
 
-    public function Alta(Usuarios $usuario)
+    public function Alta($usuario)
     {
         return DB::select('CALL bsp_alta_usuario(?, ?, ?, ?, ?, ?, ?, ?)', [
             $usuario->Username,
@@ -33,7 +33,7 @@ class GestorUsuarios
         ]);
     }
 
-    public function Modifica(Usuarios $usuario)
+    public function Modifica($usuario)
     {
         return DB::select('CALL bsp_modifica_perfil(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $usuario->IdUsuario,

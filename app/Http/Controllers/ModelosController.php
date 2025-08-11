@@ -57,7 +57,7 @@ class ModelosController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorModelos->Buscar($pDNI, $pApelName, $pFechaNacimientoMin, $pFechaNacimientoMax, $pSexo, $pEstado, $pOffset, $pCantidad);
+            $lista = $this->gestorModelos->Buscar( $pOffset, $pCantidad,$pDNI, $pApelName, $pFechaNacimientoMin, $pFechaNacimientoMax, $pSexo, $pEstado);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
