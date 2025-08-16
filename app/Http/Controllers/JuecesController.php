@@ -64,7 +64,7 @@ class JuecesController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorJueces->Listar($pIdEvento, $pIncluyeBajas);
+            $lista = $this->gestorJueces->ListarEnEvento($pIdEvento, $pIncluyeBajas);
             Log::info('Lista de jueces obtenida', ['lista' => $lista]);
             Log::info('pIdEvento', ['pIdEvento' => $pIdEvento]);
             // Devolver el resultado como JSON
@@ -90,7 +90,7 @@ class JuecesController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorJueces->Buscar($pOffset, $pCantidad, $pIdEvento, $pDNI, $pApelName, $pEstado );  
+            $lista = $this->gestorJueces->BuscarEnEvento($pOffset, $pCantidad, $pIdEvento, $pDNI, $pApelName, $pEstado );  
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
