@@ -32,7 +32,7 @@ class ParticipantesController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorParticipantes->Listar($pIdEvento, $pOffset, $pCantidad);
+            $lista = $this->gestorParticipantes->ListarEnEvento($pIdEvento, $pOffset, $pCantidad);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
