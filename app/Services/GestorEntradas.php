@@ -51,7 +51,7 @@ class GestorEntradas extends GestorBase
         ]);
     }
 
-    public function Modifica(Entradas $entrada)
+    public function Modifica($entrada)
     {
         return DB::select('CALL bsp_modifica_entrada(?, ?, ?, ?, ?, ?, ?,?)', [
             $entrada->IdEntrada,
@@ -93,7 +93,7 @@ class GestorEntradas extends GestorBase
     /**
      * @deprecated No implementado.
      */
-    public function Buscar($offset, $cantidad, $idEvento)
+    public function Buscar($offset, $cantidad)
     {
         trigger_error(
             'El método ' . __METHOD__ . ' está deprecado y no hace nada.',

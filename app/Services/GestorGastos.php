@@ -3,14 +3,14 @@
 namespace App\Services;
 use Illuminate\Support\Facades\DB;
 
-class GestorGastos extends GestorBaseEvento
+class GestorGastos extends GestorBase
 {
-    public function Listar($IdEvento)
+    public function ListarEnEvento($IdEvento)
     {
         return DB::select('CALL bsp_listar_gastos(?)', [$IdEvento]);
     }
 
-    public function Buscar($Offset, $Cantidad, $IdEvento, $Gasto = null)
+    public function BuscarEnEvento($Offset, $Cantidad, $IdEvento, $Gasto = null)
     {
         return DB::select('CALL bsp_buscar_gastos(?,?,?,?)', [$IdEvento, $Gasto, $Offset, $Cantidad]);
     }
@@ -41,5 +41,26 @@ class GestorGastos extends GestorBaseEvento
     public function Borra($IdGasto)
     {
         return DB::select('CALL bsp_borra_gasto(?)', [$IdGasto]);
+    }
+    
+    /**
+     * @deprecated No implementado.
+     */
+    public function Listar($IdEntidad)
+    {
+        trigger_error(
+            'El método ' . __METHOD__ . ' está deprecado y no hace nada.',
+            E_USER_DEPRECATED
+        );
+    }
+    /**
+     * @deprecated No implementado.
+     */
+    public function Buscar($offset, $cantidad)
+    {
+        trigger_error(
+            'El método ' . __METHOD__ . ' está deprecado y no hace nada.',
+            E_USER_DEPRECATED
+        );
     }
 }
