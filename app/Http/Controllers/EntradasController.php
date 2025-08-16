@@ -41,7 +41,7 @@ class EntradasController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorEntradas->Listar($IdEvento);
+            $lista = $this->gestorEntradas->ListarEnEvento($IdEvento);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -89,7 +89,7 @@ class EntradasController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorEntradas->Buscar($pCadena, $pDNI, $pEstado, $pIdZona, $pIdEvento, $pOffset, $pCantidad);
+            $lista = $this->gestorEntradas->BuscarEnEvento($pOffset, $pCantidad, $pIdEvento, $pCadena, $pDNI, $pEstado, $pIdZona);
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;
