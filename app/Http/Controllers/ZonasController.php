@@ -30,7 +30,7 @@ class ZonasController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorZonas->Listar($pIdEvento, $pIncluyeBajas);
+            $lista = $this->gestorZonas->ListarEnEvento($pIdEvento, $pIncluyeBajas);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -55,7 +55,7 @@ class ZonasController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorZonas->Buscar($pOffset, $pCantidad, $pIdEvento, $pZona, $pEstado, AccesoDisc: $pAccesoDisc); 
+            $lista = $this->gestorZonas->BuscarEnEvento($pOffset, $pCantidad, $pIdEvento, $pZona, $pEstado, AccesoDisc: $pAccesoDisc); 
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;

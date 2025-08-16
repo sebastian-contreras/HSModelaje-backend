@@ -5,14 +5,14 @@ namespace App\Services;
 use App\Classes\Zonas;
 use Illuminate\Support\Facades\DB;
 
-class GestorZonas extends GestorBaseEvento
+class GestorZonas extends GestorBase
 {
-    public function Listar($IdEvento, $pIncluyeBajas = 'N')
+    public function ListarEnEvento($IdEvento, $pIncluyeBajas = 'N')
     {
         return DB::select('CALL bsp_listar_zonas(?,?)', [$IdEvento, $pIncluyeBajas]);
     }
 
-    public function Buscar($Offset, $Cantidad, $IdEvento, $Zona = null,$Estado = null,$AccesoDisc = null)
+    public function BuscarEnEvento($Offset, $Cantidad, $IdEvento, $Zona = null,$Estado = null,$AccesoDisc = null)
     {
         return DB::select('CALL bsp_buscar_zonas(?,?,?,?,?,?)', [$IdEvento, $Zona, $AccesoDisc, $Estado, $Offset, $Cantidad]);
     }
@@ -44,5 +44,25 @@ class GestorZonas extends GestorBaseEvento
     public function Borra($IdZona)
     {
         return DB::select('CALL bsp_borra_zona(?)', [$IdZona]);
+    }
+      /**
+     * @deprecated No implementado.
+     */
+    public function Listar($IdEntidad)
+    {
+        trigger_error(
+            'El método ' . __METHOD__ . ' está deprecado y no hace nada.',
+            E_USER_DEPRECATED
+        );
+    }
+    /**
+     * @deprecated No implementado.
+     */
+    public function Buscar($offset, $cantidad)
+    {
+        trigger_error(
+            'El método ' . __METHOD__ . ' está deprecado y no hace nada.',
+            E_USER_DEPRECATED
+        );
     }
 }
