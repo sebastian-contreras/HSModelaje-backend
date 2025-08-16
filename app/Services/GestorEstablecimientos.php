@@ -11,7 +11,7 @@ class GestorEstablecimientos extends GestorBase
     {
         return DB::select('CALL bsp_listar_establecimiento(?)', [$pIncluyeBajas]);
     }
-    public function Buscar( $pOffset, $pCantidad,$pCadena = null, $pIncluyeInactivos=null)
+    public function Buscar($pOffset, $pCantidad, $pCadena = null, $pIncluyeInactivos = null)
     {
         return DB::select('CALL bsp_buscar_establecimiento(?,?,?,?)', [$pCadena, $pIncluyeInactivos, $pOffset, $pCantidad]);
 
@@ -40,5 +40,26 @@ class GestorEstablecimientos extends GestorBase
     public function Borra($IdEstablecimiento)
     {
         return DB::select('CALL bsp_borra_establecimiento(?)', [$IdEstablecimiento]);
+    }
+
+    /**
+     * @deprecated No implementado.
+     */
+    public function ListarEnEvento($IdEntidad)
+    {
+        trigger_error(
+            'El método ' . __METHOD__ . ' está deprecado y no hace nada.',
+            E_USER_DEPRECATED
+        );
+    }
+    /**
+     * @deprecated No implementado.
+     */
+    public function BuscarEnEvento($offset, $cantidad, $idEvento)
+    {
+        trigger_error(
+            'El método ' . __METHOD__ . ' está deprecado y no hace nada.',
+            E_USER_DEPRECATED
+        );
     }
 }

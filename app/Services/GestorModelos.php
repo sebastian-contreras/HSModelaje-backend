@@ -12,10 +12,17 @@ class GestorModelos extends GestorBase
         return DB::select('CALL bsp_listar_modelos(?)', [$pIncluyeBajas]);
     }
 
-    public function Buscar($pOffset,$pCantidad,$pDNI = null, $pApelName = null, $pFechaNacimientoMin = null, $pFechaNacimientoMax = null, $pSexo = null, $pEstado = null)
+    public function Buscar($pOffset, $pCantidad, $pDNI = null, $pApelName = null, $pFechaNacimientoMin = null, $pFechaNacimientoMax = null, $pSexo = null, $pEstado = null)
     {
         return DB::select('CALL bsp_buscar_modelo(?,?,?,?,?,?,?,?)', [
-            $pDNI, $pApelName, $pFechaNacimientoMin, $pFechaNacimientoMax, $pSexo, $pEstado, $pOffset, $pCantidad
+            $pDNI,
+            $pApelName,
+            $pFechaNacimientoMin,
+            $pFechaNacimientoMax,
+            $pSexo,
+            $pEstado,
+            $pOffset,
+            $pCantidad
         ]);
     }
 
@@ -47,5 +54,25 @@ class GestorModelos extends GestorBase
     public function Borra($IdModelo)
     {
         return DB::select('CALL bsp_borra_modelo(?)', [$IdModelo]);
+    }
+    /**
+     * @deprecated No implementado.
+     */
+    public function ListarEnEvento($IdEntidad)
+    {
+        trigger_error(
+            'El método ' . __METHOD__ . ' está deprecado y no hace nada.',
+            E_USER_DEPRECATED
+        );
+    }
+    /**
+     * @deprecated No implementado.
+     */
+    public function BuscarEnEvento($offset, $cantidad, $idEvento)
+    {
+        trigger_error(
+            'El método ' . __METHOD__ . ' está deprecado y no hace nada.',
+            E_USER_DEPRECATED
+        );
     }
 }
