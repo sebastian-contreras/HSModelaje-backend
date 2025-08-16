@@ -34,7 +34,7 @@ class PatrocinadoresController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorPatrocinadores->Listar($IdEvento);
+            $lista = $this->gestorPatrocinadores->ListarEnEvento($IdEvento);
 
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
@@ -58,7 +58,7 @@ class PatrocinadoresController extends Controller
 
         try {
             // Llamar al procedimiento almacenado
-            $lista = $this->gestorPatrocinadores->Buscar($pOffset, $pCantidad, $pIdEvento, $pPatrocinador); 
+            $lista = $this->gestorPatrocinadores->BuscarEnEvento($pOffset, $pCantidad, $pIdEvento, $pPatrocinador); 
             // Verificar si hay resultados y calcular la cantidad total de páginas
             $totalRows = isset($lista[0]->TotalRows) ? $lista[0]->TotalRows : 0;
             $totalPaginas = $totalRows > 0 ? ceil($totalRows / $pCantidad) : 1;

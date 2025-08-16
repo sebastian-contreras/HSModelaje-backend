@@ -12,7 +12,7 @@ class GestorZonas extends GestorBase
         return DB::select('CALL bsp_listar_zonas(?,?)', [$IdEvento, $pIncluyeBajas]);
     }
 
-    public function BuscarEnEvento($Offset, $Cantidad, $IdEvento, $Zona = null,$Estado = null,$AccesoDisc = null)
+    public function BuscarEnEvento($Offset, $Cantidad, $IdEvento, $Zona = null, $Estado = null, $AccesoDisc = null)
     {
         return DB::select('CALL bsp_buscar_zonas(?,?,?,?,?,?)', [$IdEvento, $Zona, $AccesoDisc, $Estado, $Offset, $Cantidad]);
     }
@@ -45,7 +45,7 @@ class GestorZonas extends GestorBase
     {
         return DB::select('CALL bsp_borra_zona(?)', [$IdZona]);
     }
-      /**
+    /**
      * @deprecated No implementado.
      */
     public function Listar($IdEntidad)
