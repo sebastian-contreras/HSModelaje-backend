@@ -100,7 +100,7 @@ class InformesController extends Controller
             $viewData = [
                 'image' => $image,
                 'data' => $output,
-                'titulo' => 'Votacion de ' . $evento[0]->Evento,
+                'titulo' => 'Votacion de ' . $evento->Evento,
             ];
 
             $pdf = Pdf::loadView('InformeTest', $viewData);
