@@ -30,8 +30,7 @@ class EventosController extends Controller
         // Obtener el parámetro 'pIncluyeBajas' de la solicitud, si es necesario
         try {
             // Llamar al procedimiento almacenado
-            $evento = new Eventos(['IdEvento' => $IdEvento]);
-            $lista = $evento->Dame();
+            $lista = Eventos::Dame($IdEvento);
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
         } catch (\Exception $e) {

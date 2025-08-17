@@ -28,7 +28,7 @@ class InformesController extends Controller
 
         try {
 
-            $evento = new Eventos(['IdEvento' => $IdEvento]);
+            $evento = Eventos::Dame($pIdEvento);
             $rawResults = $evento->ListarVotos();
 
             $models = [];

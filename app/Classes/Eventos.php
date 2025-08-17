@@ -29,9 +29,10 @@ class Eventos
         $this->CBU = $data['CBU'] ?? null;
     }
 
-    public function Dame()
+    public static function Dame($IdEvento)
     {
-        return DB::select('CALL bsp_dame_evento(?)', [$this->IdEvento]);
+        $result = DB::select('CALL bsp_dame_evento(?)', [$IdEvento]);
+        return isset($result[0]) ? new Eventos((array) $result[0]) : null;
     }
 
     public function DarBaja()
