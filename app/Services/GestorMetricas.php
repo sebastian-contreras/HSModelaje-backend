@@ -12,7 +12,7 @@ class GestorMetricas extends GestorBase
         return DB::select('CALL bsp_listar_metricas(?,?)', [$IdEvento, $pIncluyeBajas]);
     }
 
-    public function BuscarEnEvento($Offset, $Cantidad, $IdEvento, $Metrica = null, $pIncluyeInactivos = 'N')
+    public function BuscarEnEvento($Offset, $Cantidad, $IdEvento, $Metrica = null, $pIncluyeInactivos = null)
     {
         return DB::select('CALL bsp_buscar_metricas(?,?,?,?,?)', [$IdEvento, $Metrica, $pIncluyeInactivos, $Offset, $Cantidad]);
     }

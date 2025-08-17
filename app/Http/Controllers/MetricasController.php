@@ -35,7 +35,7 @@ class MetricasController extends Controller
     {
         $pIdEvento = $request->input('pIdEvento', null);
         $pMetrica = $request->input('pMetrica', null);
-        $pIncluyeInactivos = $request->input('pIncluyeInactivos', 'N');
+        $pIncluyeInactivos = $request->input('pIncluyeInactivos', null);
         $pPagina = $request->input('pPagina', 1);
         $pCantidad = $request->input('pCantidad', 10);
         $pOffset = ($pPagina - 1) * $pCantidad;
