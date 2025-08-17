@@ -53,14 +53,13 @@ class GestorEntradas extends GestorBase
 
     public function Modifica($entrada)
     {
-        return DB::select('CALL bsp_modifica_entrada(?, ?, ?, ?, ?, ?, ?,?)', [
+        return DB::select('CALL bsp_modifica_entrada(?, ?, ?, ?, ?, ?,?)', [
             $entrada->IdEntrada,
             $entrada->IdZona,
             $entrada->ApelName,
             $entrada->DNI,
             $entrada->Correo,
             $entrada->Telefono,
-            $entrada->Cantidad,
             $entrada->Comprobante,
         ]);
     }
