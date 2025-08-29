@@ -84,7 +84,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Crear una nueva usuarios
             Route::post('/', [UsuariosController::class, 'store'])->name('usuarios.store');
             // Obtener una usuarios específica
-            Route::get('/{IdUsuario}', [UsuariosController::class, 'show'])->name('usuarios.show');
+            // Route::get('/{IdUsuario}', [UsuariosController::class, 'show'])->name('usuarios.show');
             // Actualizar una usuarios específica
             Route::put('/{IdUsuario}', [UsuariosController::class, 'update'])->name('usuarios.update');
             // Eliminar una usuarios específica
@@ -118,7 +118,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Crear una nueva gastos
             Route::post('/', [GastosController::class, 'store'])->name('gastos.store');
             // Obtener una gastos específica
-            Route::get('/{IdGasto}', [GastosController::class, 'show'])->name('gastos.show');
+            Route::get('/{IdGasto}', [GastosController::class, 'dame'])->name('gastos.dame');
             // Actualizar una gastos específica
             Route::put('/{IdGasto}', [GastosController::class, 'update'])->name('gastos.update');
             // Eliminar una gastos específica
@@ -134,7 +134,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Crear una nueva patrocinadores
             Route::post('/', [PatrocinadoresController::class, 'store'])->name('patrocinadores.store');
             // Obtener una patrocinadores específica
-            Route::get('/{IdPatrocinador}', [PatrocinadoresController::class, 'show'])->name('patrocinadores.show');
+            Route::get('/{IdPatrocinador}', [PatrocinadoresController::class, 'dame'])->name('patrocinadores.dame');
             // Actualizar una patrocinadores específica
             Route::put('/{IdPatrocinador}', [PatrocinadoresController::class, 'update'])->name('patrocinadores.update');
             // Eliminar una patrocinadores específica
@@ -149,7 +149,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Crear una nueva zonas
             Route::post('/', [ZonasController::class, 'store'])->name('zonas.store');
             // Obtener una zonas específica
-            Route::get('/{IdZona}', [ZonasController::class, 'show'])->name('zonas.show');
+            Route::get('/{IdZona}', [ZonasController::class, 'dame'])->name('zonas.dame');
             // Actualizar una zonas específica
             Route::put('/{IdZona}', [ZonasController::class, 'update'])->name('zonas.update');
             // Eliminar una zonas específica
@@ -167,7 +167,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Crear una nueva modelos
             Route::post('/', [ModelosController::class, 'store'])->name('modelos.store');
             // Obtener una modelos específica
-            Route::get('/{IdModelo}', [ModelosController::class, 'show'])->name('modelos.show');
+            Route::get('/{IdModelo}', [ModelosController::class, 'dame'])->name('modelos.dame');
             // Actualizar una modelos específica
             Route::put('/{IdModelo}', [ModelosController::class, 'update'])->name('modelos.update');
             // Eliminar una modelos específica
@@ -250,7 +250,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             // Crear una nueva metricas
             Route::post('/', [MetricasController::class, 'store'])->name('metricas.store');
             // Obtener una metricas específica
-            Route::get('/{IdMetrica}', [MetricasController::class, 'show'])->name('metricas.show');
+            Route::get('/{IdMetrica}', [MetricasController::class, 'dame'])->name('metricas.dame');
             // Actualizar una metricas específica
             Route::put('/{IdMetrica}', [MetricasController::class, 'update'])->name('metricas.update');
             // Eliminar una metricas específica

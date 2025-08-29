@@ -151,7 +151,7 @@ class EntradasController extends Controller
      * Display the specified resource.
      */
 
-    public function show(string $id)
+    public function dame(string $id)
     {
         try {
             $entrada = new Entradas(['IdEntrada' => $id]);

@@ -95,7 +95,7 @@ class PatrocinadoresController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function dame(string $id)
     {
         try {
             $patrocinador = new Patrocinadores(['IdPatrocinador' => $id]);

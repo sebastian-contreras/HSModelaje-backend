@@ -93,7 +93,7 @@ class ModelosController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function dame(string $id)
     {
         try {
             $modelo = new Modelos(['IdModelo' => $id]);

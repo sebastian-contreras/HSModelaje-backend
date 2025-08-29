@@ -62,7 +62,7 @@ class MetricasController extends Controller
         return ResponseFormatter::success($result, 'Metrica creada exitosamente.', 201);
     }
 
-    public function show(string $id)
+    public function dame(string $id)
     {
         try {
             $metrica = new Metricas(['IdMetrica' => $id]);
