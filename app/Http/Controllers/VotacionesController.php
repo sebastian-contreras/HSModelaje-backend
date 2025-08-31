@@ -164,7 +164,7 @@ class VotacionesController extends Controller
         $IdParticipante = $request->input('pIdParticipante');
         $result = DB::select('CALL bsp_dame_participante(?)', [$IdParticipante]);
         try {
-            $this->gestorVotaciones->Iniciar($IdParticipante);
+            $this->gestorVotaciones->IniciarParticipante($IdParticipante);
             broadcast(new VotoModeloIniciado($result[0], 'iniciar'));
             return ResponseFormatter::success($result[0]);
         } catch (\Exception $e) {

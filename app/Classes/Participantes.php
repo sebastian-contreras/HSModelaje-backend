@@ -17,6 +17,7 @@ class Participantes
         $this->IdEvento = $data['IdEvento'] ?? null;
         $this->IdModelo = $data['IdModelo'] ?? null;
         $this->Promotor = $data['Promotor'] ?? null;
+        $this->ActivoVotacion = $data['ActivoVotacion'] ?? null;
     }
 
     public function Dame()
