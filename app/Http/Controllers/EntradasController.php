@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Classes\Entradas;
+use App\Classes\Eventos;
+use App\Classes\Zonas;
 use App\Helpers\ResponseFormatter;
 use App\Http\Requests\StoreEntradaPasarelaRequest;
 use App\Http\Requests\StoreEntradaRequest;
@@ -18,6 +20,8 @@ use App\Mail\EntradaAprobadaMail;
 use App\Mail\EntradaPendienteMail;
 use App\Mail\EntradaRechazadaMail;
 use App\Services\GestorEntradas;
+use App\Services\GestorEventos;
+use App\Services\GestorZonas;
 use DB;
 use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -31,7 +35,7 @@ class EntradasController extends Controller
      */
     protected $gestorEntradas;
 
-    public function __construct(GestorEntradas $gestorEntradas)
+    public function __construct(GestorEntradas $gestorEntradas,GestorZonas $gestorZonas,GestorEventos $gestorEventos)
     {
         $this->gestorEntradas = $gestorEntradas;
     }
@@ -61,11 +65,16 @@ class EntradasController extends Controller
             // Llamar al procedimiento almacenado
             $entrada = new Entradas(['Token' => $Token]);
             $lista = $entrada->DamePorToken();
+
             if (isset($lista[0]->Response) && $lista[0]->Response === 'error') {
                 // Si hay un error, devolver un error formateado
                 return ResponseFormatter::error('Error al recuperar la entrada.', 400);
             }
-
+            $evento = Eventos::Dame($lista[0]->IdEvento);
+            $zona = new Zonas(['IdZona' => $lista[0]->IdZona]);
+            $zona = $zona->Dame();
+            $lista[0]->Zona = $zona[0]->Zona;
+            $lista[0]->Evento = $evento->Evento;
             // Devolver el resultado como JSON
             return ResponseFormatter::success($lista);
         } catch (\Exception $e) {
