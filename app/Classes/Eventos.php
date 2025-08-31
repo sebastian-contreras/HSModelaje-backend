@@ -27,6 +27,7 @@ class Eventos
         $this->TitularCuenta = $data['TitularCuenta'] ?? null;
         $this->Alias = $data['Alias'] ?? null;
         $this->CBU = $data['CBU'] ?? null;
+        $this->EstadoEvento = $data['EstadoEvento'] ?? null;
     }
 
     public static function Dame($IdEvento)
